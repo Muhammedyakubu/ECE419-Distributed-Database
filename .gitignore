@@ -1,0 +1,9 @@
+/.metadata/
+.idea/
+*.iml
+*.ipr
+*.iws
+*.class
+*.jar
+*.zip
+*.tar.gz
