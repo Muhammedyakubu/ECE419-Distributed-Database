@@ -1,6 +1,9 @@
 package client;
 
 import shared.messages.KVMessage;
+import shared.messages.Message;
+
+import java.io.IOException;
 
 public interface KVCommInterface {
 

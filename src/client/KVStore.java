@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Looking through echoClient & echoServer, I realize that receiveMessage and
@@ -17,12 +19,14 @@ import java.net.Socket;
 public class KVStore implements KVCommInterface {
 
 	private static Logger logger = Logger.getRootLogger();
-	private Socket clientSocket;
+	private Set<ClientSocketListener> listeners;
+	private boolean running;
 
-	private static final int BUFFER_SIZE = 1024;
-	private static final int DROP_SIZE = 128 * BUFFER_SIZE;
+	private Socket clientSocket;
 	private InputStream input;
 	private OutputStream output;
+	private static final int BUFFER_SIZE = 1024;
+	private static final int DROP_SIZE = 128 * BUFFER_SIZE;
 	private String address;
 	private int port;
 
@@ -33,43 +37,89 @@ public class KVStore implements KVCommInterface {
 	 * @param port the port of the KVServer
 	 */
 	public KVStore(String address, int port) {
-		// TODO Auto-generated method stub
 		this.address = address;
 		this.port = port;
 	}
 
 	@Override
 	public void connect() throws Exception {
-		// TODO Auto-generated method stub
 		clientSocket = new Socket(address, port);
+		listeners = new HashSet<ClientSocketListener>();
+		input = clientSocket.getInputStream();
+		output = clientSocket.getOutputStream();
+		running = true;
+		logger.info("Connection established");
 	}
 
 	@Override
 	public void disconnect() {
-		// TODO Auto-generated method stub
+		logger.info("try to close connection ...");
+
+		try {
+			running = false;
+			logger.info("tearing down the connection ...");
+			if (clientSocket != null) {
+				clientSocket.close();
+				clientSocket = null;
+				logger.info("connection closed!");
+			}
+			for(ClientSocketListener listener : listeners) {
+				listener.handleStatus(ClientSocketListener.SocketStatus.DISCONNECTED);
+			}
+		} catch (IOException ioe) {
+			logger.error("Unable to close connection!");
+		}
 	}
 
 	@Override
 	public KVMessage put(String key, String value) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		Message msg = new Message(key, value, Message.StatusType.PUT);
+		sendMessage(msg); // this should throw an exception if the connection is closed... right?
+		Message response = receiveMessage();
+		return response;
 	}
 
 	@Override
 	public KVMessage get(String key) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		Message msg = new Message(key, null, Message.StatusType.GET);
+		sendMessage(msg);
+		Message response = receiveMessage();
+		return response;
 	}
 
+	public boolean isRunning() {
+		return running;
+	}
+
+	public void addListener(ClientSocketListener listener){
+		listeners.add(listener);
+	}
+
+	/**
+	 * Sends a message to the KVServer.
+	 *
+	 * @param msg
+	 * 		  the message to be sent.
+	 * @throws IOException
+	 * 		  if the message cannot be sent.
+	 */
 	public void sendMessage(Message msg) throws IOException {
 		byte[] msgBytes = msg.toByteArray();
 		output.write(msgBytes, 0, msgBytes.length);
 		output.flush();
-//        TODO: separate logging for server and client
+		// Client specific logging
 		logger.info("Send message:\t '" + msg.toString() + "'");
 
 	}
-	private Message receiveMessage() throws IOException {
+
+	/**
+	 * Receives a message from the KVServer.
+	 *
+	 * @return the received message.
+	 * @throws IOException
+	 * 		  if the message cannot be received.
+	 */
+	public Message receiveMessage() throws IOException {
 
 		int index = 0;
 		byte[] msgBytes = null, tmp = null;
@@ -123,7 +173,7 @@ public class KVStore implements KVCommInterface {
 
 		/* build final String */
 		Message msg = new Message(msgBytes);
-//        TODO: separate logging for server and client
+		// Client specific logging
 		logger.info("Receive message:\t '" + msg.toString() + "'");
 		return msg;
 	}
