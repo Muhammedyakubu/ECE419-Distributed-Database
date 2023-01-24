@@ -73,25 +73,7 @@ public class Message implements KVMessage {
      */
     @Override
     public String toString() {
-        return key + " " + value + " " + status;
-    }
-
-    /**
-     * Returns an array of bytes that represent the ASCII coded message content.
-     *
-     * @return the content of this message as an array of bytes
-     * 		in ASCII coding.
-     */
-
-    private byte[] toByteArray() {
-        byte[] bytes = this.toString().getBytes();
-        byte[] ctrBytes = new byte[]{LINE_FEED, RETURN};
-        byte[] tmp = new byte[bytes.length + ctrBytes.length];
-
-        System.arraycopy(bytes, 0, tmp, 0, bytes.length);
-        System.arraycopy(ctrBytes, 0, tmp, bytes.length, ctrBytes.length);
-
-        return tmp;
+        return key + " " + value + " " + status.toString();
     }
 
     private byte[] addCtrChars(byte[] bytes) {
@@ -104,5 +86,15 @@ public class Message implements KVMessage {
         return tmp;
     }
 
+    /**
+     * Returns an array of bytes that represent the ASCII coded message content.
+     *
+     * @return the content of this message as an array of bytes
+     * 		in ASCII coding.
+     */
 
+    public byte[] toByteArray() {
+        byte[] bytes = this.toString().getBytes();
+        return addCtrChars(bytes);
+    }
 }
