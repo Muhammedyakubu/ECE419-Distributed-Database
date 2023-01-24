@@ -1,5 +1,11 @@
 package app_kvServer;
 
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.net.BindException;
+import java.net.ServerSocket;
+
 public class KVServer implements IKVServer {
 	/**
 	 * Start KV Server at given port
@@ -11,7 +17,19 @@ public class KVServer implements IKVServer {
 	 *           currently not contained in the cache. Options are "FIFO", "LRU",
 	 *           and "LFU".
 	 */
+
+	private static Logger logger = Logger.getRootLogger();
+	private int port;
+	private int cacheSize;
+	private CacheStrategy strategy;
+	private boolean running;
+	private ServerSocket serverSocket;
+
+
 	public KVServer(int port, int cacheSize, String strategy) {
+		this.port = port;
+		this.cacheSize = cacheSize;
+		this.strategy = CacheStrategy.valueOf(strategy);
 		// TODO Auto-generated method stub
 	}
 	
@@ -75,6 +93,8 @@ public class KVServer implements IKVServer {
 	@Override
     public void run(){
 		// TODO Auto-generated method stub
+
+		running = initializeServer();
 	}
 
 	@Override
@@ -86,4 +106,23 @@ public class KVServer implements IKVServer {
     public void close(){
 		// TODO Auto-generated method stub
 	}
+
+	private boolean initializeServer() {
+		logger.info("Initialize server ...");
+		try {
+			serverSocket = new ServerSocket(port);
+			logger.info("Server listening on port: "
+					+ serverSocket.getLocalPort());
+			return true;
+
+		} catch (IOException e) {
+			logger.error("Error! Cannot open server socket:");
+			if(e instanceof BindException){
+				logger.error("Port " + port + " is already bound!");
+			}
+			return false;
+		}
+	}
+
+
 }
