@@ -2,7 +2,6 @@ package client;
 
 import org.apache.log4j.Logger;
 import shared.messages.KVMessage;
-import shared.communication.CommunicationModule;
 import shared.messages.Message;
 
 import java.io.IOException;
