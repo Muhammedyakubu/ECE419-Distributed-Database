@@ -7,6 +7,15 @@ import java.net.BindException;
 import java.net.ServerSocket;
 
 public class KVServer implements IKVServer {
+	
+	private static Logger logger = Logger.getRootLogger();
+	private int port;
+	private int cacheSize;
+	private CacheStrategy strategy;
+	private boolean running;
+	private ServerSocket serverSocket;
+	
+	
 	/**
 	 * Start KV Server at given port
 	 * @param port given port for storage server to operate
@@ -17,15 +26,6 @@ public class KVServer implements IKVServer {
 	 *           currently not contained in the cache. Options are "FIFO", "LRU",
 	 *           and "LFU".
 	 */
-
-	private static Logger logger = Logger.getRootLogger();
-	private int port;
-	private int cacheSize;
-	private CacheStrategy strategy;
-	private boolean running;
-	private ServerSocket serverSocket;
-
-
 	public KVServer(int port, int cacheSize, String strategy) {
 		this.port = port;
 		this.cacheSize = cacheSize;
