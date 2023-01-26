@@ -1,5 +1,7 @@
 package client;
 
+import shared.messages.Message;
+
 /**
  * I believe this is an interface that the client application will implement...?
  *
