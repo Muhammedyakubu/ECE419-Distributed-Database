@@ -38,11 +38,11 @@ public class KVMessage implements IKVMessage {
      * @param bytes
      */
     public KVMessage(byte[] bytes) {
-        String msg = new String(addCtrChars(bytes)).trim();
+        String msg = new String(rmvCtrChars(bytes));
         String[] parts = msg.split(" ");
         this.status = StatusType.valueOf(parts[0]);
         this.key = parts[1];
-        this.value = parts[2];
+        this.value = parts.length > 2 ? parts[2] : null;
     }
 
     @Override
@@ -78,13 +78,23 @@ public class KVMessage implements IKVMessage {
     }
 
     private byte[] addCtrChars(byte[] bytes) {
-        byte[] ctrBytes = new byte[]{LINE_FEED, RETURN};
+        byte[] ctrBytes = new byte[]{RETURN, LINE_FEED};
         byte[] tmp = new byte[bytes.length + ctrBytes.length];
 
         System.arraycopy(bytes, 0, tmp, 0, bytes.length);
         System.arraycopy(ctrBytes, 0, tmp, bytes.length, ctrBytes.length);
 
         return tmp;
+    }
+
+    public static byte[] rmvCtrChars(byte[] bytes) {
+        byte[] ctrBytes = new byte[]{RETURN, LINE_FEED};
+        if (bytes[bytes.length - 1] == ctrBytes[1] && bytes[bytes.length - 2] == ctrBytes[0]) {
+            byte[] tmp = new byte[bytes.length - ctrBytes.length];
+            System.arraycopy(bytes, 0, tmp, 0, bytes.length - ctrBytes.length);
+            return tmp;
+        }
+        return bytes;
     }
 
     /**
