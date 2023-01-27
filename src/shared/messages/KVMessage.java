@@ -69,6 +69,14 @@ public class KVMessage implements IKVMessage {
     }
 
     /**
+     * Set the value of the message (This is used by the server)
+     * @param value
+     */
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    /**
      * return a string representation of the message
      * @return String
      */

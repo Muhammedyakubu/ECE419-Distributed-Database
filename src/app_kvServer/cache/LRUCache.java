@@ -47,7 +47,7 @@ public class LRUCache implements Cache{
      *
      */
     @Override
-    public void clearCache() {
+    public void clear() {
 
     }
 }

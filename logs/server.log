@@ -1,0 +1,66 @@
+2023-01-27 13:30:55,275 INFO  [Thread-0] root: Initialize server ...
+2023-01-27 13:30:55,287 INFO  [Thread-0] root: Server listening on port: 5000
+2023-01-27 13:31:32,961 INFO  [Thread-0] root: Connected to kubernetes.docker.internal on port 56516
+2023-01-27 13:31:32,965 INFO  [Thread-1] root: SEND 	<127.0.0.1:56516>: 'Connection to MSRG Echo server established: /127.0.0.1 / 5000'
+2023-01-27 13:32:40,561 INFO  [Thread-2] root: SEND 	<127.0.0.1:56549>: 'Connection to MSRG Echo server established: /127.0.0.1 / 5000'
+2023-01-27 13:32:40,561 INFO  [Thread-0] root: Connected to kubernetes.docker.internal on port 56549
+2023-01-27 13:33:02,647 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56516>: 'okay'
+2023-01-27 13:33:02,648 INFO  [Thread-1] root: SEND 	<127.0.0.1:56516>: 'okay
+'
+2023-01-27 13:33:07,446 INFO  [Thread-2] root: RECEIVE 	<127.0.0.1:56549>: 'okay?'
+2023-01-27 13:33:07,446 INFO  [Thread-2] root: SEND 	<127.0.0.1:56549>: 'okay?
+'
+2023-01-27 13:33:20,241 INFO  [Thread-2] root: RECEIVE 	<127.0.0.1:56549>: 'it seems like this handles this well'
+2023-01-27 13:33:20,241 INFO  [Thread-2] root: SEND 	<127.0.0.1:56549>: 'it seems like this handles this well
+'
+2023-01-27 13:33:33,306 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56516>: 'so clearly it handles multiple client connections'
+2023-01-27 13:33:33,307 INFO  [Thread-1] root: SEND 	<127.0.0.1:56516>: 'so clearly it handles multiple client connections
+'
+2023-01-27 13:33:43,700 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56516>: 'asdfa'
+2023-01-27 13:33:43,700 INFO  [Thread-1] root: SEND 	<127.0.0.1:56516>: 'asdfa
+'
+2023-01-27 13:33:48,434 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56516>: 'sa'
+2023-01-27 13:33:48,435 INFO  [Thread-1] root: SEND 	<127.0.0.1:56516>: 'sa
+'
+2023-01-27 13:33:58,208 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56516>: 'okasd'
+2023-01-27 13:33:58,209 INFO  [Thread-1] root: SEND 	<127.0.0.1:56516>: 'okasd
+'
+2023-01-27 13:34:07,798 INFO  [Thread-2] root: RECEIVE 	<127.0.0.1:56549>: 'waaa'
+2023-01-27 13:34:07,798 INFO  [Thread-2] root: SEND 	<127.0.0.1:56549>: 'waaa
+'
+2023-01-27 13:34:19,099 INFO  [Thread-2] root: RECEIVE 	<127.0.0.1:56549>: 'wtf is going onnn?'
+2023-01-27 13:34:19,100 INFO  [Thread-2] root: SEND 	<127.0.0.1:56549>: 'wtf is going onnn?
+'
+2023-01-27 13:35:39,184 INFO  [Thread-3] root: SEND 	<192.168.32.1:56668>: 'Connection to MSRG Echo server established: /192.168.32.1 / 5000'
+2023-01-27 13:35:39,184 INFO  [Thread-0] root: Connected to Muhammeds.mshome.net on port 56668
+2023-01-27 13:36:00,265 INFO  [Thread-3] root: RECEIVE 	<192.168.32.1:56668>: 'That's crazy that it can connect to 3!'
+2023-01-27 13:36:00,265 INFO  [Thread-3] root: SEND 	<192.168.32.1:56668>: 'That's crazy that it can connect to 3!
+'
+2023-01-27 13:36:15,972 INFO  [Thread-3] root: RECEIVE 	<192.168.32.1:56668>: 'now we'
+2023-01-27 13:36:15,973 INFO  [Thread-3] root: SEND 	<192.168.32.1:56668>: 'now we
+'
+2023-01-27 13:36:21,548 INFO  [Thread-3] root: RECEIVE 	<192.168.32.1:56668>: 'huh'
+2023-01-27 13:36:21,548 INFO  [Thread-3] root: SEND 	<192.168.32.1:56668>: 'huh
+'
+2023-01-27 13:36:25,323 INFO  [Thread-3] root: RECEIVE 	<192.168.32.1:56668>: 'nowe wer'e asfa df ad'
+2023-01-27 13:36:25,323 INFO  [Thread-3] root: SEND 	<192.168.32.1:56668>: 'nowe wer'e asfa df ad
+'
+2023-01-27 13:36:54,935 INFO  [Thread-3] root: RECEIVE 	<192.168.32.1:56668>: ''
+2023-01-27 13:36:54,935 INFO  [Thread-3] root: SEND 	<192.168.32.1:56668>: '
+'
+2023-01-27 13:36:54,935 INFO  [Thread-3] root: RECEIVE 	<192.168.32.1:56668>: ''
+2023-01-27 13:36:54,936 ERROR [Thread-3] root: Error! Connection lost!
+2023-01-27 13:37:03,357 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56516>: ''
+2023-01-27 13:37:03,358 INFO  [Thread-1] root: SEND 	<127.0.0.1:56516>: '
+'
+2023-01-27 13:37:03,358 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56516>: ''
+2023-01-27 13:37:03,358 ERROR [Thread-1] root: Error! Connection lost!
+2023-01-27 13:37:07,244 INFO  [Thread-2] root: RECEIVE 	<127.0.0.1:56549>: ''
+2023-01-27 13:37:07,244 INFO  [Thread-2] root: SEND 	<127.0.0.1:56549>: '
+'
+2023-01-27 13:37:07,245 INFO  [Thread-2] root: RECEIVE 	<127.0.0.1:56549>: ''
+2023-01-27 13:37:07,245 ERROR [Thread-2] root: Error! Connection lost!
+2023-01-27 13:52:36,417 INFO  [Thread-0] root: Initialize server ...
+2023-01-27 13:52:36,433 INFO  [Thread-0] root: Server listening on port: 5000
+2023-01-27 13:52:50,919 INFO  [Thread-0] root: Connected to kubernetes.docker.internal on port 58331
+2023-01-27 13:52:50,927 INFO  [Thread-1] root: SEND 	<127.0.0.1:58331>: 'Connection to MSRG Echo server established: /127.0.0.1 / 5000'

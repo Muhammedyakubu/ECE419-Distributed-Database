@@ -4,15 +4,14 @@ import app_kvServer.cache.Cache;
 import app_kvServer.cache.FIFOCache;
 import app_kvServer.cache.LFUCache;
 import app_kvServer.cache.LRUCache;
+import database.IKVDatabase;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.net.BindException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
+import java.net.*;
+import java.util.List;
 
 
 /**
@@ -29,8 +28,11 @@ public class KVServer implements IKVServer {
 	private int cacheSize;
 	private CacheStrategy strategy;
 	private Cache cache;
+	private IKVDatabase db;
 	private boolean running;
 	private ServerSocket serverSocket;
+	// should I use a more efficient data structure?
+	private List<ClientConnection> clientConnections;
 	
 	
 	/**
@@ -46,7 +48,15 @@ public class KVServer implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy) {
 		this.port = port;
 		this.cacheSize = cacheSize;
-		this.strategy = CacheStrategy.valueOf(strategy);
+
+		// handle invalid cacheSize and strategy
+		if (cacheSize <= 0 || strategy == null) {
+			this.strategy = CacheStrategy.None;
+		} else {
+			this.strategy = CacheStrategy.valueOf(strategy);
+		}
+
+		// initialize cache
 		switch (this.strategy) {
 		case None:
 			this.cache = null;
@@ -61,7 +71,9 @@ public class KVServer implements IKVServer {
 			this.cache = new LFUCache(cacheSize);
 			break;
 		}
-		// some more setup
+
+		// TODO: setup db, etc
+
 		run();
 	}
 	
@@ -93,8 +105,7 @@ public class KVServer implements IKVServer {
 
 	@Override
     public int getCacheSize(){
-		// TODO Auto-generated method stub
-		return -1;
+		return this.cacheSize;
 	}
 
 	@Override
@@ -105,8 +116,10 @@ public class KVServer implements IKVServer {
 
 	@Override
     public boolean inCache(String key){
-		// TODO Auto-generated method stub
-		return false;
+		if (cache == null) {
+			return false;
+		}
+		return cache.contains(key);
 	}
 
 	@Override
@@ -122,7 +135,7 @@ public class KVServer implements IKVServer {
 
 	@Override
     public void clearCache(){
-		// TODO Auto-generated method stub
+		cache.clear();
 	}
 
 	@Override
@@ -131,12 +144,27 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
-    public void run(){
-		// TODO Auto-generated method stub
+    public void run() {
 
 		running = initializeServer();
 
 		// handle client connections & stuff
+		if (serverSocket != null) {
+			while (running) {
+				try {
+					Socket clientSocket = serverSocket.accept();
+					ClientConnection connection =
+							new ClientConnection(clientSocket, this);
+					clientConnections.add(connection);
+					new Thread(connection).start();
+
+				} catch (IOException e) {
+					logger.error("Error! " +
+							"Unable to establish connection. \n", e);
+				}
+			}
+		}
+		logger.info("Server stopped.");
 	}
 
 	@Override

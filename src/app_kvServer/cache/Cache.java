@@ -38,5 +38,5 @@ public interface Cache {
     /**
      * Clear the cache
      */
-    public void clearCache();
+    public void clear();
 }

@@ -47,7 +47,7 @@ public class LFUCache implements Cache{
      *
      */
     @Override
-    public void clearCache() {
+    public void clear() {
 
     }
 }
