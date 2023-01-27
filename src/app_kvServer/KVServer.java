@@ -1,17 +1,34 @@
 package app_kvServer;
 
+import app_kvServer.cache.Cache;
+import app_kvServer.cache.FIFOCache;
+import app_kvServer.cache.LFUCache;
+import app_kvServer.cache.LRUCache;
+import logger.LogSetup;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.BindException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 
+
+/**
+ * This class is the main class of the KVServer application. It provides the
+ * functionality to start and stop a server instance. It also provides the
+ * functionality to initialize and shut down the storage server.
+ *
+ * Should this have a main method???
+ */
 public class KVServer implements IKVServer {
 	
 	private static Logger logger = Logger.getRootLogger();
 	private int port;
 	private int cacheSize;
 	private CacheStrategy strategy;
+	private Cache cache;
 	private boolean running;
 	private ServerSocket serverSocket;
 	
@@ -30,25 +47,48 @@ public class KVServer implements IKVServer {
 		this.port = port;
 		this.cacheSize = cacheSize;
 		this.strategy = CacheStrategy.valueOf(strategy);
-		// TODO Auto-generated method stub
+		switch (this.strategy) {
+		case None:
+			this.cache = null;
+			break;
+		case FIFO:
+			this.cache = new FIFOCache(cacheSize);
+			break;
+		case LRU:
+			this.cache = new LRUCache(cacheSize);
+			break;
+		case LFU:
+			this.cache = new LFUCache(cacheSize);
+			break;
+		}
+		// some more setup
+		run();
 	}
 	
 	@Override
 	public int getPort(){
-		// TODO Auto-generated method stub
-		return -1;
+		return port;
 	}
 
 	@Override
     public String getHostname(){
-		// TODO Auto-generated method stub
+		InetAddress ip;
+		String hostname;
+		try {
+			ip = InetAddress.getLocalHost();
+			hostname = ip.getHostName();
+			System.out.println("Your current IP address : " + ip);
+			System.out.println("Your current Hostname : " + hostname);
+			return hostname;
+		} catch (UnknownHostException e) {
+				e.printStackTrace();
+		}
 		return null;
 	}
 
 	@Override
     public CacheStrategy getCacheStrategy(){
-		// TODO Auto-generated method stub
-		return IKVServer.CacheStrategy.None;
+		return this.strategy;
 	}
 
 	@Override
@@ -95,6 +135,8 @@ public class KVServer implements IKVServer {
 		// TODO Auto-generated method stub
 
 		running = initializeServer();
+
+		// handle client connections & stuff
 	}
 
 	@Override
@@ -124,5 +166,36 @@ public class KVServer implements IKVServer {
 		}
 	}
 
+	/**
+	 * The method starts the server thread that waits for incoming client
+	 * connections as a background process. The method also starts the cache
+	 * replacement strategy if caching is enabled.
+	 * @param args
+	 *
+	 * Someone needs to work on parsing the arguments as specified in the spec:
+	 * java -jar m1-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>
+	 */
+	public static void main(String[] args) {
+//		TODO: parse arguments and set defaults
+		try {
+			new LogSetup("logs/KVserver.log", Level.ALL);
+			if(args.length != 1) {
+				System.out.println("Error! Invalid number of arguments!");
+				System.out.println("Usage: java -jar m1-server.jar " +
+						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
+			} else {
+				int port = Integer.parseInt(args[0]);
+				new KVServer(port, 10, "FIFO");
+			}
+		} catch (IOException e) {
+			System.out.println("Error! Unable to initialize logger!");
+			e.printStackTrace();
+			System.exit(1);
+		} catch (NumberFormatException nfe) {
+			System.out.println("Error! Invalid argument <port>! Not a number!");
+			System.out.println("Usage: Server <port>!");
+			System.exit(1);
+		}
+	}
 
 }
