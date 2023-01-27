@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -32,7 +33,7 @@ public class KVServer implements IKVServer {
 	private boolean running;
 	private ServerSocket serverSocket;
 	// should I use a more efficient data structure?
-	private List<ClientConnection> clientConnections;
+	private List<ClientConnection> clientConnections = new LinkedList<ClientConnection>();
 	
 	
 	/**
