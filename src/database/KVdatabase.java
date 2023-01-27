@@ -2,12 +2,29 @@ package database;
 
 
 /**
- * Class for manipulating key-value store database
- * Used by kvServer to place key-value pairs in storage and retrieve values
- *
- * Implemented using log structured file and hashmap of key-address locations
+ * Class for manipulating key-value store database using a simple key to file mapping
+ * for each pair.
  */
-public class database {
+public class KVdatabase implements IKVDatabase{
 
+    @Override
+    public String getValue(String key) {
+        return null;
+    }
+
+    @Override
+    public boolean insertPair(String key, String value){
+        return false;
+    }
+
+    @Override
+    public boolean deletePair(String key) {
+        return false;
+    }
+
+    @Override
+    public boolean updatePair(String key, String value) {
+        return false;
+    }
 
 }
