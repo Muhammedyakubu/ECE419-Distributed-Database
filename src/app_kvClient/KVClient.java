@@ -8,7 +8,6 @@ import logging.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import shared.messages.KVMessage;
-import shared.messages.Message;
 import ui.Application;
 
 import java.util.*;
@@ -95,7 +94,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                         }
                     }
                     //RETURNS THE RESPONSE HERE, HANDLE IT
-                    KVMessage response = kvstore.put(key, msg.toString());
+                    KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
                     //PRINT RESPONSE SOMEHOW?
                 } else {
                     printError("Not connected!");
@@ -111,7 +110,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 if(kvstore != null){
                     String key = tokens[1];
                     //RETURNS THE RESPONSE HERE, HANDLE IT
-                    KVMessage response = kvstore.get(key);
+                    KVMessage response = (KVMessage) kvstore.get(key);
                     //PRINT RESPONSE SOMEHOW?
                 } else {
                     printError("Not connected!");
@@ -245,7 +244,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
     }
 
     @Override
-    public void handleNewMessage(Message msg) {
+    public void handleNewMessage(KVMessage msg) {
         //WHAT HERE?
     }
 

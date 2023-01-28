@@ -1,8 +1,8 @@
 package client;
 
 import org.apache.log4j.Logger;
+import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
-import shared.messages.Message;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,18 +72,18 @@ public class KVStore implements KVCommInterface {
 	}
 
 	@Override
-	public KVMessage put(String key, String value) throws Exception {
-		Message msg = new Message(key, value, Message.StatusType.PUT);
+	public IKVMessage put(String key, String value) throws Exception {
+		KVMessage msg = new KVMessage(KVMessage.StatusType.PUT, key, value);
 		sendMessage(msg); // this should throw an exception if the connection is closed... right?
-		Message response = receiveMessage();
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
 	@Override
-	public KVMessage get(String key) throws Exception {
-		Message msg = new Message(key, null, Message.StatusType.GET);
+	public IKVMessage get(String key) throws Exception {
+		KVMessage msg = new KVMessage(KVMessage.StatusType.GET, key, null);
 		sendMessage(msg);
-		Message response = receiveMessage();
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
@@ -103,7 +103,7 @@ public class KVStore implements KVCommInterface {
 	 * @throws IOException
 	 * 		  if the message cannot be sent.
 	 */
-	public void sendMessage(Message msg) throws IOException {
+	public void sendMessage(KVMessage msg) throws IOException {
 		byte[] msgBytes = msg.toByteArray();
 		output.write(msgBytes, 0, msgBytes.length);
 		output.flush();
@@ -119,7 +119,7 @@ public class KVStore implements KVCommInterface {
 	 * @throws IOException
 	 * 		  if the message cannot be received.
 	 */
-	public Message receiveMessage() throws IOException {
+	public KVMessage receiveMessage() throws IOException {
 
 		int index = 0;
 		byte[] msgBytes = null, tmp = null;
@@ -172,7 +172,7 @@ public class KVStore implements KVCommInterface {
 		msgBytes = tmp;
 
 		/* build final String */
-		Message msg = new Message(msgBytes);
+		KVMessage msg = new KVMessage(msgBytes);
 		// Client specific logging
 		logger.info("Receive message:\t '" + msg.toString() + "'");
 		return msg;

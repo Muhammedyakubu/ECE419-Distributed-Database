@@ -1,9 +1,6 @@
 package client;
 
-import shared.messages.KVMessage;
-import shared.messages.Message;
-
-import java.io.IOException;
+import shared.messages.IKVMessage;
 
 public interface KVCommInterface {
 
@@ -32,7 +29,7 @@ public interface KVCommInterface {
 	 *             if put command cannot be executed (e.g. not connected to any
 	 *             KV server).
 	 */
-	public KVMessage put(String key, String value) throws Exception;
+	public IKVMessage put(String key, String value) throws Exception;
 
 	/**
 	 * Retrieves the value for a given key from the KVServer.
@@ -44,5 +41,5 @@ public interface KVCommInterface {
 	 *             if put command cannot be executed (e.g. not connected to any
 	 *             KV server).
 	 */
-	public KVMessage get(String key) throws Exception;
+	public IKVMessage get(String key) throws Exception;
 }
