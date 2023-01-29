@@ -1,0 +1,47 @@
+2023-01-29 13:38:03,085 WARN  [main] root: Unknown error occurred!
+java.lang.NullPointerException: Cannot invoke "java.util.Set.add(Object)" because "this.listeners" is null
+	at client.KVStore.addListener(KVStore.java:95)
+	at app_kvClient.KVClient.newConnection(KVClient.java:234)
+	at app_kvClient.KVClient.handleCommand(KVClient.java:62)
+	at app_kvClient.KVClient.run(KVClient.java:37)
+	at app_kvClient.KVClient.main(KVClient.java:258)
+2023-01-29 13:39:32,505 WARN  [main] root: Unknown error occurred!
+java.lang.NullPointerException: Cannot invoke "java.util.Set.add(Object)" because "this.listeners" is null
+	at client.KVStore.addListener(KVStore.java:95)
+	at app_kvClient.KVClient.newConnection(KVClient.java:234)
+	at app_kvClient.KVClient.handleCommand(KVClient.java:62)
+	at app_kvClient.KVClient.run(KVClient.java:37)
+	at app_kvClient.KVClient.main(KVClient.java:258)
+2023-01-29 13:42:41,010 INFO  [main] root: try to close connection ...
+2023-01-29 13:42:41,012 INFO  [main] root: tearing down the connection ...
+2023-01-29 13:43:18,364 INFO  [main] root: Connection established
+2023-01-29 13:43:36,358 INFO  [main] root: Send message:	 'PUT this in'
+2023-01-29 13:46:35,859 INFO  [main] root: try to close connection ...
+2023-01-29 13:46:35,860 INFO  [main] root: tearing down the connection ...
+2023-01-29 13:46:35,863 INFO  [main] root: connection closed!
+2023-01-29 13:47:26,913 INFO  [main] root: Send message:	 'PUT this in'
+2023-01-29 13:47:26,918 WARN  [main] root: Unknown error occurred
+java.lang.IllegalArgumentException: No enum constant shared.messages.IKVMessage.StatusType.Connection
+	at java.base/java.lang.Enum.valueOf(Enum.java:274)
+	at shared.messages.IKVMessage$StatusType.valueOf(IKVMessage.java:5)
+	at shared.messages.KVMessage.<init>(KVMessage.java:43)
+	at client.KVStore.receiveMessage(KVStore.java:175)
+	at client.KVStore.put(KVStore.java:78)
+	at app_kvClient.KVClient.handleCommand(KVClient.java:96)
+	at app_kvClient.KVClient.run(KVClient.java:37)
+	at app_kvClient.KVClient.main(KVClient.java:260)
+2023-01-29 13:51:27,907 INFO  [main] root: Send message:	 'PUT ngng '
+2023-01-29 13:51:27,908 WARN  [main] root: Unknown error occurred
+java.lang.IllegalArgumentException: No enum constant shared.messages.IKVMessage.StatusType.
+PUT
+	at java.base/java.lang.Enum.valueOf(Enum.java:274)
+	at shared.messages.IKVMessage$StatusType.valueOf(IKVMessage.java:5)
+	at shared.messages.KVMessage.<init>(KVMessage.java:43)
+	at client.KVStore.receiveMessage(KVStore.java:175)
+	at client.KVStore.put(KVStore.java:78)
+	at app_kvClient.KVClient.handleCommand(KVClient.java:96)
+	at app_kvClient.KVClient.run(KVClient.java:37)
+	at app_kvClient.KVClient.main(KVClient.java:260)
+2023-01-29 13:53:13,091 INFO  [main] root: try to close connection ...
+2023-01-29 13:53:13,092 INFO  [main] root: tearing down the connection ...
+2023-01-29 13:53:13,095 INFO  [main] root: connection closed!

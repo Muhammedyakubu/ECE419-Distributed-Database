@@ -72,7 +72,7 @@ public class KVStore implements KVCommInterface {
 	}
 
 	@Override
-	public IKVMessage put(String key, String value) throws Exception {
+	public KVMessage put(String key, String value) throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.PUT, key, value);
 		sendMessage(msg); // this should throw an exception if the connection is closed... right?
 		KVMessage response = receiveMessage();

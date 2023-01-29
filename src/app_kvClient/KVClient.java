@@ -3,12 +3,10 @@ package app_kvClient;
 import client.KVStore;
 import client.KVCommInterface;
 import client.ClientSocketListener;
-import client.TextMessage;
-import logging.LogSetup;
+import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import shared.messages.KVMessage;
-import ui.Application;
 
 import java.util.*;
 import java.lang.*;
@@ -41,6 +39,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 stop = true;
                 printError("CLI does not respond - Application terminated ");
             } catch (Exception e){
+                logger.warn("Unknown error occurred", e);
                 printError("Input error");
             }
         }
@@ -233,8 +232,9 @@ public class KVClient implements IKVClient, ClientSocketListener {
     @Override
     public void newConnection(String hostname, int port) throws Exception{
             kvstore = new KVStore(hostname, port);
-            kvstore.addListener(this);
             kvstore.connect();
+            kvstore.addListener(this);
+
     }
 
     @Override
