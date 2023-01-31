@@ -9,31 +9,32 @@ package database;
 public interface IKVDatabase {
 
     /**
-     * Retrieve the value from storage based on key
-     * Does not modify database
-     *
+     * Gets a value
+     * @param key
+     * @return value in string
      */
     public String getValue(String key);
 
     /**
-     * Inserts a key value pair into storage
-     * Returns successful or unsuccessful insertion
+     * Inserts/updates KV Pair
+     * @param key
+     * @param value
+     * @return successful or unsuccessful insertion
      */
     public boolean insertPair(String key, String value);
 
     /**
-     * Permenantly deletes a pair in storage
-     * Returns successful or unsuccessful deletion
+     * Permanently deletes a pair in storage
+     *
+     * @param key
+     * @return Successful or unsuccessful deletion
      */
     public boolean deletePair(String key);
 
     /**
-     * Updates the value stored with an attached key
-     * Returns successful or unsuccessful update
+     * Clears all existing KV pairs
+     * @return successful or unsuccessful clearance
      */
-    public boolean updatePair(String key, String value);
-
-
-
+    public boolean clearStorage();
 
 }
