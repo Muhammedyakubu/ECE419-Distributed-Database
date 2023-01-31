@@ -11,4 +11,6 @@
 *.MF
 logs/*
 *.log
+bin/
+out/
 src/KVStorage
