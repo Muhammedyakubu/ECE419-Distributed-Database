@@ -9,3 +9,6 @@
 *.tar.gz
 *.DS_Store
 *.MF
+logs/*
+*.log
+src/KVStorage

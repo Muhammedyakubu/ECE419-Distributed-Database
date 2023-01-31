@@ -83,3 +83,51 @@
 '
 2023-01-31 12:48:32,438 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:63812>: ''
 2023-01-31 12:48:32,438 ERROR [Thread-1] root: Error! Connection lost!
+2023-01-31 15:28:48,923 WARN  [main] root: Error while initializing database: 
+java.nio.file.FileAlreadyExistsException: .\src\KVStorage
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:87)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.createDirectory(WindowsFileSystemProvider.java:521)
+	at java.base/java.nio.file.Files.createDirectory(Files.java:700)
+	at database.KVdatabase.<init>(KVdatabase.java:36)
+	at app_kvServer.KVServer.<init>(KVServer.java:87)
+	at app_kvServer.KVServer.main(KVServer.java:364)
+2023-01-31 15:28:48,930 INFO  [main] root: Initialize server ...
+2023-01-31 15:28:48,942 INFO  [main] root: Server listening on port: 5000
+2023-01-31 15:37:05,595 WARN  [main] root: Error while initializing database: 
+java.nio.file.FileAlreadyExistsException: .\src\KVStorage
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:87)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.createDirectory(WindowsFileSystemProvider.java:521)
+	at java.base/java.nio.file.Files.createDirectory(Files.java:700)
+	at database.KVdatabase.<init>(KVdatabase.java:36)
+	at app_kvServer.KVServer.<init>(KVServer.java:87)
+	at app_kvServer.KVServer.main(KVServer.java:364)
+2023-01-31 15:37:05,601 INFO  [main] root: Initialize server ...
+2023-01-31 15:37:05,623 INFO  [main] root: Server listening on port: 5000
+2023-01-31 15:37:20,858 INFO  [main] root: Initialize server ...
+2023-01-31 15:37:20,903 INFO  [main] root: Server listening on port: 5000
+2023-01-31 15:38:24,159 INFO  [main] root: Connected to kubernetes.docker.internal on port 52788
+2023-01-31 15:39:38,828 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:52788>: 'GET foo null'
+2023-01-31 15:39:41,704 INFO  [Thread-0] root: SEND 	<127.0.0.1:52788>: 'GET_SUCCESS foo yeah'
+2023-01-31 15:40:01,814 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:52788>: 'PUT muhu asdfa'
+2023-01-31 15:40:52,364 INFO  [Thread-0] root: SEND 	<127.0.0.1:52788>: 'PUT_SUCCESS muhu asdfa'
+2023-01-31 15:41:20,297 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:52788>: 'GET muhu null'
+2023-01-31 15:41:20,297 INFO  [Thread-0] root: SEND 	<127.0.0.1:52788>: 'GET_SUCCESS muhu asdfa'
+2023-01-31 15:42:26,154 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:52788>: 'PUT Hope Working\n'
+2023-01-31 15:42:38,540 INFO  [Thread-0] root: SEND 	<127.0.0.1:52788>: 'PUT_SUCCESS Hope Working\n'
+2023-01-31 15:44:00,589 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:52788>: 'GET hope null'
+2023-01-31 15:44:00,590 INFO  [Thread-0] root: SEND 	<127.0.0.1:52788>: 'GET_SUCCESS hope Working\n'
+2023-01-31 15:44:20,740 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:52788>: 'GET HOPE null'
+2023-01-31 15:44:20,741 INFO  [Thread-0] root: SEND 	<127.0.0.1:52788>: 'GET_SUCCESS HOPE Working\n'
+2023-01-31 16:00:09,754 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:52788>: 'PUT k null'
+2023-01-31 16:00:16,390 INFO  [Thread-0] root: SEND 	<127.0.0.1:52788>: 'PUT_SUCCESS k null'
+2023-01-31 16:08:45,413 INFO  [main] root: Connected to kubernetes.docker.internal on port 54165
+2023-01-31 16:09:06,675 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:54165>: 'GET hope null'
+2023-01-31 16:09:06,676 INFO  [Thread-1] root: SEND 	<127.0.0.1:54165>: 'GET_SUCCESS hope Working\n'
+2023-01-31 16:09:28,155 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:52788>: 'PUT k v'
+2023-01-31 16:09:28,158 INFO  [Thread-0] root: SEND 	<127.0.0.1:52788>: 'PUT_SUCCESS k v'
+2023-01-31 16:10:04,591 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:54165>: 'GET k null'
+2023-01-31 16:10:04,592 INFO  [Thread-1] root: SEND 	<127.0.0.1:54165>: 'GET_SUCCESS k v'

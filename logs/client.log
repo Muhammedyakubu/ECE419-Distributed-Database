@@ -317,3 +317,25 @@ java.lang.ArrayIndexOutOfBoundsException: Index -1 out of bounds for length 0
 	at app_kvClient.KVClient.handleCommand(KVClient.java:96)
 	at app_kvClient.KVClient.run(KVClient.java:37)
 	at app_kvClient.KVClient.main(KVClient.java:275)
+2023-01-31 15:38:24,146 INFO  [main] root: Connection established
+2023-01-31 15:39:32,659 INFO  [main] root: Send message:	 'GET foo null'
+2023-01-31 15:39:41,704 INFO  [main] root: Receive message:	 'GET_SUCCESS foo yeah'
+2023-01-31 15:40:01,814 INFO  [main] root: Send message:	 'PUT muhu asdfa'
+2023-01-31 15:40:52,365 INFO  [main] root: Receive message:	 'PUT_SUCCESS muhu asdfa'
+2023-01-31 15:41:20,297 INFO  [main] root: Send message:	 'GET muhu null'
+2023-01-31 15:41:20,298 INFO  [main] root: Receive message:	 'GET_SUCCESS muhu asdfa'
+2023-01-31 15:42:26,154 INFO  [main] root: Send message:	 'PUT Hope Working\n'
+2023-01-31 15:42:38,541 INFO  [main] root: Receive message:	 'PUT_SUCCESS Hope Working\n'
+2023-01-31 15:44:00,589 INFO  [main] root: Send message:	 'GET hope null'
+2023-01-31 15:44:00,591 INFO  [main] root: Receive message:	 'GET_SUCCESS hope Working\n'
+2023-01-31 15:44:20,740 INFO  [main] root: Send message:	 'GET HOPE null'
+2023-01-31 15:44:20,741 INFO  [main] root: Receive message:	 'GET_SUCCESS HOPE Working\n'
+2023-01-31 16:00:09,754 INFO  [main] root: Send message:	 'PUT k null'
+2023-01-31 16:00:16,391 INFO  [main] root: Receive message:	 'PUT_SUCCESS k null'
+2023-01-31 16:08:45,412 INFO  [main] root: Connection established
+2023-01-31 16:09:06,679 INFO  [main] root: Send message:	 'GET hope null'
+2023-01-31 16:09:06,680 INFO  [main] root: Receive message:	 'GET_SUCCESS hope Working\n'
+2023-01-31 16:09:28,155 INFO  [main] root: Send message:	 'PUT k v'
+2023-01-31 16:09:28,158 INFO  [main] root: Receive message:	 'PUT_SUCCESS k v'
+2023-01-31 16:10:04,591 INFO  [main] root: Send message:	 'GET k null'
+2023-01-31 16:10:04,592 INFO  [main] root: Receive message:	 'GET_SUCCESS k v'
