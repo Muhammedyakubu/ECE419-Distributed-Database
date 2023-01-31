@@ -1,9 +1,8 @@
 package testing;
 
-import app_kvServer.KVServer;
 import database.KVdatabase;
 import junit.framework.TestCase;
-import org.apache.log4j.BasicConfigurator;
+
 
 public class KVDatabaseTest extends TestCase{
 
@@ -14,6 +13,9 @@ public class KVDatabaseTest extends TestCase{
         boolean expected = true;
         boolean actual = db.insertPair(key, value);
         assertEquals(expected, actual);
+
+
+
 
     }
 
