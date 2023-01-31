@@ -194,11 +194,11 @@ public class KVServer implements IKVServer {
 	private boolean initializeServer() {
 		logger.info("Initialize server ...");
 		try {
-			InetAddress address = bind_address;
-			if(address == null){
-				address = InetAddress.getByName("localhost");
+			if(this.bind_address == null){
+				serverSocket = new ServerSocket(this.port);
+			} else {
+				serverSocket = new ServerSocket(this.port, 50, this.bind_address);
 			}
-			serverSocket = new ServerSocket(port, 50, address);
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
 			return true;

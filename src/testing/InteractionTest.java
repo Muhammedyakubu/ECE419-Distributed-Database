@@ -1,5 +1,6 @@
 package testing;
 
+import org.apache.log4j.BasicConfigurator;
 import org.junit.Test;
 
 import client.KVStore;
@@ -9,10 +10,11 @@ import shared.messages.IKVMessage.StatusType;
 
 
 public class InteractionTest extends TestCase {
-
+	// This doesn't work right now. We need to create a private KVServer separate from the test suite's
 	private KVStore kvClient;
 	
 	public void setUp() {
+		BasicConfigurator.configure();
 		kvClient = new KVStore("localhost", 50000);
 		try {
 			kvClient.connect();

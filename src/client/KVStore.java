@@ -55,6 +55,11 @@ public class KVStore implements KVCommInterface {
 	public void disconnect() {
 		logger.info("try to close connection ...");
 
+		if (!running || listeners == null) {
+			logger.info("connection is already closed.");
+			return;
+		}
+
 		try {
 			running = false;
 			logger.info("tearing down the connection ...");
