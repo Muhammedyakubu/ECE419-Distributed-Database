@@ -58,7 +58,7 @@ public class ClientConnection implements Runnable {
 					sendMessage(response);
 					
 				/* connection either terminated by the client or lost due to 
-				 * network problems*/	
+				 * network problems */
 				} catch (IOException ioe) {
 					logger.info("Error! Connection lost!");
 					isOpen = false;
@@ -124,8 +124,7 @@ public class ClientConnection implements Runnable {
 				+ clientSocket.getPort() + ">: '" 
 				+ msg +"'");
     }
-	
-	
+
 	private KVMessage receiveMessage() throws IOException {
 		
 		int index = 0;
@@ -191,7 +190,5 @@ public class ClientConnection implements Runnable {
 				+ msg + "'");
 		return msg;
     }
-	
 
-	
 }

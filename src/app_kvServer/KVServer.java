@@ -137,7 +137,7 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
-    public String getKV(String key) throws Exception{
+    synchronized public String getKV(String key) throws Exception{
 		byte[] byteArr = key.getBytes("UTF-8");
 		if (key == "" || byteArr.length > 20) throw new Exception("Invalid key length, must be more than 0 bytes and less than 20");
 
@@ -157,13 +157,13 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
-    public void putKV(String key, String value) throws Exception{
+    synchronized public void putKV(String key, String value) throws Exception{
 		if (value == null) {
 			boolean success = db.deletePair(key);
 			if (!success)
 				throw new Exception ("Unsuccessful deletion");
-			//else
-				//TODO evict from cache as well
+			else
+				cache.deleteKV(key);
 		}
 		else {
 			boolean success = db.insertPair(key, value);
@@ -218,7 +218,16 @@ public class KVServer implements IKVServer {
 
 	@Override
     public void close(){
-		// TODO Auto-generated method stub
+		running = false;
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			logger.error("Error! " +
+					"Unable to close socket on port: " + port, e);
+		}
+
+		// TODO: close client connections, db, clear cache, etc
+		// 		Do we need to add logging for when server is closed on client side?
 	}
 
 	//ADDRESS GOES IN HERE

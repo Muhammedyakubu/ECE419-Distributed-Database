@@ -44,6 +44,14 @@ public class LRUCache implements Cache{
     }
 
     /**
+     * @param key
+     */
+    @Override
+    public void deleteKV(String key) {
+
+    }
+
+    /**
      *
      */
     @Override

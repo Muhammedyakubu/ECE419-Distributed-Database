@@ -36,6 +36,11 @@ public interface Cache {
     public void evictKV() throws Exception;
 
     /**
+     * Delete a key-value pair from cache
+     */
+    public void deleteKV(String key);
+
+    /**
      * Clear the cache
      */
     public void clear();
