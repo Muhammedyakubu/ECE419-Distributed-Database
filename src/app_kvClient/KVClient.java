@@ -39,8 +39,8 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 stop = true;
                 printError("CLI does not respond - Application terminated ");
             } catch (Exception e){
-                logger.warn("Unknown error occurred", e);
-                printError("Input error");
+                logger.warn("The following error occurred:", e);
+                printError("Unknown error occurred.");
             }
         }
     }
@@ -94,7 +94,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     }
                     //RETURNS THE RESPONSE HERE, HANDLE IT
                     KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
-                    //PRINT RESPONSE SOMEHOW?
+                    handleNewMessage(response);
                 } else {
                     printError("Not connected!");
                 }
@@ -110,7 +110,8 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     String key = tokens[1];
                     //RETURNS THE RESPONSE HERE, HANDLE IT
                     KVMessage response = (KVMessage) kvstore.get(key);
-                    //PRINT RESPONSE SOMEHOW?
+                    handleNewMessage(response);
+
                 } else {
                     printError("Not connected!");
                 }
@@ -245,12 +246,26 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
     @Override
     public void handleNewMessage(KVMessage msg) {
-        //WHAT HERE?
+        if(!stop) {
+            System.out.println(msg.toString());
+            System.out.print(PROMPT);
+        }
     }
 
     @Override
     public void handleStatus(SocketStatus status) {
-        //WHAT HERE?
+        if(status == SocketStatus.CONNECTED) {
+
+        } else if (status == SocketStatus.DISCONNECTED) {
+            System.out.print(PROMPT);
+            System.out.println("Connection terminated: "
+                    + serverAddress + " / " + serverPort);
+
+        } else if (status == SocketStatus.CONNECTION_LOST) {
+            System.out.println("Connection lost: "
+                    + serverAddress + " / " + serverPort);
+            System.out.print(PROMPT);
+        }
     }
 
     public static void main(String[] args) {
