@@ -11,35 +11,43 @@ import java.util.List;
 /**
  * Class for manipulating key-value store database using a simple key to file mapping
  * for each pair.
- * TODO Add concurrency (locking)
+ * TODO Test read/write locks
  */
 public class KVdatabase implements IKVDatabase{
 
     KVServer sv;
     String keyPath;
-    String defaultPath = "./src/KVStorage/";
+    String defaultPath = "./src/KVStorage";
 
     /**
      * Three constructors provided: with server and custom store location, with default store location,
      * and with no server
      */
     public KVdatabase(KVServer sv) {
-        this.sv = sv;
-        this.keyPath = defaultPath;
+        this(sv, null);
     }
     public KVdatabase(KVServer sv, String dir) {
         this.sv = sv;
-        this.keyPath = dir;
+        if (dir == "" || dir == null)
+            this.keyPath = defaultPath;
+        else
+            this.keyPath = dir;
+        try {
+            Files.createDirectory(Paths.get(this.keyPath));
+        }
+        catch(Exception e){
+            if (sv != null)
+                sv.logger.warn("Error while initializing database: ", e);
+        }
     }
 
     public KVdatabase() {
-        this.sv = null;
-        this.keyPath = defaultPath;
+        this(null, null);
     }
 
     @Override
     public String getValue(String key) {
-        String kvFile =  keyPath + key + ".txt";
+        String kvFile =  keyPath + "/" +  key + ".txt";
         Path path = Paths.get(kvFile);
         String value;
 
@@ -56,7 +64,7 @@ public class KVdatabase implements IKVDatabase{
 
     @Override
     public boolean insertPair(String key, String value){
-        String kvFile = keyPath + key + ".txt";
+        String kvFile = keyPath + "/" +  key + ".txt";
         Path path = Paths.get(kvFile);
         try {
             boolean exists = Files.exists(path);
@@ -77,7 +85,7 @@ public class KVdatabase implements IKVDatabase{
 
     @Override
     public boolean deletePair(String key) {
-        String kvFile = keyPath + key + ".txt";
+        String kvFile = keyPath + "/" +  key + ".txt";
         Path path = Paths.get(kvFile);
         boolean success;
         try {

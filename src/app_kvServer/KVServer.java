@@ -5,6 +5,7 @@ import app_kvServer.cache.FIFOCache;
 import app_kvServer.cache.LFUCache;
 import app_kvServer.cache.LRUCache;
 import database.IKVDatabase;
+import database.KVdatabase;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -83,6 +84,7 @@ public class KVServer implements IKVServer {
 		}
 
 		// TODO: setup db, etc
+		this.db = new KVdatabase(this, dataPath);
 
 		run();
 	}
@@ -120,8 +122,10 @@ public class KVServer implements IKVServer {
 
 	@Override
     public boolean inStorage(String key){
-		// TODO Auto-generated method stub
-		return false;
+
+		String exists = db.getValue(key);
+
+		return exists != null;
 	}
 
 	@Override
@@ -134,13 +138,40 @@ public class KVServer implements IKVServer {
 
 	@Override
     public String getKV(String key) throws Exception{
-		// TODO Auto-generated method stub
-		return "";
+		byte[] byteArr = key.getBytes("UTF-8");
+		if (key == "" || byteArr.length > 20) throw new Exception("Invalid key length, must be more than 0 bytes and less than 20");
+
+		String value = null;
+
+		if (inCache(key)){
+			value = cache.getKV(key);
+		}
+		else {
+			value = db.getValue(key);
+			if (value == null)
+				throw new Exception("IO Error when reading");
+			else
+				cache.putKV(key, value);
+		}
+		return value;
 	}
 
 	@Override
     public void putKV(String key, String value) throws Exception{
-		// TODO Auto-generated method stub
+		if (value == null) {
+			boolean success = db.deletePair(key);
+			if (!success)
+				throw new Exception ("Unsuccessful deletion");
+			//else
+				//TODO evict from cache as well
+		}
+		else {
+			boolean success = db.insertPair(key, value);
+			if (!success)
+				throw new Exception("Unsuccessful insertion into storage");
+			else
+				cache.putKV(key, value);
+		}
 	}
 
 	@Override
@@ -150,7 +181,7 @@ public class KVServer implements IKVServer {
 
 	@Override
     public void clearStorage(){
-		// TODO Auto-generated method stub
+		db.clearStorage();
 	}
 
 	@Override
@@ -260,8 +291,8 @@ public class KVServer implements IKVServer {
 			int port = -1;
 			boolean port_present = false;
 			String address = "localhost";
-			String dataPath = " "; //NEED TO SET THIS DEFAULT
-			String logPath = "logs/KVserver.log";
+			String dataPath = ""; //NEED TO SET THIS DEFAULT
+			String logPath = "logs/server.log";
 			String logLevel = " "; //DEFAULT IS SET TO ALL LATER
 
 			for(int i = 0; i < args.length; i++) {
