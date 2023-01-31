@@ -317,4 +317,3 @@ java.lang.ArrayIndexOutOfBoundsException: Index -1 out of bounds for length 0
 	at app_kvClient.KVClient.handleCommand(KVClient.java:96)
 	at app_kvClient.KVClient.run(KVClient.java:37)
 	at app_kvClient.KVClient.main(KVClient.java:275)
->>>>>>> 07a791e (Added server to database connection, tested client get and put requests)
