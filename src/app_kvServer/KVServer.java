@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.lang.*;
 
 
 /**
@@ -26,10 +27,12 @@ public class KVServer implements IKVServer {
 	
 	private static Logger logger = Logger.getRootLogger();
 	private int port;
+	private InetAddress bind_address;
 	private int cacheSize;
 	private CacheStrategy strategy;
 	private Cache cache;
 	private IKVDatabase db;
+	private String dataPath;
 	private boolean running;
 	private ServerSocket serverSocket;
 	// should I use a more efficient data structure?
@@ -46,9 +49,15 @@ public class KVServer implements IKVServer {
 	 *           currently not contained in the cache. Options are "FIFO", "LRU",
 	 *           and "LFU".
 	 */
+
 	public KVServer(int port, int cacheSize, String strategy) {
+		this(port, cacheSize, strategy, null, null);
+	}
+	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath) {
 		this.port = port;
 		this.cacheSize = cacheSize;
+		this.dataPath = dataPath;
+		this.bind_address = bind_address;
 
 		// handle invalid cacheSize and strategy
 		if (cacheSize <= 0 || strategy == null) {
@@ -59,18 +68,18 @@ public class KVServer implements IKVServer {
 
 		// initialize cache
 		switch (this.strategy) {
-		case None:
-			this.cache = null;
-			break;
-		case FIFO:
-			this.cache = new FIFOCache(cacheSize);
-			break;
-		case LRU:
-			this.cache = new LRUCache(cacheSize);
-			break;
-		case LFU:
-			this.cache = new LFUCache(cacheSize);
-			break;
+			case None:
+				this.cache = null;
+				break;
+			case FIFO:
+				this.cache = new FIFOCache(cacheSize);
+				break;
+			case LRU:
+				this.cache = new LRUCache(cacheSize);
+				break;
+			case LFU:
+				this.cache = new LFUCache(cacheSize);
+				break;
 		}
 
 		// TODO: setup db, etc
@@ -178,10 +187,15 @@ public class KVServer implements IKVServer {
 		// TODO Auto-generated method stub
 	}
 
+	//ADDRESS GOES IN HERE
 	private boolean initializeServer() {
 		logger.info("Initialize server ...");
 		try {
-			serverSocket = new ServerSocket(port);
+			InetAddress address = bind_address;
+			if(address == null){
+				address = InetAddress.getByName("localhost");
+			}
+			serverSocket = new ServerSocket(port, 50, address);
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
 			return true;
@@ -191,7 +205,31 @@ public class KVServer implements IKVServer {
 			if(e instanceof BindException){
 				logger.error("Port " + port + " is already bound!");
 			}
+			if(e instanceof UnknownHostException){
+				logger.error("Bind address could not be found!");
+			}
 			return false;
+		}
+	}
+
+	private static Level StringToLevel(String levelString) {
+
+		if(levelString.equals(Level.ALL.toString())) {
+			return Level.ALL;
+		} else if(levelString.equals(Level.DEBUG.toString())) {
+			return Level.DEBUG;
+		} else if(levelString.equals(Level.INFO.toString())) {
+			return Level.INFO;
+		} else if(levelString.equals(Level.WARN.toString())) {
+			return Level.WARN;
+		} else if(levelString.equals(Level.ERROR.toString())) {
+			return Level.ERROR;
+		} else if(levelString.equals(Level.FATAL.toString())) {
+			return Level.FATAL;
+		} else if(levelString.equals(Level.OFF.toString())) {
+			return Level.OFF;
+		} else {
+			return null;
 		}
 	}
 
@@ -207,22 +245,97 @@ public class KVServer implements IKVServer {
 	public static void main(String[] args) {
 //		TODO: parse arguments and set defaults
 		try {
-			new LogSetup("logs/KVserver.log", Level.ALL);
-			if(args.length != 1) {
-				System.out.println("Error! Invalid number of arguments!");
+
+			//WRONG ARGUMENT ENTRY
+			if(args.length % 2 != 0){
+				System.out.println("Error! Invalid entry of arguments!");
 				System.out.println("Usage: java -jar m1-server.jar " +
 						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
-			} else {
-				int port = Integer.parseInt(args[0]);
-				new KVServer(port, 10, "FIFO");
+				System.exit(0);
 			}
+
+			int port = -1;
+			boolean port_present = false;
+			String address = "localhost";
+			String dataPath = " "; //NEED TO SET THIS DEFAULT
+			String logPath = "logs/KVserver.log";
+			String logLevel = " "; //DEFAULT IS SET TO ALL LATER
+
+			for(int i = 0; i < args.length; i++) {
+				//PORT CHECK
+				if(args[i].equals("-p")) {
+					port = Integer.parseInt(args[i+1]);
+					if(port < 0 || port > 65535){
+						System.out.println("Error! Port number out of range!");
+						System.out.println("Port number must fall between 0 and 65535, inclusive.");
+						System.exit(0);
+					}
+					port_present = true;
+				}
+
+				//ADDRESS CHECK
+				if(args[i].equals("-a")) {
+					address = args[i+1];
+				}
+
+				//DATAPATH CHECK
+				if(args[i].equals("-d")) {
+					dataPath = args[i+1];
+				}
+
+				//LOGPATH CHECK
+				if(args[i].equals("-l")) {
+					logPath = args[i+1];
+				}
+
+				//LOGLEVEL CHECK
+				if(args[i].equals("-ll")) {
+					logLevel = args[i+1];
+				}
+			}
+
+			if(port_present == false) {
+				System.out.println("Error! No port number found!");
+				System.out.println("Usage: java -jar m1-server.jar " +
+						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
+				System.exit(0);
+			}
+
+			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
+			InetAddress bind_address = InetAddress.getByName(address);
+
+			Level level = Level.ALL;
+
+			if(!logLevel.equals(" ")){
+				 level = StringToLevel(logLevel);
+
+				if(level == null){
+					System.out.println("Given loglevel was invalid. Set to default (ALL).");
+					level = Level.ALL;
+				}
+			}
+
+			//WILL THROW I/O EXCEPTION IF PATH IS INVALID
+			new LogSetup(logPath, level);
+
+			KVServer server = new KVServer(port, 10, "FIFO", bind_address, dataPath);
+
+				//PASS DATAPATH TO KVSERVER, NEED TO KNOW HOW DB IS IMPLEMENTED
+				//PASS ADDRESS, NOT SURE WHERE TO CHANGE THIS...
 		} catch (IOException e) {
-			System.out.println("Error! Unable to initialize logger!");
+			if(e instanceof UnknownHostException){
+				System.out.println("Error! Invalid logPath <logPath>!");
+			} else {
+				System.out.println("Error! Unable to  find logPath!");
+			}
+			System.out.println("Usage: java -jar m1-server.jar " +
+					"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
 			e.printStackTrace();
 			System.exit(1);
 		} catch (NumberFormatException nfe) {
 			System.out.println("Error! Invalid argument <port>! Not a number!");
-			System.out.println("Usage: Server <port>!");
+			System.out.println("Usage: java -jar m1-server.jar " +
+					"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
 			System.exit(1);
 		}
 	}
