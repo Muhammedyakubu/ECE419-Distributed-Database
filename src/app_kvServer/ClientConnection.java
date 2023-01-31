@@ -96,11 +96,21 @@ public class ClientConnection implements Runnable {
 				break;
 			case PUT:
 				try {
+					if (msg.getValue() == null || msg.getValue().equals("") || msg.getValue().equals("null")) {
+						msg.setValue(null);
+						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
+					} else {
+						msg.setStatus(KVMessage.StatusType.PUT_SUCCESS);
+					}
 					kvServer.putKV(msg.getKey(), msg.getValue());
-					msg.setStatus(KVMessage.StatusType.PUT_SUCCESS);
 				} catch (Exception e) {
-					msg.setStatus(KVMessage.StatusType.PUT_ERROR);
-					logger.error("Error! Unable to put value for key: " + msg.getKey(), e);
+					if (msg.getValue() == null) {
+						msg.setStatus(KVMessage.StatusType.DELETE_ERROR);
+						logger.error("Error! Unable to delete key: " + msg.getKey(), e);
+					} else {
+						msg.setStatus(KVMessage.StatusType.PUT_ERROR);
+						logger.error("Error! Unable to put value for key: " + msg.getKey(), e);
+					}
 				}
 				break;
 			default:
