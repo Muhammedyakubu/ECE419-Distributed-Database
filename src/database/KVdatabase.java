@@ -32,12 +32,14 @@ public class KVdatabase implements IKVDatabase{
             this.keyPath = defaultPath;
         else
             this.keyPath = dir;
-        try {
-            Files.createDirectory(Paths.get(this.keyPath));
-        }
-        catch(Exception e){
-            if (sv != null)
-                sv.logger.warn("Error while initializing database: ", e);
+        if (!Files.isDirectory(Paths.get(this.keyPath))){
+            try {
+                Files.createDirectory(Paths.get(this.keyPath));
+            }
+            catch(Exception e){
+                if (sv != null)
+                    sv.logger.warn("Error while initializing database: ", e);
+            }
         }
     }
 
