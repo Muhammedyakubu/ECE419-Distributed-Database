@@ -1,5 +1,6 @@
 package app_kvServer.cache;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -16,6 +17,7 @@ public class LRUCache implements Cache{
                 return size() > maxCacheSize;
             }
         };
+        this.cache = (LinkedHashMap<String, String>) Collections.synchronizedMap(cache);
     }
 
     /**

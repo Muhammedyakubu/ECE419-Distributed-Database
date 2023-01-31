@@ -131,3 +131,65 @@ java.nio.file.FileAlreadyExistsException: .\src\KVStorage
 2023-01-31 16:09:28,158 INFO  [Thread-0] root: SEND 	<127.0.0.1:52788>: 'PUT_SUCCESS k v'
 2023-01-31 16:10:04,591 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:54165>: 'GET k null'
 2023-01-31 16:10:04,592 INFO  [Thread-1] root: SEND 	<127.0.0.1:54165>: 'GET_SUCCESS k v'
+2023-01-31 17:08:14,117 INFO  [main] root: Initialize server ...
+2023-01-31 17:08:14,127 INFO  [main] root: Server listening on port: 5000
+2023-01-31 17:08:31,823 INFO  [main] root: Connected to kubernetes.docker.internal on port 56223
+2023-01-31 17:08:36,936 INFO  [main] root: Connected to kubernetes.docker.internal on port 56227
+2023-01-31 17:08:40,630 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:56223>: 'GET foo null'
+2023-01-31 17:08:40,639 INFO  [Thread-0] root: SEND 	<127.0.0.1:56223>: 'GET_SUCCESS foo yeah'
+2023-01-31 17:08:48,338 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56227>: 'PUT foo bar'
+2023-01-31 17:08:48,340 INFO  [Thread-1] root: SEND 	<127.0.0.1:56227>: 'PUT_SUCCESS foo bar'
+2023-01-31 17:08:53,137 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:56223>: 'GET foo null'
+2023-01-31 17:08:53,138 INFO  [Thread-0] root: SEND 	<127.0.0.1:56223>: 'GET_SUCCESS foo bar'
+2023-01-31 17:09:07,096 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:56223>: 'PUT hope ""'
+2023-01-31 17:09:07,097 INFO  [Thread-0] root: SEND 	<127.0.0.1:56223>: 'PUT_SUCCESS hope ""'
+2023-01-31 17:09:18,392 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56227>: 'GET hope null'
+2023-01-31 17:09:18,392 INFO  [Thread-1] root: SEND 	<127.0.0.1:56227>: 'GET_SUCCESS hope ""'
+2023-01-31 17:09:26,238 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56227>: 'PUT hope null'
+2023-01-31 17:09:26,239 INFO  [Thread-1] root: SEND 	<127.0.0.1:56227>: 'DELETE_SUCCESS hope null'
+2023-01-31 17:09:35,419 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:56223>: 'GET hope null'
+2023-01-31 17:09:35,420 WARN  [Thread-0] root: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\hope.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:150)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 17:09:35,424 ERROR [Thread-0] root: Error! Unable to get value for key: hope
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:152)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 17:09:35,425 INFO  [Thread-0] root: SEND 	<127.0.0.1:56223>: 'GET_ERROR hope null'
+2023-01-31 17:10:17,119 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56227>: 'GET hope null'
+2023-01-31 17:10:17,119 WARN  [Thread-1] root: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\hope.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:150)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 17:10:17,120 ERROR [Thread-1] root: Error! Unable to get value for key: hope
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:152)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 17:10:17,120 INFO  [Thread-1] root: SEND 	<127.0.0.1:56227>: 'GET_ERROR hope null'
+2023-01-31 17:10:22,769 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56227>: 'PUT foo a'
+2023-01-31 17:10:22,770 INFO  [Thread-1] root: SEND 	<127.0.0.1:56227>: 'PUT_SUCCESS foo a'

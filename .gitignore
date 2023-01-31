@@ -9,7 +9,10 @@
 *.tar.gz
 *.DS_Store
 *.MF
+logs
 logs/*
+logs/
+logs/**
 *.log
 bin/
 out/

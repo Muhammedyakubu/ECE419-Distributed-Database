@@ -52,9 +52,17 @@ public class KVServer implements IKVServer {
 	 */
 
 	public KVServer(int port, int cacheSize, String strategy) {
-		this(port, cacheSize, strategy, null, null);
+		this(port, cacheSize, strategy, null, null, true);
 	}
+
+	public KVServer(int port, int cacheSize, String strategy, boolean run) {
+		this(port, cacheSize, strategy, null, null, run);
+	}
+
 	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath) {
+		this(port, cacheSize, strategy, bind_address, dataPath, true);
+	}
+	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath, boolean run) {
 		this.port = port;
 		this.cacheSize = cacheSize;
 		this.dataPath = dataPath;
@@ -86,7 +94,7 @@ public class KVServer implements IKVServer {
 		// TODO: setup db, etc
 		this.db = new KVdatabase(this, dataPath);
 
-		run();
+		if (run) run();
 	}
 	
 	@Override
@@ -143,14 +151,14 @@ public class KVServer implements IKVServer {
 
 		String value = null;
 
-		if (inCache(key)){
+		if (cache != null && inCache(key)){
 			value = cache.getKV(key);
 		}
 		else {
 			value = db.getValue(key);
 			if (value == null)
 				throw new Exception("IO Error when reading");
-			else
+			else if (cache != null)
 				cache.putKV(key, value);
 		}
 		return value;
@@ -162,14 +170,14 @@ public class KVServer implements IKVServer {
 			boolean success = db.deletePair(key);
 			if (!success)
 				throw new Exception ("Unsuccessful deletion");
-			else
+			else if (cache != null)
 				cache.deleteKV(key);
 		}
 		else {
 			boolean success = db.insertPair(key, value);
 			if (!success)
 				throw new Exception("Unsuccessful insertion into storage");
-			else
+			else if (cache != null)
 				cache.putKV(key, value);
 		}
 	}
