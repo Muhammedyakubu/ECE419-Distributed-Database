@@ -1,0 +1,44 @@
+2023-01-30 22:31:14,322 INFO  [main] root: Initialize server ...
+2023-01-30 22:31:14,357 INFO  [main] root: Server listening on port: 5000
+2023-01-31 12:45:48,230 INFO  [main] root: Initialize server ...
+2023-01-31 12:45:48,242 INFO  [main] root: Server listening on port: 5000
+2023-01-31 12:46:48,117 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:63755>: 'PUT k v'
+2023-01-31 12:46:48,118 INFO  [Thread-0] root: SEND 	<127.0.0.1:63755>: 'PUT_SUCCESS k v'
+2023-01-31 12:54:26,300 INFO  [main] root: Initialize server ...
+2023-01-31 12:54:26,312 INFO  [main] root: Server listening on port: 5000
+2023-01-31 12:56:43,611 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:64075>: 'PUT k v'
+2023-01-31 12:56:43,612 INFO  [Thread-0] root: SEND 	<127.0.0.1:64075>: 'PUT_SUCCESS k v'
+2023-01-31 12:58:30,729 INFO  [main] root: Initialize server ...
+2023-01-31 12:58:30,741 INFO  [main] root: Server listening on port: 5000
+2023-01-31 13:00:47,594 ERROR [Thread-0] root: Error! Connection lost!
+2023-01-31 13:01:06,076 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:64245>: 'GET k null'
+2023-01-31 13:01:06,078 INFO  [Thread-1] root: SEND 	<127.0.0.1:64245>: 'GET_SUCCESS k '
+2023-01-31 13:01:52,630 INFO  [main] root: Initialize server ...
+2023-01-31 13:01:52,645 INFO  [main] root: Server listening on port: 5000
+2023-01-31 13:05:37,524 INFO  [main] root: Initialize server ...
+2023-01-31 13:05:37,533 INFO  [main] root: Server listening on port: 5000
+2023-01-31 13:05:55,073 INFO  [main] root: Connected to kubernetes.docker.internal on port 64401
+2023-01-31 13:06:33,033 INFO  [main] root: Connected to kubernetes.docker.internal on port 64435
+2023-01-31 13:06:44,770 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:64435>: 'PUT k v'
+2023-01-31 13:06:44,771 INFO  [Thread-1] root: SEND 	<127.0.0.1:64435>: 'PUT_SUCCESS k v'
+2023-01-31 13:06:49,215 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:64401>: 'GET k null'
+2023-01-31 13:06:49,216 INFO  [Thread-0] root: SEND 	<127.0.0.1:64401>: 'GET_SUCCESS k '
+2023-01-31 13:09:01,949 INFO  [main] root: Initialize server ...
+2023-01-31 13:09:01,960 INFO  [main] root: Server listening on port: 5000
+2023-01-31 13:09:10,240 INFO  [main] root: Connected to kubernetes.docker.internal on port 64531
+2023-01-31 13:09:29,653 INFO  [main] root: Initialize server ...
+2023-01-31 13:09:29,666 INFO  [main] root: Server listening on port: 5000
+2023-01-31 13:10:47,644 INFO  [main] root: Initialize server ...
+2023-01-31 13:10:47,659 INFO  [main] root: Server listening on port: 5000
+2023-01-31 13:11:12,120 INFO  [main] root: Initialize server ...
+2023-01-31 13:11:12,155 INFO  [main] root: Server listening on port: 5000
+2023-01-31 13:12:02,821 INFO  [main] root: Connected to kubernetes.docker.internal on port 64687
+2023-01-31 13:13:02,908 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:64687>: 'PUT k v'
+2023-01-31 13:13:02,910 INFO  [Thread-0] root: SEND 	<127.0.0.1:64687>: 'PUT_SUCCESS k v'
+2023-01-31 13:13:51,558 INFO  [main] root: Connected to kubernetes.docker.internal on port 64739
+2023-01-31 13:14:30,082 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:64739>: 'PUT k v'
+2023-01-31 13:14:30,082 INFO  [Thread-1] root: SEND 	<127.0.0.1:64739>: 'PUT_SUCCESS k v'
+2023-01-31 13:18:49,602 ERROR [Thread-1] root: Error! Connection lost!
+2023-01-31 13:19:16,727 INFO  [main] root: Connected to kubernetes.docker.internal on port 64902
+2023-01-31 13:19:40,013 INFO  [Thread-2] root: RECEIVE 	<127.0.0.1:64902>: 'PUT k v'
+2023-01-31 13:19:46,391 INFO  [Thread-2] root: SEND 	<127.0.0.1:64902>: 'PUT_SUCCESS k v'

@@ -64,3 +64,22 @@
 2023-01-27 13:52:36,433 INFO  [Thread-0] root: Server listening on port: 5000
 2023-01-27 13:52:50,919 INFO  [Thread-0] root: Connected to kubernetes.docker.internal on port 58331
 2023-01-27 13:52:50,927 INFO  [Thread-1] root: SEND 	<127.0.0.1:58331>: 'Connection to MSRG Echo server established: /127.0.0.1 / 5000'
+2023-01-31 12:23:11,610 INFO  [Thread-0] root: Initialize server ...
+2023-01-31 12:23:11,623 INFO  [Thread-0] root: Server listening on port: 5000
+2023-01-31 12:47:29,425 INFO  [Thread-0] root: Initialize server ...
+2023-01-31 12:47:29,428 ERROR [Thread-0] root: Error! Cannot open server socket:
+2023-01-31 12:47:29,441 ERROR [Thread-0] root: Port 5000 is already bound!
+2023-01-31 12:47:29,441 INFO  [Thread-0] root: Server stopped.
+2023-01-31 12:47:33,704 INFO  [Thread-0] root: Initialize server ...
+2023-01-31 12:47:33,707 ERROR [Thread-0] root: Error! Cannot open server socket:
+2023-01-31 12:47:33,719 ERROR [Thread-0] root: Port 5000 is already bound!
+2023-01-31 12:47:33,719 INFO  [Thread-0] root: Server stopped.
+2023-01-31 12:47:49,465 INFO  [Thread-0] root: Initialize server ...
+2023-01-31 12:47:49,477 INFO  [Thread-0] root: Server listening on port: 5001
+2023-01-31 12:48:29,682 INFO  [Thread-0] root: Connected to kubernetes.docker.internal on port 63812
+2023-01-31 12:48:29,687 INFO  [Thread-1] root: SEND 	<127.0.0.1:63812>: 'Connection to MSRG Echo server established: /127.0.0.1 / 5001'
+2023-01-31 12:48:32,437 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:63812>: ''
+2023-01-31 12:48:32,438 INFO  [Thread-1] root: SEND 	<127.0.0.1:63812>: '
+'
+2023-01-31 12:48:32,438 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:63812>: ''
+2023-01-31 12:48:32,438 ERROR [Thread-1] root: Error! Connection lost!

@@ -40,7 +40,7 @@ public class KVMessage implements IKVMessage {
     public KVMessage(byte[] bytes) {
         String msg = new String(rmvCtrChars(bytes));
         String[] parts = msg.split(" ");
-        this.status = StatusType.valueOf(parts[0]);
+        this.status = StatusType.valueOf(parts[0].strip());
         this.key = parts[1];
         this.value = parts.length > 2 ? parts[2] : null;
     }

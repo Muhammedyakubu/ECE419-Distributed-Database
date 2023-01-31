@@ -25,7 +25,7 @@ import java.lang.*;
  */
 public class KVServer implements IKVServer {
 	
-	private static Logger logger = Logger.getRootLogger();
+	public static Logger logger = Logger.getRootLogger();
 	private int port;
 	private InetAddress bind_address;
 	private int cacheSize;
@@ -168,6 +168,9 @@ public class KVServer implements IKVServer {
 					clientConnections.add(connection);
 					new Thread(connection).start();
 
+					logger.info("Connected to " +
+							clientSocket.getInetAddress().getHostName() +
+							" on port " + clientSocket.getPort());
 				} catch (IOException e) {
 					logger.error("Error! " +
 							"Unable to establish connection. \n", e);
