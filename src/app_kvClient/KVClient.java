@@ -81,7 +81,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
         //GOOD
         } else  if (tokens[0].equals("put")) {
-            if(tokens.length >= 2) {
+            if(tokens.length >= 3) {
                     //if there is a connected client
                 if(kvstore != null){
                     String key = tokens[1];
@@ -99,7 +99,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     printError("Not connected!");
                 }
             } else {
-                printError("Must enter <key>!");
+                printError("Usage: put <key> <value>!");
             }
 
         //NEED TO DO
@@ -116,7 +116,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     printError("Not connected!");
                 }
             } else {
-                printError("Must enter <key>!");
+                printError("Usage: get <key>!");
             }
 
         //GOOD

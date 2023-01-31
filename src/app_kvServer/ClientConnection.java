@@ -60,7 +60,7 @@ public class ClientConnection implements Runnable {
 				/* connection either terminated by the client or lost due to 
 				 * network problems*/	
 				} catch (IOException ioe) {
-					logger.error("Error! Connection lost!");
+					logger.info("Error! Connection lost!");
 					isOpen = false;
 				}				
 			}
@@ -136,7 +136,7 @@ public class ClientConnection implements Runnable {
 		byte read = (byte) input.read();	
 		boolean reading = true;
 
-		while(read != 13 && reading) {/* CR, error */
+		while(read != 13 && read != -1 && reading) {/* CR, disconnect, error */
 			/* if buffer filled, copy to msg array */
 			if(index == BUFFER_SIZE) {
 				if(msgBytes == null){
@@ -177,6 +177,11 @@ public class ClientConnection implements Runnable {
 		}
 		
 		msgBytes = tmp;
+
+		/* Check for empty message indicating a disconnect */
+		if(msgBytes.length == 0) {
+			throw new IOException("Error! Connection lost!");
+		}
 		
 		/* build final String */
 		KVMessage msg = new KVMessage(msgBytes);
