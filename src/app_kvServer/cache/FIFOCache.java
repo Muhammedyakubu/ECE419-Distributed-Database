@@ -17,7 +17,7 @@ public class FIFOCache implements Cache{
                 return size() > maxCacheSize;
             }
         };
-        this.cache = (LinkedHashMap<String, String>) Collections.synchronizedMap(cache);
+//        this.cache = (LinkedHashMap<String, String>) Collections.synchronizedMap(cache);
     }
 
     /**

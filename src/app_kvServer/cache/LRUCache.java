@@ -17,7 +17,7 @@ public class LRUCache implements Cache{
                 return size() > maxCacheSize;
             }
         };
-        this.cache = (LinkedHashMap<String, String>) Collections.synchronizedMap(cache);
+//        this.cache = (LinkedHashMap<String, String>) Collections.synchronizedMap(cache);
     }
 
     /**
