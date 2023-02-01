@@ -17,32 +17,24 @@ public class InteractionTest extends TestCase {
 	private KVStore kvClient;
 	private KVServer kvServer;
 	private Thread serverThread;
-	private boolean serverRunning = false;
+	private static boolean serverRunning = false;
 
-	public void setUpBeforeClass() {
+	public void setUpServer() {
 		BasicConfigurator.configure();
 
-//		kvServer = new KVServer(50000, 10, "None", false);
-//		this.serverThread = new Thread(() -> {
-//			try {
-//				kvServer.run();
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		});
-//		serverThread.start();
-	}
-
-	public void tearDownAfterClass() {
-		kvServer.close();
-		serverThread.interrupt();
+		System.out.println("Starting server...");
+		this.kvServer = new KVServer(50000, 10, "None", false);
+		this.serverThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				kvServer.run();
+			}
+		});
+		serverThread.start();
 	}
 
 	public void setUp() {
-		if (!serverRunning) {
-			serverRunning = true;
-			setUpBeforeClass();
-		}
+		setUpServer();
 		kvClient = new KVStore("localhost", 50000);
 		try {
 			kvClient.connect();
@@ -54,6 +46,7 @@ public class InteractionTest extends TestCase {
 	public void tearDown() {
 		kvClient.disconnect();
 		kvServer.clearStorage();
+		serverThread.interrupt();
 	}
 
 
