@@ -193,3 +193,309 @@ java.lang.Exception: IO Error when reading
 2023-01-31 17:10:17,120 INFO  [Thread-1] root: SEND 	<127.0.0.1:56227>: 'GET_ERROR hope null'
 2023-01-31 17:10:22,769 INFO  [Thread-1] root: RECEIVE 	<127.0.0.1:56227>: 'PUT foo a'
 2023-01-31 17:10:22,770 INFO  [Thread-1] root: SEND 	<127.0.0.1:56227>: 'PUT_SUCCESS foo a'
+18:15:12.627 [mainhread] app_kvServer.KVServer.initializeServer(KVServer.java:243)evel rootlass{36}.initializeServer 243 - Initialize server ...sg
+18:15:12.658 [mainhread] app_kvServer.KVServer.initializeServer(KVServer.java:250)evel rootlass{36}.initializeServer 250 - Server listening on port: 5000sg
+18:16:04.420 [mainhread] app_kvServer.KVServer.initializeServer(KVServer.java:243)evel rootlass{36}.initializeServer 243 - Initialize server ...
+18:16:04.452 [mainhread] app_kvServer.KVServer.initializeServer(KVServer.java:250)evel rootlass{36}.initializeServer 250 - Server listening on port: 5000
+18:16:21.522 [mainhread] app_kvServer.KVServer.initializeServer(KVServer.java:243)evel root.initializeServer 243 - Initialize server ...
+18:16:21.559 [mainhread] app_kvServer.KVServer.initializeServer(KVServer.java:250)evel root.initializeServer 250 - Server listening on port: 5000
+18:16:34.930 [mainhread] app_kvServer.KVServer.initializeServer(KVServer.java:243)evel rootlass{36}.initializeServer 243 - Initialize server ...
+18:16:34.960 [mainhread] app_kvServer.KVServer.initializeServer(KVServer.java:250)evel rootlass{36}.initializeServer 250 - Server listening on port: 5000
+18:17:30 [mainhread] INFO  rootlass{0} - Initialize server ...
+18:17:30 [mainhread] INFO  rootlass{0} - Server listening on port: 5000
+18:18:03.429 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243)evel root.initializeServer 243 - Initialize server ...
+18:18:03.460 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250)evel root.initializeServer 250 - Server listening on port: 5000
+2023-01-31 18:18:25,190 INFO  [main] root: Initialize server ...
+2023-01-31 18:18:25,219 INFO  [main] root: Server listening on port: 5000
+18:18:46.687 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243)evel rootlass{36}.initializeServer 243 - Initialize server ...
+18:18:46.720 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250)evel rootlass{36}.initializeServer 250 - Server listening on port: 5000
+18:19:22.214 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243) root.initializeServer:243 - Initialize server ...
+18:19:22.241 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250) root.initializeServer:250 - Server listening on port: 5000
+18:19:32.087 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243) root.initializeServer:243 - Initialize server ...
+18:19:32.118 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250) root.initializeServer:250 - Server listening on port: 5000
+18:20:04.372 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243) root.initializeServer - Initialize server ...
+18:20:04.397 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250) root.initializeServer - Server listening on port: 5000
+18:20:19.769 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243) root.initializeServer: Initialize server ...
+18:20:19.798 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250) root.initializeServer: Server listening on port: 5000
+2023-01-31 18:20:33,001 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243) root.initializeServer: Initialize server ...
+2023-01-31 18:20:33,029 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250) root.initializeServer: Server listening on port: 5000
+2023-01-31 18:21:14,590 [main] app_kvServer.KVServer.run(KVServer.java:210) root.run: Connected to kubernetes.docker.internal on port 55146
+2023-01-31 18:21:31,689 [Thread-0] app_kvServer.ClientConnection.receiveMessage(ClientConnection.java:197) root.receiveMessage: RECEIVE 	<127.0.0.1:55146>: 'PUT foo bar'
+2023-01-31 18:21:34,698 [Thread-0] app_kvServer.ClientConnection.sendMessage(ClientConnection.java:132) root.sendMessage: SEND 	<127.0.0.1:55146>: 'PUT_SUCCESS foo bar'
+2023-01-31 18:21:34,699 [Thread-0] app_kvServer.ClientConnection.receiveMessage(ClientConnection.java:197) root.receiveMessage: RECEIVE 	<127.0.0.1:55146>: 'GET foo null'
+2023-01-31 18:21:34,699 [Thread-0] app_kvServer.ClientConnection.sendMessage(ClientConnection.java:132) root.sendMessage: SEND 	<127.0.0.1:55146>: 'GET_SUCCESS foo bar'
+2023-01-31 18:21:34,701 [Thread-0] app_kvServer.ClientConnection.run(ClientConnection.java:63) root.run: Error! Connection lost!
+2023-01-31 18:21:34,711 [main] app_kvServer.KVServer.run(KVServer.java:210) root.run: Connected to kubernetes.docker.internal on port 55157
+2023-01-31 18:21:34,712 [Thread-1] app_kvServer.ClientConnection.receiveMessage(ClientConnection.java:197) root.receiveMessage: RECEIVE 	<127.0.0.1:55157>: 'PUT updateTestValue initial'
+2023-01-31 18:21:34,713 [Thread-1] app_kvServer.ClientConnection.sendMessage(ClientConnection.java:132) root.sendMessage: SEND 	<127.0.0.1:55157>: 'PUT_SUCCESS updateTestValue initial'
+2023-01-31 18:21:34,714 [Thread-1] app_kvServer.ClientConnection.receiveMessage(ClientConnection.java:197) root.receiveMessage: RECEIVE 	<127.0.0.1:55157>: 'PUT updateTestValue updated'
+2023-01-31 18:21:34,716 [Thread-1] app_kvServer.ClientConnection.sendMessage(ClientConnection.java:132) root.sendMessage: SEND 	<127.0.0.1:55157>: 'PUT_SUCCESS updateTestValue updated'
+2023-01-31 18:21:34,716 [Thread-1] app_kvServer.ClientConnection.run(ClientConnection.java:63) root.run: Error! Connection lost!
+2023-01-31 18:21:34,720 [main] app_kvServer.KVServer.run(KVServer.java:210) root.run: Connected to kubernetes.docker.internal on port 55158
+2023-01-31 18:21:34,720 [Thread-2] app_kvServer.ClientConnection.receiveMessage(ClientConnection.java:197) root.receiveMessage: RECEIVE 	<127.0.0.1:55158>: 'GET an unset'
+2023-01-31 18:21:34,723 [Thread-2] database.KVdatabase.getValue(KVdatabase.java:61) root.getValue: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\an.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:158)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 18:21:34,727 [Thread-2] app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:94) root.handleClientMessage: Error! Unable to get value for key: an
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:160)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 18:21:34,728 [Thread-2] app_kvServer.ClientConnection.sendMessage(ClientConnection.java:132) root.sendMessage: SEND 	<127.0.0.1:55158>: 'GET_ERROR an unset'
+2023-01-31 18:21:34,728 [Thread-2] app_kvServer.ClientConnection.run(ClientConnection.java:63) root.run: Error! Connection lost!
+2023-01-31 18:21:34,731 [main] app_kvServer.KVServer.run(KVServer.java:210) root.run: Connected to kubernetes.docker.internal on port 55159
+2023-01-31 18:21:34,731 [Thread-3] app_kvServer.ClientConnection.receiveMessage(ClientConnection.java:197) root.receiveMessage: RECEIVE 	<127.0.0.1:55159>: 'PUT deleteTestValue toDelete'
+2023-01-31 18:21:34,733 [Thread-3] app_kvServer.ClientConnection.sendMessage(ClientConnection.java:132) root.sendMessage: SEND 	<127.0.0.1:55159>: 'PUT_SUCCESS deleteTestValue toDelete'
+2023-01-31 18:21:34,733 [Thread-3] app_kvServer.ClientConnection.receiveMessage(ClientConnection.java:197) root.receiveMessage: RECEIVE 	<127.0.0.1:55159>: 'PUT deleteTestValue null'
+2023-01-31 18:21:34,734 [Thread-3] app_kvServer.ClientConnection.sendMessage(ClientConnection.java:132) root.sendMessage: SEND 	<127.0.0.1:55159>: 'DELETE_SUCCESS deleteTestValue null'
+2023-01-31 18:21:34,735 [Thread-3] app_kvServer.ClientConnection.run(ClientConnection.java:63) root.run: Error! Connection lost!
+2023-01-31 18:21:34,737 [main] app_kvServer.KVServer.run(KVServer.java:210) root.run: Connected to kubernetes.docker.internal on port 55160
+2023-01-31 18:21:34,738 [Thread-4] app_kvServer.ClientConnection.receiveMessage(ClientConnection.java:197) root.receiveMessage: RECEIVE 	<127.0.0.1:55160>: 'PUT foo2 bar2'
+2023-01-31 18:21:34,739 [Thread-4] app_kvServer.ClientConnection.sendMessage(ClientConnection.java:132) root.sendMessage: SEND 	<127.0.0.1:55160>: 'PUT_SUCCESS foo2 bar2'
+2023-01-31 18:21:34,740 [Thread-4] app_kvServer.ClientConnection.run(ClientConnection.java:63) root.run: Error! Connection lost!
+2023-01-31 18:21:34,743 [main] app_kvServer.KVServer.run(KVServer.java:210) root.run: Connected to kubernetes.docker.internal on port 55161
+2023-01-31 18:21:34,743 [Thread-5] app_kvServer.ClientConnection.run(ClientConnection.java:63) root.run: Error! Connection lost!
+2023-01-31 18:22:48,985 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243) root.initializeServer: Initialize server ...
+2023-01-31 18:22:49,011 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250) root.initializeServer: Server listening on port: 5000
+0 [main] INFO  root  - Initialize server ...
+28 [main] INFO  root  - Server listening on port: 5000
+1 [main] INFO  root  - Initialize server ...
+28 [main] INFO  root  - Server listening on port: 5000
+2023-01-31 18:24:41,991 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243) root.initializeServer: Initialize server ...
+2023-01-31 18:24:42,017 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250) root.initializeServer: Server listening on port: 5000
+2023-01-31 18:24:52,714 [main] app_kvServer.KVServer.initializeServer(KVServer.java:243) root.initializeServer: Initialize server ...
+2023-01-31 18:24:52,748 [main] app_kvServer.KVServer.initializeServer(KVServer.java:250) root.initializeServer: Server listening on port: 5000
+2023-01-31 18:25:03,555 [main] INFO root.initializeServer: Initialize server ...
+2023-01-31 18:25:03,583 [main] INFO root.initializeServer: Server listening on port: 5000
+2023-01-31 18:25:38,759 INFO  [main] root.initializeServer: Initialize server ...
+2023-01-31 18:25:38,792 INFO  [main] root.initializeServer: Server listening on port: 5000
+2023-01-31 18:26:58,144 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55432
+2023-01-31 18:27:06,121 INFO  [Thread-0] root.run: Error! Connection lost!
+2023-01-31 18:27:23,521 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55445
+2023-01-31 18:27:23,545 INFO  [Thread-1] root.receiveMessage: RECEIVE 	<127.0.0.1:55445>: 'PUT updateTestValue initial'
+2023-01-31 18:27:23,556 INFO  [Thread-1] root.sendMessage: SEND 	<127.0.0.1:55445>: 'PUT_SUCCESS updateTestValue initial'
+2023-01-31 18:27:23,557 INFO  [Thread-1] root.receiveMessage: RECEIVE 	<127.0.0.1:55445>: 'PUT updateTestValue updated'
+2023-01-31 18:27:23,559 INFO  [Thread-1] root.sendMessage: SEND 	<127.0.0.1:55445>: 'PUT_SUCCESS updateTestValue updated'
+2023-01-31 18:27:23,559 INFO  [Thread-1] root.run: Error! Connection lost!
+2023-01-31 18:27:23,563 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55446
+2023-01-31 18:27:23,564 INFO  [Thread-2] root.receiveMessage: RECEIVE 	<127.0.0.1:55446>: 'GET an unset'
+2023-01-31 18:27:23,565 WARN  [Thread-2] root.getValue: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\an.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:158)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 18:27:23,569 ERROR [Thread-2] root.handleClientMessage: Error! Unable to get value for key: an
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:160)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 18:27:23,569 INFO  [Thread-2] root.sendMessage: SEND 	<127.0.0.1:55446>: 'GET_ERROR an unset'
+2023-01-31 18:27:23,570 INFO  [Thread-2] root.run: Error! Connection lost!
+2023-01-31 18:27:23,572 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55447
+2023-01-31 18:27:23,573 INFO  [Thread-3] root.receiveMessage: RECEIVE 	<127.0.0.1:55447>: 'PUT foo bar'
+2023-01-31 18:27:23,574 INFO  [Thread-3] root.sendMessage: SEND 	<127.0.0.1:55447>: 'PUT_SUCCESS foo bar'
+2023-01-31 18:27:23,575 INFO  [Thread-3] root.receiveMessage: RECEIVE 	<127.0.0.1:55447>: 'GET foo null'
+2023-01-31 18:27:23,575 INFO  [Thread-3] root.sendMessage: SEND 	<127.0.0.1:55447>: 'GET_SUCCESS foo bar'
+2023-01-31 18:27:23,576 INFO  [Thread-3] root.run: Error! Connection lost!
+2023-01-31 18:27:23,579 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55448
+2023-01-31 18:27:23,579 INFO  [Thread-4] root.receiveMessage: RECEIVE 	<127.0.0.1:55448>: 'PUT deleteTestValue toDelete'
+2023-01-31 18:27:23,581 INFO  [Thread-4] root.sendMessage: SEND 	<127.0.0.1:55448>: 'PUT_SUCCESS deleteTestValue toDelete'
+2023-01-31 18:27:23,582 INFO  [Thread-4] root.receiveMessage: RECEIVE 	<127.0.0.1:55448>: 'PUT deleteTestValue null'
+2023-01-31 18:27:23,583 INFO  [Thread-4] root.sendMessage: SEND 	<127.0.0.1:55448>: 'DELETE_SUCCESS deleteTestValue null'
+2023-01-31 18:27:23,584 INFO  [Thread-4] root.run: Error! Connection lost!
+2023-01-31 18:27:23,587 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55449
+2023-01-31 18:27:23,587 INFO  [Thread-5] root.receiveMessage: RECEIVE 	<127.0.0.1:55449>: 'PUT foo2 bar2'
+2023-01-31 18:27:23,589 INFO  [Thread-5] root.sendMessage: SEND 	<127.0.0.1:55449>: 'PUT_SUCCESS foo2 bar2'
+2023-01-31 18:27:23,589 INFO  [Thread-5] root.run: Error! Connection lost!
+2023-01-31 18:28:14,535 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55479
+2023-01-31 18:28:19,812 INFO  [Thread-6] root.receiveMessage: RECEIVE 	<127.0.0.1:55479>: 'PUT foo2 bar2'
+2023-01-31 18:28:19,813 INFO  [Thread-6] root.sendMessage: SEND 	<127.0.0.1:55479>: 'PUT_SUCCESS foo2 bar2'
+2023-01-31 18:28:19,818 INFO  [Thread-6] root.run: Error! Connection lost!
+2023-01-31 18:28:19,821 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55484
+2023-01-31 18:28:19,821 INFO  [Thread-7] root.receiveMessage: RECEIVE 	<127.0.0.1:55484>: 'PUT updateTestValue initial'
+2023-01-31 18:28:19,823 INFO  [Thread-7] root.sendMessage: SEND 	<127.0.0.1:55484>: 'PUT_SUCCESS updateTestValue initial'
+2023-01-31 18:28:19,824 INFO  [Thread-7] root.receiveMessage: RECEIVE 	<127.0.0.1:55484>: 'PUT updateTestValue updated'
+2023-01-31 18:28:19,825 INFO  [Thread-7] root.sendMessage: SEND 	<127.0.0.1:55484>: 'PUT_SUCCESS updateTestValue updated'
+2023-01-31 18:28:19,826 INFO  [Thread-7] root.run: Error! Connection lost!
+2023-01-31 18:28:22,095 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55487
+2023-01-31 18:28:22,117 INFO  [Thread-8] root.receiveMessage: RECEIVE 	<127.0.0.1:55487>: 'PUT foo2 bar2'
+2023-01-31 18:28:22,118 INFO  [Thread-8] root.sendMessage: SEND 	<127.0.0.1:55487>: 'PUT_SUCCESS foo2 bar2'
+2023-01-31 18:28:22,122 INFO  [Thread-8] root.run: Error! Connection lost!
+2023-01-31 18:28:22,125 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55488
+2023-01-31 18:28:22,125 INFO  [Thread-9] root.run: Error! Connection lost!
+2023-01-31 18:28:22,127 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55489
+2023-01-31 18:28:22,127 INFO  [Thread-10] root.receiveMessage: RECEIVE 	<127.0.0.1:55489>: 'PUT foo bar'
+2023-01-31 18:28:22,129 INFO  [Thread-10] root.sendMessage: SEND 	<127.0.0.1:55489>: 'PUT_SUCCESS foo bar'
+2023-01-31 18:28:22,129 INFO  [Thread-10] root.receiveMessage: RECEIVE 	<127.0.0.1:55489>: 'GET foo null'
+2023-01-31 18:28:22,130 INFO  [Thread-10] root.sendMessage: SEND 	<127.0.0.1:55489>: 'GET_SUCCESS foo bar'
+2023-01-31 18:28:22,130 INFO  [Thread-10] root.run: Error! Connection lost!
+2023-01-31 18:28:22,133 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55490
+2023-01-31 18:28:22,133 INFO  [Thread-11] root.receiveMessage: RECEIVE 	<127.0.0.1:55490>: 'GET an unset'
+2023-01-31 18:28:22,135 WARN  [Thread-11] root.getValue: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\an.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:158)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 18:28:22,136 ERROR [Thread-11] root.handleClientMessage: Error! Unable to get value for key: an
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:160)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 18:28:22,137 INFO  [Thread-11] root.sendMessage: SEND 	<127.0.0.1:55490>: 'GET_ERROR an unset'
+2023-01-31 18:28:22,139 INFO  [Thread-11] root.run: Error! Connection lost!
+2023-01-31 18:28:22,145 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55491
+2023-01-31 18:28:22,145 INFO  [Thread-12] root.receiveMessage: RECEIVE 	<127.0.0.1:55491>: 'PUT updateTestValue initial'
+2023-01-31 18:28:22,149 INFO  [Thread-12] root.sendMessage: SEND 	<127.0.0.1:55491>: 'PUT_SUCCESS updateTestValue initial'
+2023-01-31 18:28:22,151 INFO  [Thread-12] root.receiveMessage: RECEIVE 	<127.0.0.1:55491>: 'PUT updateTestValue updated'
+2023-01-31 18:28:22,155 INFO  [Thread-12] root.sendMessage: SEND 	<127.0.0.1:55491>: 'PUT_SUCCESS updateTestValue updated'
+2023-01-31 18:28:22,156 INFO  [Thread-12] root.run: Error! Connection lost!
+2023-01-31 18:28:22,172 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 55492
+2023-01-31 18:28:22,173 INFO  [Thread-13] root.receiveMessage: RECEIVE 	<127.0.0.1:55492>: 'PUT deleteTestValue toDelete'
+2023-01-31 18:28:22,175 INFO  [Thread-13] root.sendMessage: SEND 	<127.0.0.1:55492>: 'PUT_SUCCESS deleteTestValue toDelete'
+2023-01-31 18:28:22,176 INFO  [Thread-13] root.receiveMessage: RECEIVE 	<127.0.0.1:55492>: 'PUT deleteTestValue null'
+2023-01-31 18:28:22,177 INFO  [Thread-13] root.sendMessage: SEND 	<127.0.0.1:55492>: 'DELETE_SUCCESS deleteTestValue null'
+2023-01-31 18:28:22,178 INFO  [Thread-13] root.run: Error! Connection lost!
+2023-01-31 19:00:23,027 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54035
+2023-01-31 19:00:23,029 INFO  [Thread-14] root.run: Error! Connection lost!
+2023-01-31 19:00:23,052 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54036
+2023-01-31 19:00:23,052 INFO  [Thread-15] root.receiveMessage: RECEIVE 	<127.0.0.1:54036>: 'PUT foo2 bar2'
+2023-01-31 19:00:23,054 INFO  [Thread-15] root.sendMessage: SEND 	<127.0.0.1:54036>: 'PUT_SUCCESS foo2 bar2'
+2023-01-31 19:00:23,057 INFO  [Thread-15] root.run: Error! Connection lost!
+2023-01-31 19:00:23,059 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54037
+2023-01-31 19:00:23,060 INFO  [Thread-16] root.receiveMessage: RECEIVE 	<127.0.0.1:54037>: 'PUT deleteTestValue toDelete'
+2023-01-31 19:00:23,062 INFO  [Thread-16] root.sendMessage: SEND 	<127.0.0.1:54037>: 'PUT_SUCCESS deleteTestValue toDelete'
+2023-01-31 19:00:23,062 INFO  [Thread-16] root.receiveMessage: RECEIVE 	<127.0.0.1:54037>: 'PUT deleteTestValue null'
+2023-01-31 19:00:23,063 INFO  [Thread-16] root.sendMessage: SEND 	<127.0.0.1:54037>: 'DELETE_SUCCESS deleteTestValue null'
+2023-01-31 19:00:23,064 INFO  [Thread-16] root.run: Error! Connection lost!
+2023-01-31 19:00:23,066 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54038
+2023-01-31 19:00:23,066 INFO  [Thread-17] root.receiveMessage: RECEIVE 	<127.0.0.1:54038>: 'PUT foo bar'
+2023-01-31 19:00:23,067 INFO  [Thread-17] root.sendMessage: SEND 	<127.0.0.1:54038>: 'PUT_SUCCESS foo bar'
+2023-01-31 19:00:23,068 INFO  [Thread-17] root.receiveMessage: RECEIVE 	<127.0.0.1:54038>: 'GET foo null'
+2023-01-31 19:00:23,069 INFO  [Thread-17] root.sendMessage: SEND 	<127.0.0.1:54038>: 'GET_SUCCESS foo bar'
+2023-01-31 19:00:23,069 INFO  [Thread-17] root.run: Error! Connection lost!
+2023-01-31 19:00:23,071 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54039
+2023-01-31 19:00:23,071 INFO  [Thread-18] root.receiveMessage: RECEIVE 	<127.0.0.1:54039>: 'GET an unset'
+2023-01-31 19:00:23,072 WARN  [Thread-18] root.getValue: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\an.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:158)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 19:00:23,073 ERROR [Thread-18] root.handleClientMessage: Error! Unable to get value for key: an
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:160)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 19:00:23,073 INFO  [Thread-18] root.sendMessage: SEND 	<127.0.0.1:54039>: 'GET_ERROR an unset'
+2023-01-31 19:00:23,074 INFO  [Thread-18] root.run: Error! Connection lost!
+2023-01-31 19:00:23,076 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54040
+2023-01-31 19:00:23,076 INFO  [Thread-19] root.receiveMessage: RECEIVE 	<127.0.0.1:54040>: 'PUT updateTestValue initial'
+2023-01-31 19:00:23,078 INFO  [Thread-19] root.sendMessage: SEND 	<127.0.0.1:54040>: 'PUT_SUCCESS updateTestValue initial'
+2023-01-31 19:00:23,079 INFO  [Thread-19] root.receiveMessage: RECEIVE 	<127.0.0.1:54040>: 'PUT updateTestValue updated'
+2023-01-31 19:00:23,081 INFO  [Thread-19] root.sendMessage: SEND 	<127.0.0.1:54040>: 'PUT_SUCCESS updateTestValue updated'
+2023-01-31 19:00:23,081 INFO  [Thread-19] root.run: Error! Connection lost!
+2023-01-31 19:00:40,589 INFO  [main] root.initializeServer: Initialize server ...
+2023-01-31 19:00:40,620 INFO  [main] root.initializeServer: Server listening on port: 5000
+2023-01-31 19:00:48,503 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54063
+2023-01-31 19:00:48,534 INFO  [Thread-0] root.receiveMessage: RECEIVE 	<127.0.0.1:54063>: 'PUT updateTestValue initial'
+2023-01-31 19:00:48,545 INFO  [Thread-0] root.sendMessage: SEND 	<127.0.0.1:54063>: 'PUT_UPDATE updateTestValue initial'
+2023-01-31 19:00:48,546 INFO  [Thread-0] root.receiveMessage: RECEIVE 	<127.0.0.1:54063>: 'PUT updateTestValue updated'
+2023-01-31 19:00:48,549 INFO  [Thread-0] root.sendMessage: SEND 	<127.0.0.1:54063>: 'PUT_UPDATE updateTestValue updated'
+2023-01-31 19:00:48,550 INFO  [Thread-0] root.run: Error! Connection lost!
+2023-01-31 19:00:48,553 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54064
+2023-01-31 19:00:48,553 INFO  [Thread-1] root.receiveMessage: RECEIVE 	<127.0.0.1:54064>: 'PUT deleteTestValue toDelete'
+2023-01-31 19:00:48,555 WARN  [Thread-1] root.getValue: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\deleteTestValue.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.inStorage(KVServer.java:134)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:102)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 19:00:48,560 INFO  [Thread-1] root.sendMessage: SEND 	<127.0.0.1:54064>: 'PUT_SUCCESS deleteTestValue toDelete'
+2023-01-31 19:00:48,561 INFO  [Thread-1] root.receiveMessage: RECEIVE 	<127.0.0.1:54064>: 'PUT deleteTestValue null'
+2023-01-31 19:00:48,562 INFO  [Thread-1] root.sendMessage: SEND 	<127.0.0.1:54064>: 'DELETE_SUCCESS deleteTestValue null'
+2023-01-31 19:00:48,563 INFO  [Thread-1] root.run: Error! Connection lost!
+2023-01-31 19:00:48,565 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54065
+2023-01-31 19:00:48,565 INFO  [Thread-2] root.receiveMessage: RECEIVE 	<127.0.0.1:54065>: 'PUT foo bar'
+2023-01-31 19:00:48,569 INFO  [Thread-2] root.sendMessage: SEND 	<127.0.0.1:54065>: 'PUT_UPDATE foo bar'
+2023-01-31 19:00:48,569 INFO  [Thread-2] root.receiveMessage: RECEIVE 	<127.0.0.1:54065>: 'GET foo null'
+2023-01-31 19:00:48,569 INFO  [Thread-2] root.sendMessage: SEND 	<127.0.0.1:54065>: 'GET_SUCCESS foo bar'
+2023-01-31 19:00:48,570 INFO  [Thread-2] root.run: Error! Connection lost!
+2023-01-31 19:00:48,572 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54066
+2023-01-31 19:00:48,572 INFO  [Thread-3] root.receiveMessage: RECEIVE 	<127.0.0.1:54066>: 'PUT foo2 bar2'
+2023-01-31 19:00:48,574 INFO  [Thread-3] root.sendMessage: SEND 	<127.0.0.1:54066>: 'PUT_UPDATE foo2 bar2'
+2023-01-31 19:00:48,574 INFO  [Thread-3] root.run: Error! Connection lost!
+2023-01-31 19:00:48,584 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54067
+2023-01-31 19:00:48,584 INFO  [Thread-4] root.receiveMessage: RECEIVE 	<127.0.0.1:54067>: 'GET an unset'
+2023-01-31 19:00:48,585 WARN  [Thread-4] root.getValue: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\an.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:158)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 19:00:48,586 ERROR [Thread-4] root.handleClientMessage: Error! Unable to get value for key: an
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:160)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 19:00:48,587 INFO  [Thread-4] root.sendMessage: SEND 	<127.0.0.1:54067>: 'GET_ERROR an unset'
+2023-01-31 19:00:48,588 INFO  [Thread-4] root.run: Error! Connection lost!
+2023-01-31 19:00:48,590 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54068
+2023-01-31 19:00:48,590 INFO  [Thread-5] root.run: Error! Connection lost!
