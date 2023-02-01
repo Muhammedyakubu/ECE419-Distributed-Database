@@ -4,11 +4,11 @@
 *.ipr
 *.iws
 *.class
-*.jar
 *.zip
 *.tar.gz
 *.DS_Store
 *.MF
+*.jar
 logs
 logs/*
 logs/

@@ -359,3 +359,10 @@ java.lang.ArrayIndexOutOfBoundsException: Index -1 out of bounds for length 0
 2023-01-31 17:10:17,121 INFO  [main] root: Receive message:	 'GET_ERROR hope null'
 2023-01-31 17:10:22,769 INFO  [main] root: Send message:	 'PUT foo a'
 2023-01-31 17:10:22,770 INFO  [main] root: Receive message:	 'PUT_SUCCESS foo a'
+2023-01-31 20:00:31,034 INFO  [main] root: Connection established
+2023-01-31 20:00:40,653 INFO  [main] root: Send message:	 'GET foo null'
+2023-01-31 20:00:40,678 INFO  [main] root: Receive message:	 'GET_ERROR foo null'
+2023-01-31 20:01:05,430 INFO  [main] root: Send message:	 'GET a null'
+2023-01-31 20:01:05,432 INFO  [main] root: Receive message:	 'GET_ERROR a null'
+2023-01-31 20:07:49,679 INFO  [main] root: Send message:	 'GET 'a null'
+2023-01-31 20:07:49,681 INFO  [main] root: Receive message:	 'GET_ERROR 'a null'

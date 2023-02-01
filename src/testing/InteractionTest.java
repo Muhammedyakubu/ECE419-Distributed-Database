@@ -157,7 +157,23 @@ public class InteractionTest extends TestCase {
 
 		assertTrue(ex == null && response.getStatus() == StatusType.GET_ERROR);
 	}
-	
 
+	/* Our tests start here */
+
+//	@Test
+//	public void testKVWithSpaces() {
+//		String key = "foo bar";
+//		String value = "bar foo";
+//		IKVMessage response = null;
+//		Exception ex = null;
+//
+//		try {
+//			response = kvClient.put(key, value);
+//		} catch (Exception e) {
+//			ex = e;
+//		}
+//
+//		assertTrue(ex == null && response.getStatus() == StatusType.PUT_SUCCESS);
+//	}
 
 }

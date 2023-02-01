@@ -499,3 +499,73 @@ java.lang.Exception: IO Error when reading
 2023-01-31 19:00:48,588 INFO  [Thread-4] root.run: Error! Connection lost!
 2023-01-31 19:00:48,590 INFO  [main] root.run: Connected to kubernetes.docker.internal on port 54068
 2023-01-31 19:00:48,590 INFO  [Thread-5] root.run: Error! Connection lost!
+2023-01-31 19:49:55,271 INFO  [main] root: Initialize server ...
+2023-01-31 19:49:55,284 INFO  [main] root: Server listening on port: 5000
+2023-01-31 20:00:31,044 INFO  [main] root: Connected to kubernetes.docker.internal on port 56209
+2023-01-31 20:00:40,668 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:56209>: 'GET foo null'
+2023-01-31 20:00:40,673 WARN  [Thread-0] root: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\foo.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:158)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 20:00:40,676 ERROR [Thread-0] root: Error! Unable to get value for key: foo
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:160)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 20:00:40,677 INFO  [Thread-0] root: SEND 	<127.0.0.1:56209>: 'GET_ERROR foo null'
+2023-01-31 20:01:05,431 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:56209>: 'GET a null'
+2023-01-31 20:01:05,431 WARN  [Thread-0] root: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\a.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:158)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 20:01:05,431 ERROR [Thread-0] root: Error! Unable to get value for key: a
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:160)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 20:01:05,432 INFO  [Thread-0] root: SEND 	<127.0.0.1:56209>: 'GET_ERROR a null'
+2023-01-31 20:07:49,680 INFO  [Thread-0] root: RECEIVE 	<127.0.0.1:56209>: 'GET 'a null'
+2023-01-31 20:07:49,680 WARN  [Thread-0] root: Exception thrown when reading key-value pair: 
+java.nio.file.NoSuchFileException: .\src\KVStorage\'a.txt
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at database.KVdatabase.getValue(KVdatabase.java:57)
+	at app_kvServer.KVServer.getKV(KVServer.java:158)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 20:07:49,681 ERROR [Thread-0] root: Error! Unable to get value for key: 'a
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:160)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-01-31 20:07:49,681 INFO  [Thread-0] root: SEND 	<127.0.0.1:56209>: 'GET_ERROR 'a null'
+2023-01-31 20:09:29,103 INFO  [Thread-0] root: Error! Connection lost!
