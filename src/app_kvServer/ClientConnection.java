@@ -99,6 +99,10 @@ public class ClientConnection implements Runnable {
 					if (msg.getValue() == null || msg.getValue().equals("") || msg.getValue().equals("null")) {
 						msg.setValue(null);
 						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
+					} else if (this.kvServer.inStorage(msg.getKey())) {
+						msg.setStatus(KVMessage.StatusType.PUT_UPDATE);
+						// TODO: right now this method involved accessing disk twice.
+						//  We could modify putKV to return a boolean indicating if the key was in storage or not
 					} else {
 						msg.setStatus(KVMessage.StatusType.PUT_SUCCESS);
 					}
@@ -188,7 +192,7 @@ public class ClientConnection implements Runnable {
 		msgBytes = tmp;
 
 		/* Check for empty message indicating a disconnect */
-		if(msgBytes.length == 0) {
+		if(msgBytes.length < 2) {
 			throw new IOException("Error! Connection lost!");
 		}
 		
