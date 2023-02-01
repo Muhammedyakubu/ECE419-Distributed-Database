@@ -27,7 +27,11 @@ public class InteractionTest extends TestCase {
 		this.serverThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				kvServer.run();
+				try {
+					kvServer.run();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		});
 		serverThread.start();
