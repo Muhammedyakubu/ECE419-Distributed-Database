@@ -107,11 +107,18 @@ public class KVMessageTest extends TestCase{
         assertEquals(expected, actual);
     }
 
-    public void testKeyWithSpace() {
-        KVMessage msg = new KVMessage(StatusType.GET, "key with space", "value");
-        byte[] expected = {71, 69, 84, 32, 107, 101, 121, 32, 119, 105, 116, 104, 32, 115, 112, 97, 99, 101, 32, 118, 97, 108, 117, 101, 13, 10};
+    public void testEquals() {
+        KVMessage msg = new KVMessage(StatusType.GET, "key", "value");
+        KVMessage msg2 = new KVMessage(StatusType.GET, "key", "value");
+        assertEquals(msg, msg2);
+    }
+
+    public void testValueWithSpace() {
+        KVMessage msg = new KVMessage(StatusType.GET, "key", "value value");
+        byte[] expected = {71, 69, 84, 32, 107, 101, 121, 32, 118, 97, 108, 117, 101, 32, 118, 97, 108, 117, 101, 13, 10};
         byte[] actual = msg.toByteArray();
         printByteArray(expected, actual);
+        assertEquals(new KVMessage(expected), new KVMessage(actual));
         assertEquals(expected.length, actual.length);
     }
 }

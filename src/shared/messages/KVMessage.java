@@ -43,7 +43,15 @@ public class KVMessage implements IKVMessage {
         try {
             this.status = StatusType.valueOf(parts[0].strip().toUpperCase());
             this.key = parts[1];
-            this.value = parts.length > 2 ? parts[2] : null;
+            if (parts.length > 2) {
+                String val = parts[2];
+                for (int i = 3; i < parts.length; i++) {
+                    val += " " + parts[i];
+                }
+                this.value = val;
+            } else {
+                this.value = null;
+            }
         } catch (Exception e) {
             this.status = StatusType.FAILED;
             this.key = msg;
@@ -89,6 +97,15 @@ public class KVMessage implements IKVMessage {
     @Override
     public String toString() {
         return status.toString() + " " + key + " " + value;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof KVMessage) {
+            KVMessage msg = (KVMessage) obj;
+            return msg.status.equals(this.status) && msg.key.equals(this.key) && msg.value.equals(this.value);
+        }
+        return false;
     }
 
     /**
