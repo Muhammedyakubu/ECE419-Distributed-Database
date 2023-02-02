@@ -39,10 +39,24 @@ public class KVMessage implements IKVMessage {
      */
     public KVMessage(byte[] bytes) {
         String msg = new String(rmvCtrChars(bytes));
-        String[] parts = msg.split("\0");
-        this.status = StatusType.valueOf(parts[0].strip());
-        this.key = parts[1];
-        this.value = parts.length > 2 ? parts[2] : null;
+        String[] parts = decode(msg);
+        try {
+            this.status = StatusType.valueOf(parts[0].strip().toUpperCase());
+            this.key = parts[1];
+            if (parts.length > 2) {
+                String val = parts[2];
+                for (int i = 3; i < parts.length; i++) {
+                    val += " " + parts[i];
+                }
+                this.value = val;
+            } else {
+                this.value = null;
+            }
+        } catch (Exception e) {
+            this.status = StatusType.FAILED;
+            this.key = msg;
+            this.value = null;
+        }
     }
 
     @Override
@@ -85,12 +99,25 @@ public class KVMessage implements IKVMessage {
         return status.toString() + " " + key + " " + value;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof KVMessage) {
+            KVMessage msg = (KVMessage) obj;
+            return msg.status.equals(this.status) && msg.key.equals(this.key) && msg.value.equals(this.value);
+        }
+        return false;
+    }
+
     /**
      * Encode the message into a single null delimited string
      * @return
      */
     public String encode() {
-    	return status.toString() + "\0" + key + "\0" + value;
+    	return status.toString() + " " + key + " " + value;
+    }
+
+    public String[] decode(String msg) {
+    	return msg.split(" ");
     }
 
     private byte[] addCtrChars(byte[] bytes) {

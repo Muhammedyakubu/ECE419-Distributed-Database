@@ -59,7 +59,7 @@ public interface IKVServer {
      * @throws Exception
      *      when key not in the key range of the server
      */
-    public void putKV(String key, String value) throws Exception;
+    public boolean putKV(String key, String value) throws Exception;
 
     /**
      * Clear the local cache of the server

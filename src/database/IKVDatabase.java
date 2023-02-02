@@ -19,9 +19,12 @@ public interface IKVDatabase {
      * Inserts/updates KV Pair
      * @param key
      * @param value
-     * @return successful or unsuccessful insertion
+     * @return {@code true} if the key already exists in the database or if the
+     *        key-value pair was successfully deleted, {@code false} otherwise
+     * @throws Exception
+     *     when there's an error inserting the key-value pair into the database
      */
-    public boolean insertPair(String key, String value);
+    public boolean insertPair(String key, String value) throws Exception ;
 
     /**
      * Permanently deletes a pair in storage
