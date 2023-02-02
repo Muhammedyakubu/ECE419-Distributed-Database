@@ -46,7 +46,7 @@ public class KVMessage implements IKVMessage {
             this.value = parts.length > 2 ? parts[2] : null;
         } catch (Exception e) {
             this.status = StatusType.FAILED;
-            this.key = null;
+            this.key = msg;
             this.value = null;
         }
     }
