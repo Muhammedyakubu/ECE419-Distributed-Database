@@ -30,10 +30,14 @@ public class KVdatabase implements IKVDatabase{
     }
     public KVdatabase(KVServer sv, String dir) {
         this.sv = sv;
+
+        //Initialize datapath to default or user-specified
         if (dir == "" || dir == null)
             this.keyPath = defaultPath;
         else
             this.keyPath = dir;
+
+        //create datapath directory if it doesnt exist
         if (!Files.isDirectory(Paths.get(this.keyPath))){
             try {
                 Files.createDirectory(Paths.get(this.keyPath));
@@ -67,11 +71,12 @@ public class KVdatabase implements IKVDatabase{
     }
 
     @Override
-    public boolean insertPair(String key, String value){
+    public boolean insertPair(String key, String value) throws Exception{
         String kvFile = keyPath + "/" +  key + ".txt";
         Path path = Paths.get(kvFile);
+        boolean exists;
         try {
-            boolean exists = Files.exists(path);
+            exists = Files.exists(path);
             if (!exists) {
                 Files.createFile(path);
             }
@@ -81,10 +86,10 @@ public class KVdatabase implements IKVDatabase{
         catch(Exception e){
             if (sv != null)
                 sv.logger.warn("Exception thrown when writing to the key-value store:", e);
-            return false;
+            throw new Exception("Write Exception");
         }
 
-        return true;
+        return exists; //returns true if update and false if new insertion
     }
 
     @Override
