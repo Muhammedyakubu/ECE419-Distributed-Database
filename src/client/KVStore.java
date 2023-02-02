@@ -39,12 +39,12 @@ public class KVStore implements KVCommInterface {
 	public KVStore(String address, int port) {
 		this.address = address;
 		this.port = port;
+		listeners = new HashSet<ClientSocketListener>();
 	}
 
 	@Override
 	public void connect() throws Exception {
 		clientSocket = new Socket(address, port);
-		listeners = new HashSet<ClientSocketListener>();
 		input = clientSocket.getInputStream();
 		output = clientSocket.getOutputStream();
 		running = true;

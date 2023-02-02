@@ -23,7 +23,6 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private BufferedReader stdin;
     private KVStore kvstore = null;
     private boolean stop = false;
-
     private String serverAddress;
     private int serverPort;
 
@@ -92,9 +91,16 @@ public class KVClient implements IKVClient, ClientSocketListener {
                             msg.append(" ");
                         }
                     }
-                    //RETURNS THE RESPONSE HERE, HANDLE IT
-                    KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
-                    handleNewMessage(response);
+
+                    try {
+                        KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
+                        handleNewMessage(response);
+                    } catch (IOException e){
+                        logger.info("Connection to server was lost. Attempting to reconnect...");
+                        kvstore.connect();
+                        KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
+                        handleNewMessage(response);
+                    }
                 } else {
                     printError("Not connected!");
                 }
@@ -109,8 +115,15 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 if(kvstore != null){
                     String key = tokens[1];
                     //RETURNS THE RESPONSE HERE, HANDLE IT
-                    KVMessage response = (KVMessage) kvstore.get(key);
-                    handleNewMessage(response);
+                    try {
+                        KVMessage response = (KVMessage) kvstore.get(key);
+                        handleNewMessage(response);
+                    } catch(IOException e){
+                        logger.info("Connection to server was lost. Attempting to reconnect...");
+                        kvstore.connect();
+                        KVMessage response = (KVMessage) kvstore.get(key);
+                        handleNewMessage(response);
+                    }
 
                 } else {
                     printError("Not connected!");
@@ -235,7 +248,6 @@ public class KVClient implements IKVClient, ClientSocketListener {
             kvstore = new KVStore(hostname, port);
             kvstore.connect();
             kvstore.addListener(this);
-
     }
 
     @Override
