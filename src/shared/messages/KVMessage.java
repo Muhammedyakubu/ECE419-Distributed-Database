@@ -19,6 +19,7 @@ public class KVMessage implements IKVMessage {
     String value;
     private static final char LINE_FEED = 0x0A;
     private static final char RETURN = 0x0D;
+    private static final String DELIMITER = " ";
 
     /**
      * Constructor for a message with a key, value, and status
@@ -43,15 +44,7 @@ public class KVMessage implements IKVMessage {
         try {
             this.status = StatusType.valueOf(parts[0].strip().toUpperCase());
             this.key = parts[1];
-            if (parts.length > 2) {
-                String val = parts[2];
-                for (int i = 3; i < parts.length; i++) {
-                    val += " " + parts[i];
-                }
-                this.value = val;
-            } else {
-                this.value = null;
-            }
+            this.value = (parts[2].equals("") || parts[2].equals("null")) ? null : parts[2];
         } catch (Exception e) {
             this.status = StatusType.FAILED;
             this.key = msg;
@@ -113,11 +106,11 @@ public class KVMessage implements IKVMessage {
      * @return
      */
     public String encode() {
-    	return status.toString() + " " + key + " " + value;
+    	return status.toString() + DELIMITER + key + DELIMITER + value;
     }
 
     public String[] decode(String msg) {
-    	return msg.split(" ");
+    	return msg.split(DELIMITER, 3);
     }
 
     private byte[] addCtrChars(byte[] bytes) {

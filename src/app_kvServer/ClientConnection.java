@@ -88,10 +88,13 @@ public class ClientConnection implements Runnable {
 				try {
 					String value = kvServer.getKV(msg.getKey());
 					msg.setValue(value);
-					msg.setStatus(KVMessage.StatusType.GET_SUCCESS);
+					if (value == null)
+						msg.setStatus(KVMessage.StatusType.GET_ERROR);
+					else
+						msg.setStatus(KVMessage.StatusType.GET_SUCCESS);
 				} catch (Exception e) {
+					logger.error("Error! Key not in key range: " + msg.getKey(), e);
 					msg.setStatus(KVMessage.StatusType.GET_ERROR);
-					logger.error("Error! Unable to get value for key: " + msg.getKey(), e);
 				}
 				break;
 			case PUT:

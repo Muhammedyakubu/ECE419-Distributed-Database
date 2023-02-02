@@ -91,7 +91,6 @@ public class KVServer implements IKVServer {
 				break;
 		}
 
-		// TODO: setup db, etc
 		this.db = new KVdatabase(this, dataPath);
 
 		if (run) run();
@@ -156,9 +155,7 @@ public class KVServer implements IKVServer {
 		}
 		else {
 			value = db.getValue(key);
-			if (value == null)
-				throw new Exception("IO Error when reading");
-			else if (cache != null)
+			if ((value != null) && (cache != null))
 				cache.putKV(key, value);
 		}
 		return value;
