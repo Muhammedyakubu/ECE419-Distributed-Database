@@ -145,7 +145,7 @@ public class InteractionTest extends TestCase {
 
 	@Test
 	public void testGetUnsetValue() {
-		String key = "an unset value";
+		String key = "an_unset_value";
 		IKVMessage response = null;
 		Exception ex = null;
 

@@ -39,7 +39,7 @@ public class KVMessage implements IKVMessage {
      */
     public KVMessage(byte[] bytes) {
         String msg = new String(rmvCtrChars(bytes));
-        String[] parts = msg.split("\0");
+        String[] parts = decode(msg);
         this.status = StatusType.valueOf(parts[0].strip());
         this.key = parts[1];
         this.value = parts.length > 2 ? parts[2] : null;
@@ -90,7 +90,11 @@ public class KVMessage implements IKVMessage {
      * @return
      */
     public String encode() {
-    	return status.toString() + "\0" + key + "\0" + value;
+    	return status.toString() + " " + key + " " + value;
+    }
+
+    public String[] decode(String msg) {
+    	return msg.split(" ");
     }
 
     private byte[] addCtrChars(byte[] bytes) {

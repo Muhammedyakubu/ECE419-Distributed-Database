@@ -84,3 +84,23 @@ java.lang.Exception: IO Error when reading
 2023-01-31 19:45:21,104 ERROR [Thread-12] root: Port 50000 is already bound!
 2023-01-31 19:45:21,116 ERROR [main] root: Error! Cannot open server socket:
 2023-01-31 19:45:21,116 ERROR [main] root: Port 50000 is already bound!
+2023-02-02 13:22:52,928 ERROR [Thread-2] root: Error! Cannot open server socket:
+2023-02-02 13:22:52,931 ERROR [Thread-2] root: Port 50000 is already bound!
+2023-02-02 13:22:52,953 ERROR [Thread-4] root: Error! Cannot open server socket:
+2023-02-02 13:22:52,958 ERROR [Thread-4] root: Port 50000 is already bound!
+2023-02-02 13:22:52,984 ERROR [Thread-6] root: Error! Cannot open server socket:
+2023-02-02 13:22:52,984 ERROR [Thread-6] root: Port 50000 is already bound!
+2023-02-02 13:22:52,992 ERROR [Thread-8] root: Error! Cannot open server socket:
+2023-02-02 13:22:52,992 ERROR [Thread-8] root: Port 50000 is already bound!
+2023-02-02 13:22:53,001 ERROR [Thread-10] root: Error! Cannot open server socket:
+2023-02-02 13:22:53,001 ERROR [Thread-10] root: Port 50000 is already bound!
+2023-02-02 13:22:53,007 ERROR [Thread-11] root: Error! Unable to get value for key: an_unset_value
+java.lang.Exception: IO Error when reading
+	at app_kvServer.KVServer.getKV(KVServer.java:160)
+	at app_kvServer.ClientConnection.handleClientMessage(ClientConnection.java:89)
+	at app_kvServer.ClientConnection.run(ClientConnection.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+2023-02-02 13:22:53,014 ERROR [Thread-12] root: Error! Cannot open server socket:
+2023-02-02 13:22:53,015 ERROR [Thread-12] root: Port 50000 is already bound!
+2023-02-02 13:22:53,039 ERROR [main] root: Error! Cannot open server socket:
+2023-02-02 13:22:53,040 ERROR [main] root: Port 50000 is already bound!
