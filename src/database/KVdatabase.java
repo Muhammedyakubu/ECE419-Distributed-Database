@@ -4,6 +4,7 @@ import app_kvServer.KVServer;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -62,9 +63,11 @@ public class KVdatabase implements IKVDatabase{
         try {
             byte[] bytes = Files.readAllBytes(path);
             value = new String(bytes);
-        }
-        catch (IOException e){
-            sv.logger.warn("Exception thrown when reading key-value pair: ", e);
+        } catch (NoSuchFileException e){
+            sv.logger.info("KEY: '" + key + "' not found in database");
+            return null;
+        } catch (IOException e) {
+            sv.logger.warn("Exception thrown when reading from the key-value store:", e);
             return null;
         }
         return value;
