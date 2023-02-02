@@ -221,7 +221,7 @@ public class KVServer implements IKVServer {
 
 	@Override
     public void kill(){
-		// TODO Auto-generated method stub
+		System.exit(0);
 	}
 
 	@Override
@@ -234,8 +234,8 @@ public class KVServer implements IKVServer {
 					"Unable to close socket on port: " + port, e);
 		}
 
-		// TODO: close client connections, db, clear cache, etc
-		// 		Do we need to add logging for when server is closed on client side?
+		clearCache();
+		kill();
 	}
 
 	//ADDRESS GOES IN HERE
@@ -308,7 +308,7 @@ public class KVServer implements IKVServer {
 			int port = -1;
 			boolean port_present = false;
 			String address = "localhost";
-			String dataPath = ""; //NEED TO SET THIS DEFAULT
+			String dataPath = ""; //DEFAULT HANDLED IN KVDATABASE
 			String logPath = "logs/server.log";
 			String logLevel = " "; //DEFAULT IS SET TO ALL LATER
 
@@ -371,8 +371,6 @@ public class KVServer implements IKVServer {
 
 			KVServer server = new KVServer(port, 10, "FIFO", bind_address, dataPath);
 
-				//PASS DATAPATH TO KVSERVER, NEED TO KNOW HOW DB IS IMPLEMENTED
-				//PASS ADDRESS, NOT SURE WHERE TO CHANGE THIS...
 		} catch (IOException e) {
 			if(e instanceof UnknownHostException){
 				System.out.println("Error! Invalid logPath <logPath>!");
