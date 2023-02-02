@@ -20,14 +20,23 @@ public class KVDatabaseTest extends TestCase{
     public void testInsert() {
         String key = "foo";
         String value = "bar";
-        boolean expected = true;
-        boolean actual = db.insertPair(key, value);
+        boolean expected = false;
+        boolean actual = false;
+        try {
+            actual = db.insertPair(key, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         assertEquals(expected, actual);
     }
 
 
     public void testGet() {
-        db.insertPair("foo", "bar");
+        try {
+            db.insertPair("foo", "bar");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         String key = "foo";
         String expected = "bar";
         String actual = db.getValue(key);
@@ -35,7 +44,11 @@ public class KVDatabaseTest extends TestCase{
     }
 
     public void testDelete() {
-        db.insertPair("foo", "bar");
+        try {
+            db.insertPair("foo", "bar");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         String key = "foo";
         boolean expected = true;
         boolean actual = db.deletePair(key);
@@ -44,8 +57,12 @@ public class KVDatabaseTest extends TestCase{
 
     public void testUpdate() {
         String key = "foo";
-        db.insertPair(key, "bar");
-        db.insertPair(key, "yeah");
+        try {
+            db.insertPair(key, "bar");
+            db.insertPair(key, "yeah");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         String expected = "yeah";
         String actual = db.getValue(key);
         assertEquals(expected, actual);
@@ -54,8 +71,12 @@ public class KVDatabaseTest extends TestCase{
     public void testClear() {
         String key = "foo";
         String key2 = "foo2";
-        db.insertPair(key, "bar");
-        db.insertPair(key2, "bar2");
+        try {
+            db.insertPair(key, "bar");
+            db.insertPair(key2, "bar2");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         boolean actual = db.clearStorage();
         boolean expected = true;

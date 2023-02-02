@@ -96,17 +96,24 @@ public class ClientConnection implements Runnable {
 				break;
 			case PUT:
 				try {
+					// convert all forms of null to null
 					if (msg.getValue() == null || msg.getValue().equals("") || msg.getValue().equals("null")) {
 						msg.setValue(null);
 						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
-					} else if (this.kvServer.inStorage(msg.getKey())) {
+					}
+
+					// do the put
+					boolean isUpdate = kvServer.putKV(msg.getKey(), msg.getValue());
+					boolean deleteSuccessful = isUpdate && (msg.getValue() == null);
+
+					// set the status
+					if (deleteSuccessful) {
+						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
+					} else if (isUpdate) {
 						msg.setStatus(KVMessage.StatusType.PUT_UPDATE);
-						// TODO: right now this method involved accessing disk twice.
-						//  We could modify putKV to return a boolean indicating if the key was in storage or not
 					} else {
 						msg.setStatus(KVMessage.StatusType.PUT_SUCCESS);
 					}
-					kvServer.putKV(msg.getKey(), msg.getValue());
 				} catch (Exception e) {
 					if (msg.getValue() == null) {
 						msg.setStatus(KVMessage.StatusType.DELETE_ERROR);
