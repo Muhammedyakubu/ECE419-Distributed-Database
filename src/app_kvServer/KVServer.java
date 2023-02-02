@@ -224,7 +224,8 @@ public class KVServer implements IKVServer {
 
 	@Override
     public void kill(){
-		System.exit(0);
+		running = false;
+//		System.exit(0);
 	}
 
 	@Override
