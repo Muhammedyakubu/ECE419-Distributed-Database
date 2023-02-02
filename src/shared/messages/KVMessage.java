@@ -40,9 +40,15 @@ public class KVMessage implements IKVMessage {
     public KVMessage(byte[] bytes) {
         String msg = new String(rmvCtrChars(bytes));
         String[] parts = decode(msg);
-        this.status = StatusType.valueOf(parts[0].strip().toUpperCase());
-        this.key = parts[1];
-        this.value = parts.length > 2 ? parts[2] : null;
+        try {
+            this.status = StatusType.valueOf(parts[0].strip().toUpperCase());
+            this.key = parts[1];
+            this.value = parts.length > 2 ? parts[2] : null;
+        } catch (Exception e) {
+            this.status = StatusType.FAILED;
+            this.key = null;
+            this.value = null;
+        }
     }
 
     @Override
