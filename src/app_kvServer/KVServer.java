@@ -237,7 +237,7 @@ public class KVServer implements IKVServer {
 					"Unable to close socket on port: " + port, e);
 		}
 
-		clearCache();
+		if (this.cache != null) clearCache();
 		kill();
 	}
 
