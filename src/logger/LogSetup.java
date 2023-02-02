@@ -33,7 +33,7 @@ public class LogSetup {
 
 	private void initialize(Level level) throws IOException {
 //		PatternLayout layout = new PatternLayout( "%d{ISO8601} %-5p [%t] %c: %m%n" );
-		PatternLayout layout = new PatternLayout( "%d{ISO8601} %-5p [%t] %c{1}.%M: %m%n" );
+		PatternLayout layout = new PatternLayout( "%d{ISO8601} %-5p [%t] %c{3}.%M: %m%n" );
 		FileAppender fileAppender = new FileAppender( layout, logdir, true );
 	    
 	    ConsoleAppender consoleAppender = new ConsoleAppender(layout);
