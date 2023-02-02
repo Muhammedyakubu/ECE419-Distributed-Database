@@ -248,7 +248,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
     public void handleNewMessage(KVMessage msg) {
         if(!stop) {
             System.out.println(msg.toString());
-            System.out.print(PROMPT);
+            //System.out.print(PROMPT);
         }
     }
 
@@ -262,15 +262,15 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     + serverAddress + " / " + serverPort);
 
         } else if (status == SocketStatus.CONNECTION_LOST) {
+            System.out.print(PROMPT);
             System.out.println("Connection lost: "
                     + serverAddress + " / " + serverPort);
-            System.out.print(PROMPT);
         }
     }
 
     public static void main(String[] args) {
         try {
-            new LogSetup("logs/client.log", Level.ALL);
+            new LogSetup("logs/KVClient.log", Level.ALL);
             KVClient client = new KVClient();
             client.run();
         } catch (IOException e) {

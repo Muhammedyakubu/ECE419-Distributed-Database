@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 /**
  * Class for manipulating key-value store database using a simple key to file mapping
@@ -114,7 +116,9 @@ public class KVdatabase implements IKVDatabase{
 
 
         try{
-            List<Path> pathList = Files.walk(rootPath).toList();
+            Stream<Path> pathStream = Files.walk(rootPath);
+            List<Path> pathList = pathStream.collect(Collectors.<Path>toList());
+            //List<Path> pathList = (Files.walk(rootPath)).toList();
             for (Path curr:pathList){
                 if (Files.isDirectory(curr)) continue;
                 boolean success = Files.deleteIfExists(curr);
