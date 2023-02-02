@@ -91,7 +91,6 @@ public class KVServer implements IKVServer {
 				break;
 		}
 
-		// TODO: setup db, etc
 		this.db = new KVdatabase(this, dataPath);
 
 		if (run) run();
