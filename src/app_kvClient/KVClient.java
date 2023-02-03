@@ -21,7 +21,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private static Logger logger = Logger.getRootLogger();
     private static final String PROMPT = "M1Client> ";
     private BufferedReader stdin;
-    private KVStore kvstore = null;
+    public KVStore kvstore = null;
     private boolean stop = false;
     private String serverAddress;
     private int serverPort;
@@ -44,7 +44,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
         }
     }
 
-    private void handleCommand(String cmdLine) throws Exception{ //structure taken from m0 and adapted for m1
+    public String handleCommand(String cmdLine) throws Exception{ //structure taken from m0 and adapted for m1
         String[] tokens = cmdLine.split("\\s+");
 
         //GOOD
@@ -95,11 +95,13 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     try {
                         KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
                         handleNewMessage(response);
+                        return response.getStatus().toString();
                     } catch (IOException e){
                         logger.info("Connection to server was lost. Attempting to reconnect...");
                         kvstore.connect();
                         KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
                         handleNewMessage(response);
+                        return response.getStatus().toString();
                     }
                 } else {
                     printError("Not connected!");
@@ -118,11 +120,13 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     try {
                         KVMessage response = (KVMessage) kvstore.get(key);
                         handleNewMessage(response);
+                        return response.getStatus().toString();
                     } catch(IOException e){
                         logger.info("Connection to server was lost. Attempting to reconnect...");
                         kvstore.connect();
                         KVMessage response = (KVMessage) kvstore.get(key);
                         handleNewMessage(response);
+                        return response.getStatus().toString();
                     }
 
                 } else {
@@ -156,6 +160,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
             printError("Unknown command");
             printHelpText();
         }
+        return "";
     }
 
     public void printError(String error){

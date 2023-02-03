@@ -7,6 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import client.KVStore;
+import app_kvClient.KVClient;
 import junit.framework.TestCase;
 import shared.messages.IKVMessage;
 import shared.messages.IKVMessage.StatusType;
@@ -17,6 +18,8 @@ public class InteractionTest extends TestCase {
 	private KVStore kvClient;
 	private KVServer kvServer;
 	private Thread serverThread;
+
+	private KVClient client_app;
 	private static boolean serverRunning = false;
 
 	public void setUpServer() {
@@ -155,6 +158,46 @@ public class InteractionTest extends TestCase {
 			ex = e;
 		}
 		assertTrue(ex == null && response.getStatus() == StatusType.GET_ERROR);
+	}
+
+	@Test
+	public void testPutAfterServerReconnection() {
+		String command = "put this here";
+		String command2 = "put something here";
+		String response = null;
+		Exception ex = null;
+		client_app = new KVClient();
+
+		try {
+			client_app.kvstore = this.kvClient;
+			//client_app.handleCommand("connect localhost 5000");
+			client_app.handleCommand(command);
+			kvServer.kill();
+			setUpServer();
+			response = client_app.handleCommand(command2);
+		} catch (Exception e) {
+			ex = e;
+		}
+		assertTrue(ex == null && response.equals(StatusType.PUT_SUCCESS.toString()));
+	}
+	public void testGetAfterServerReconnection() {
+		String command = "put this here";
+		String command2 = "get this";
+		String response = null;
+		Exception ex = null;
+		client_app = new KVClient();
+
+		try {
+			client_app.kvstore = this.kvClient;
+			//client_app.handleCommand("connect localhost 5000");
+			client_app.handleCommand(command);
+			kvServer.kill();
+			setUpServer();
+			response = client_app.handleCommand(command2);
+		} catch (Exception e) {
+			ex = e;
+		}
+		assertTrue(ex == null && response.equals(StatusType.GET_SUCCESS.toString()));
 	}
 
 	/* Our tests start here */
