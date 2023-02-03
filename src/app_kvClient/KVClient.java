@@ -80,7 +80,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
         //GOOD
         } else  if (tokens[0].equals("put")) {
-            if(tokens.length >= 3) {
+            if(tokens.length >= 2) {
                     //if there is a connected client
                 if(kvstore != null){
                     String key = tokens[1];
