@@ -43,9 +43,10 @@ public class KVMessage implements IKVMessage {
         String[] parts = decode(msg);
         try {
             this.status = StatusType.valueOf(parts[0].strip().toUpperCase());
-            this.key = parts[1];
-            this.value = (parts.length < 3 || parts[2].equals("") || parts[2].equals("null")) ? null : parts[2];
+            this.key = parts[1].replace("\n", ""); // key won't contain spaces or control characters
+            this.value = (parts[2].equals("") || parts[2].equals("null")) ? null : parts[2];
         } catch (Exception e) {
+            System.out.println("Error decoding message: '" + msg + "'");
             this.status = StatusType.FAILED;
             this.key = msg;
             this.value = null;
@@ -102,15 +103,24 @@ public class KVMessage implements IKVMessage {
     }
 
     /**
-     * Encode the message into a single null delimited string
-     * @return
+     * Encode the message into a single {@code DELIMITER} separated string for transmission
+     * @return String of the form "statusDELIMITERkeyDELIMITERvalue"
      */
     public String encode() {
     	return status.toString() + DELIMITER + key + DELIMITER + value;
     }
 
+    /**
+     * Decode a message from a string into an array of strings
+     * @param msg
+     * @return String array of the form {status, key, value}
+     */
     public String[] decode(String msg) {
-    	return msg.split(DELIMITER, 3);
+        String[] arr = msg.split(DELIMITER, 3);
+        if (arr.length == 2) {
+            return new String[]{arr[0], arr[1], ""};
+        }
+    	return arr;
     }
 
     private byte[] addCtrChars(byte[] bytes) {
@@ -141,7 +151,6 @@ public class KVMessage implements IKVMessage {
      */
 
     public byte[] toByteArray() {
-        byte[] bytes = this.encode().getBytes();
-        return addCtrChars(bytes);
+        return addCtrChars(this.encode().getBytes());
     }
 }

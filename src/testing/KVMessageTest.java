@@ -80,6 +80,14 @@ public class KVMessageTest extends TestCase{
         assertEquals(expected, actual);
     }
 
+    public void testFromByteArrayWithEmptyValueAndNoSpace(){
+        byte[] bytes = {71, 69, 84, 32, 107, 101, 121, 13, 10};
+        KVMessage msg = new KVMessage(bytes);
+        String expected = "GET key null";
+        String actual = msg.toString();
+        assertEquals(expected, actual);
+    }
+
     public void testToByteArrayWithLineFeedInValue() {
         KVMessage msg = new KVMessage(StatusType.GET, "key", "value\n");
         byte[] expected = {71, 69, 84, 32, 107, 101, 121, 32, 118, 97, 108, 117, 101, 10, 13, 10};
