@@ -165,20 +165,12 @@ public class KVServer implements IKVServer {
     synchronized public boolean putKV(String key, String value) throws Exception{
 		boolean keyInStorage = false;
 		if (value == null) {
-			try {
-				keyInStorage = db.deletePair(key);
-			} catch (Exception e) {
-				logger.error("Unsuccessful deletion", e);
-			}
+			keyInStorage = db.deletePair(key);
 			if (cache != null)
 				cache.deleteKV(key);
 		}
 		else {
-			try {
-				keyInStorage = db.insertPair(key, value);
-			} catch (Exception e) {
-				logger.error("IO Error when writing", e);
-			}
+			keyInStorage = db.insertPair(key, value);
 			if (cache != null)
 				cache.putKV(key, value);
 		}

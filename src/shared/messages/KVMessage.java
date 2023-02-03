@@ -44,7 +44,7 @@ public class KVMessage implements IKVMessage {
         try {
             this.status = StatusType.valueOf(parts[0].strip().toUpperCase());
             this.key = parts[1];
-            this.value = (parts[2].equals("") || parts[2].equals("null")) ? null : parts[2];
+            this.value = (parts.length < 3 || parts[2].equals("") || parts[2].equals("null")) ? null : parts[2];
         } catch (Exception e) {
             this.status = StatusType.FAILED;
             this.key = msg;

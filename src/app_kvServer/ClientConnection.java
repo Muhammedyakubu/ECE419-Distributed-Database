@@ -100,7 +100,7 @@ public class ClientConnection implements Runnable {
 			case PUT:
 				try {
 					// convert all forms of null to null
-					if (msg.getValue() == null || msg.getValue().equals("") || msg.getValue().equals("null")) {
+					if (msg.getValue() == null) {
 						msg.setValue(null);
 						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
 					}
