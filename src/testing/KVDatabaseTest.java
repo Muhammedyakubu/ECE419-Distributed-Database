@@ -4,6 +4,10 @@ import database.KVdatabase;
 import junit.framework.TestCase;
 import org.apache.log4j.BasicConfigurator;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 
 public class KVDatabaseTest extends TestCase{
 
@@ -17,20 +21,6 @@ public class KVDatabaseTest extends TestCase{
         db.clearStorage();
     }
 
-    public void testInsert() {
-        String key = "foo";
-        String value = "bar";
-        boolean expected = false;
-        boolean actual = false;
-        try {
-            actual = db.insertPair(key, value);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        assertEquals(expected, actual);
-    }
-
-
     public void testGet() {
         try {
             db.insertPair("foo", "bar");
@@ -43,6 +33,25 @@ public class KVDatabaseTest extends TestCase{
         assertEquals(expected, actual);
     }
 
+    public void testInsert() {
+        String key = "foo";
+        String value = "bar";
+        boolean expected = false;
+        boolean actual = false;
+        String actualVal = "";
+        try {
+            actual = db.insertPair(key, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        actualVal = db.getValue(key);
+        assertEquals(expected, actual);
+        assertEquals(value, actualVal);
+    }
+
+
+
+
     public void testDelete() {
         try {
             db.insertPair("foo", "bar");
@@ -52,7 +61,12 @@ public class KVDatabaseTest extends TestCase{
         String key = "foo";
         boolean expected = true;
         boolean actual = db.deletePair(key);
+        String kvFile = db.keyPath + "/" +  key + ".txt";
+        Path path = Paths.get(kvFile);
+        boolean exists = Files.exists(path);
+
         assertEquals(expected, actual);
+        assertEquals(false, exists);
     }
 
     public void testUpdate() {
@@ -80,7 +94,13 @@ public class KVDatabaseTest extends TestCase{
 
         boolean actual = db.clearStorage();
         boolean expected = true;
+
+        String kvFile = db.keyPath + "/" +  key + ".txt";
+        Path path = Paths.get(kvFile);
+        boolean exists = Files.exists(path);
+
         assertEquals(expected, actual);
+        assertEquals(false, exists);
 
     }
 }
