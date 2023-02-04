@@ -2,24 +2,36 @@ package testing;
 
 import client.KVStore;
 import junit.framework.TestCase;
+import logger.LogSetup;
+import org.apache.log4j.Level;
 import org.junit.Test;
 import app_kvServer.KVServer;
 import org.apache.log4j.BasicConfigurator;
 
+import java.io.IOException;
+
 public class LRUCacheTest extends TestCase{
 
     private KVStore client;
-    private KVServer server;
-    private Thread serverThread;
+    private static KVServer server;
+    private static Thread serverThread;
+    private static boolean setup = false;
 
 
 
     public void setUpServer() {
-        BasicConfigurator.configure();
+        if (setup) return;
+
+        try {
+            new LogSetup("logs/testing/test.log", Level.ALL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        setup = true;
 
         System.out.println("Starting server...");
-        this.server = new KVServer(5001, 3, "LRU", false);
-        this.serverThread = new Thread(new Runnable() {
+        server = new KVServer(5001, 3, "LRU", false);
+        serverThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -30,6 +42,13 @@ public class LRUCacheTest extends TestCase{
             }
         });
         serverThread.start();
+
+        // give the server some time to start up
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setUp() {
@@ -45,7 +64,6 @@ public class LRUCacheTest extends TestCase{
     public void tearDown() {
         client.disconnect();
         server.clearStorage();
-        serverThread.interrupt();
     }
     @Test
     public void testPutGetLRUCache(){

@@ -1,24 +1,33 @@
 package testing;
 import client.KVStore;
 import junit.framework.TestCase;
+import logger.LogSetup;
+import org.apache.log4j.Level;
 import org.junit.Test;
 import app_kvServer.KVServer;
 import org.apache.log4j.BasicConfigurator;
 
+import java.io.IOException;
+
 public class FIFOCacheTest extends TestCase{
 
     private KVStore client;
-    private KVServer server;
-    private Thread serverThread;
-
-
+    private static KVServer server;
+    private static Thread serverThread;
+    private static boolean setup = false;
 
     public void setUpServer() {
-        BasicConfigurator.configure();
+        if (setup) return;
+        try {
+            new LogSetup("logs/testing/test.log", Level.ALL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        setup = true;
 
         System.out.println("Starting server...");
-        this.server = new KVServer(5000, 3, "FIFO", false);
-        this.serverThread = new Thread(new Runnable() {
+        server = new KVServer(50001, 3, "FIFO", false);
+        serverThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -29,11 +38,18 @@ public class FIFOCacheTest extends TestCase{
             }
         });
         serverThread.start();
+
+        // give the server some time to start up
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setUp() {
         setUpServer();
-        client = new KVStore("localhost", 5000);
+        client = new KVStore("localhost", 50001);
         try {
             client.connect();
         } catch (Exception e) {
@@ -44,7 +60,6 @@ public class FIFOCacheTest extends TestCase{
     public void tearDown() {
         client.disconnect();
         server.clearStorage();
-        serverThread.interrupt();
     }
     @Test
     public void testPutGetFIFOCache(){

@@ -1,10 +1,11 @@
 package testing;
 
 import app_kvServer.KVServer;
+import logger.LogSetup;
 import org.apache.log4j.BasicConfigurator;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.apache.log4j.Level;
+import org.junit.Assert.*;
+import org.junit.*;
 
 import client.KVStore;
 import app_kvClient.KVClient;
@@ -12,22 +13,29 @@ import junit.framework.TestCase;
 import shared.messages.IKVMessage;
 import shared.messages.IKVMessage.StatusType;
 
+import java.io.IOException;
 
-public class InteractionTest extends TestCase {
+
+public class InteractionTest extends TestCase{
 	// This doesn't work right now. We need to create a private KVServer separate from the test suite's
 	private KVStore kvClient;
-	private KVServer kvServer;
-	private Thread serverThread;
-
+	private static KVServer kvServer;
+	private static Thread serverThread;
 	private KVClient client_app;
-	private static boolean serverRunning = false;
+	private static boolean setup = false;
 
 	public void setUpServer() {
-		BasicConfigurator.configure();
+		if (setup) return;
+		try {
+			new LogSetup("logs/testing/test.log", Level.ALL);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		setup = true;
 
 		System.out.println("Starting server...");
-		this.kvServer = new KVServer(50000, 10, "None", false);
-		this.serverThread = new Thread(new Runnable() {
+		kvServer = new KVServer(50000, 10, "None", false);
+		serverThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -40,6 +48,7 @@ public class InteractionTest extends TestCase {
 		serverThread.start();
 	}
 
+	@Before
 	public void setUp() {
 		setUpServer();
 		kvClient = new KVStore("localhost", 50000);
@@ -50,10 +59,10 @@ public class InteractionTest extends TestCase {
 		}
 	}
 
+	@After
 	public void tearDown() {
 		kvClient.disconnect();
 		kvServer.clearStorage();
-		serverThread.interrupt();
 	}
 
 
@@ -70,7 +79,7 @@ public class InteractionTest extends TestCase {
 			ex = e;
 		}
 
-		assertTrue(ex == null && response.getStatus() == StatusType.PUT_SUCCESS);
+		Assert.assertTrue(ex == null && response.getStatus() == StatusType.PUT_SUCCESS);
 	}
 	
 	@Test
@@ -86,7 +95,7 @@ public class InteractionTest extends TestCase {
 			ex = e;
 		}
 
-		assertNotNull(ex);
+		Assert.assertNotNull(ex);
 	}
 
 	@Test
@@ -106,7 +115,7 @@ public class InteractionTest extends TestCase {
 			ex = e;
 		}
 
-		assertTrue(ex == null && response.getStatus() == StatusType.PUT_UPDATE
+		Assert.assertTrue(ex == null && response.getStatus() == StatusType.PUT_UPDATE
 				&& response.getValue().equals(updatedValue));
 	}
 	
@@ -126,7 +135,7 @@ public class InteractionTest extends TestCase {
 			ex = e;
 		}
 
-		assertTrue(ex == null && response.getStatus() == StatusType.DELETE_SUCCESS);
+		Assert.assertTrue(ex == null && response.getStatus() == StatusType.DELETE_SUCCESS);
 	}
 	
 	@Test
@@ -143,7 +152,7 @@ public class InteractionTest extends TestCase {
 				ex = e;
 			}
 		
-		assertTrue(ex == null && response.getValue().equals("bar"));
+		Assert.assertTrue(ex == null && response.getValue().equals("bar"));
 	}
 
 	@Test
@@ -157,7 +166,7 @@ public class InteractionTest extends TestCase {
 		} catch (Exception e) {
 			ex = e;
 		}
-		assertTrue(ex == null && response.getStatus() == StatusType.GET_ERROR);
+		Assert.assertTrue(ex == null && response.getStatus() == StatusType.GET_ERROR);
 	}
 
 	@Test
@@ -178,8 +187,9 @@ public class InteractionTest extends TestCase {
 		} catch (Exception e) {
 			ex = e;
 		}
-		assertTrue(ex == null && response.equals(StatusType.PUT_SUCCESS.toString()));
+		Assert.assertTrue(ex == null && response.equals(StatusType.PUT_SUCCESS.toString()));
 	}
+	@Test
 	public void testGetAfterServerReconnection() {
 		String command = "put this here";
 		String command2 = "get this";
@@ -197,7 +207,7 @@ public class InteractionTest extends TestCase {
 		} catch (Exception e) {
 			ex = e;
 		}
-		assertTrue(ex == null && response.equals(StatusType.GET_SUCCESS.toString()));
+		Assert.assertTrue(ex == null && response.equals(StatusType.GET_SUCCESS.toString()));
 	}
 
 	/* Our tests start here */
