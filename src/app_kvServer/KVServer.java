@@ -31,7 +31,7 @@ public class KVServer implements IKVServer {
 	private InetAddress bind_address;
 	private int cacheSize;
 	private CacheStrategy strategy;
-	private Cache cache;
+	public Cache cache;
 	private IKVDatabase db;
 	private String dataPath;
 	private boolean running;
@@ -280,17 +280,7 @@ public class KVServer implements IKVServer {
 		}
 	}
 
-	/**
-	 * The method starts the server thread that waits for incoming client
-	 * connections as a background process. The method also starts the cache
-	 * replacement strategy if caching is enabled.
-	 * @param args
-	 *
-	 * Someone needs to work on parsing the arguments as specified in the spec:
-	 * java -jar m1-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>
-	 */
-	public static void main(String[] args) {
-//		TODO: parse arguments and set defaults
+	public static String parseCommandLine(String[] args, boolean run_server){
 		try {
 
 			//WRONG ARGUMENT ENTRY
@@ -298,10 +288,11 @@ public class KVServer implements IKVServer {
 				System.out.println("Error! Invalid entry of arguments!");
 				System.out.println("Usage: java -jar m1-server.jar " +
 						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
-				System.exit(0);
+				return "Invalid";
+				//System.exit(0);
 			}
 
-			int port = -1;
+			int port_num = -1;
 			boolean port_present = false;
 			String address = "localhost";
 			String dataPath = ""; //DEFAULT HANDLED IN KVDATABASE
@@ -311,8 +302,8 @@ public class KVServer implements IKVServer {
 			for(int i = 0; i < args.length; i++) {
 				//PORT CHECK
 				if(args[i].equals("-p")) {
-					port = Integer.parseInt(args[i+1]);
-					if(port < 0 || port > 65535){
+					port_num = Integer.parseInt(args[i+1]);
+					if(port_num < 0 || port_num > 65535){
 						System.out.println("Error! Port number out of range!");
 						System.out.println("Port number must fall between 0 and 65535, inclusive.");
 						System.exit(0);
@@ -345,7 +336,8 @@ public class KVServer implements IKVServer {
 				System.out.println("Error! No port number found!");
 				System.out.println("Usage: java -jar m1-server.jar " +
 						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
-				System.exit(0);
+				return("No port, invalid");
+				//System.exit(0);
 			}
 
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
@@ -354,7 +346,7 @@ public class KVServer implements IKVServer {
 			Level level = Level.ALL;
 
 			if(!logLevel.equals(" ")){
-				 level = StringToLevel(logLevel);
+				level = StringToLevel(logLevel);
 
 				if(level == null){
 					System.out.println("Given loglevel was invalid. Set to default (ALL).");
@@ -363,26 +355,47 @@ public class KVServer implements IKVServer {
 			}
 
 			//WILL THROW I/O EXCEPTION IF PATH IS INVALID
-			new LogSetup(logPath, level);
+			if(run_server) {
+				new LogSetup(logPath, level);
 
-			KVServer server = new KVServer(port, 10, "FIFO", bind_address, dataPath);
+				KVServer server = new KVServer(port_num, 10, "FIFO", bind_address, dataPath);
+			}
+
+			String returned = "Port: " + port_num + " Address: " + address + " Datapath: " + dataPath +
+								" Logpath: " + logPath + " Loglevel: " + logLevel;
+			return returned;
 
 		} catch (IOException e) {
 			if(e instanceof UnknownHostException){
-				System.out.println("Error! Invalid logPath <logPath>!");
+				System.out.println("Error! Invalid address!");
 			} else {
-				System.out.println("Error! Unable to  find logPath!");
+				System.out.println("Error! Unable to find logPath!");
 			}
 			System.out.println("Usage: java -jar m1-server.jar " +
 					"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
-			e.printStackTrace();
-			System.exit(1);
+			return "Invalid";
+			//e.printStackTrace();
+			//System.exit(1);
 		} catch (NumberFormatException nfe) {
 			System.out.println("Error! Invalid argument <port>! Not a number!");
 			System.out.println("Usage: java -jar m1-server.jar " +
 					"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
-			System.exit(1);
+			return "Invalid";
+			//System.exit(1);
 		}
+	}
+	/**
+	 * The method starts the server thread that waits for incoming client
+	 * connections as a background process. The method also starts the cache
+	 * replacement strategy if caching is enabled.
+	 * @param args
+	 *
+	 * Someone needs to work on parsing the arguments as specified in the spec:
+	 * java -jar m1-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>
+	 */
+	public static void main(String[] args) {
+//		TODO: parse arguments and set defaults
+		parseCommandLine(args, true);
 	}
 
 }
