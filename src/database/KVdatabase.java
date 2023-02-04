@@ -2,12 +2,19 @@ package database;
 
 import app_kvServer.KVServer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileLock;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
@@ -18,8 +25,13 @@ import java.util.stream.Collectors;
  */
 public class KVdatabase implements IKVDatabase{
 
+    /**
+     * File channels are thread safe, allowing concurrent reads and locked writes
+     * Store the file channel for all open keys in the system
+     */
+    ConcurrentHashMap<String, RandomAccessFile> channels;
     KVServer sv;
-    String keyPath;
+    public String keyPath;
     String defaultPath = "./src/KVStorage";
 
     /**
@@ -48,6 +60,7 @@ public class KVdatabase implements IKVDatabase{
                     sv.logger.warn("Error while initializing database: ", e);
             }
         }
+        channels = new ConcurrentHashMap<>();
     }
 
     public KVdatabase() {
@@ -57,42 +70,78 @@ public class KVdatabase implements IKVDatabase{
     @Override
     public String getValue(String key) {
         String kvFile =  keyPath + "/" +  key + ".txt";
+        String value = "";
         Path path = Paths.get(kvFile);
-        String value;
-
         try {
-            byte[] bytes = Files.readAllBytes(path);
-            value = new String(bytes);
-        } catch (NoSuchFileException e){
-            sv.logger.info("KEY: '" + key + "' not found in database");
-            return null;
-        } catch (IOException e) {
-            sv.logger.warn("Exception thrown when reading from the key-value store:", e);
+            RandomAccessFile reader = channels.get(kvFile);//First check if file channel already open
+            if (reader == null) {
+                boolean exists = Files.exists(path); //next check if file was persisted but not in hashmap
+                if (exists) {
+                    reader = new RandomAccessFile(kvFile, "rw");
+                    channels.put(kvFile, reader);
+                }
+                else {
+                    if (sv != null)
+                        sv.logger.warn("The file you are locking for does not exist");
+                    return null; //file does not exist
+                }
+            }
+
+            //perform read operation
+            FileChannel channel = reader.getChannel();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+            int bufferSize = 1024;
+            ByteBuffer buff = ByteBuffer.allocate(bufferSize);
+
+            while (channel.read(buff) > 0) {
+                out.write(buff.array(), 0, buff.position());
+                buff.clear();
+            }
+            channel.position(0);//set channel position to zero for future access
+            value = new String(out.toByteArray(), StandardCharsets.UTF_8);
+
+
+        }
+        catch(Exception e) {
+            if (sv != null)
+                sv.logger.warn("Exception thrown when trying to read key-value pair: ", e);
             return null;
         }
+
         return value;
+
     }
 
     @Override
     public boolean insertPair(String key, String value) throws Exception{
         String kvFile = keyPath + "/" +  key + ".txt";
+        boolean exists = true;
         Path path = Paths.get(kvFile);
-        boolean exists;
+
         try {
-            exists = Files.exists(path);
-            if (!exists) {
-                Files.createFile(path);
+            RandomAccessFile writer = channels.get(kvFile);
+            if (writer == null) {
+                exists = Files.exists(path);
+                if (exists == false)
+                    Files.createFile(path);
+                writer = new RandomAccessFile(kvFile, "rw");
+                channels.put(kvFile, writer);
             }
-            byte[] bytes = value.getBytes();
-            Files.write(path, bytes);
+
+            //perform write operation
+            FileChannel channel = writer.getChannel();
+            ByteBuffer buff = ByteBuffer.wrap(value.getBytes(StandardCharsets.UTF_8));
+            channel.write(buff);
+            channel.truncate(value.getBytes("UTF-8").length); //remove excess in case of update
+            channel.position(0);//set position to zero
         }
-        catch(Exception e){
+        catch (Exception e) {
             if (sv != null)
                 sv.logger.warn("Exception thrown when writing to the key-value store:", e);
             throw new Exception("Write Exception");
         }
-
-        return exists; //returns true if update and false if new insertion
+        return exists;
     }
 
     @Override
@@ -102,6 +151,8 @@ public class KVdatabase implements IKVDatabase{
         boolean success;
         try {
             success = Files.deleteIfExists(path);
+            channels.remove(kvFile);
+
         }
         catch(Exception e){
             if (sv != null)
@@ -141,6 +192,7 @@ public class KVdatabase implements IKVDatabase{
                 sv.logger.warn("Exception occurred when deleting files: ", e);
             return false;
         }
+        channels.clear();
 
         return true;
     }
