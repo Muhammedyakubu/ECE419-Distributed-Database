@@ -96,7 +96,7 @@ public class KVServer implements IKVServer {
 
 		if (run) run();
 	}
-	
+
 	@Override
 	public int getPort(){
 		return port;
@@ -145,7 +145,7 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
-    synchronized public String getKV(String key) throws Exception{
+    public String getKV(String key) throws Exception{
 		byte[] byteArr = key.getBytes("UTF-8");
 		if (key == "" || byteArr.length > 20) throw new Exception("Invalid key length, must be more than 0 bytes and less than 20");
 
@@ -163,7 +163,7 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
-    synchronized public boolean putKV(String key, String value) throws Exception{
+    public boolean putKV(String key, String value) throws Exception{
 		boolean keyInStorage = false;
 		if (value == null) {
 			keyInStorage = db.deletePair(key);
