@@ -26,6 +26,9 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private String serverAddress;
     private int serverPort;
 
+    /**
+     * Runs the client application and takes input from user.
+     */
     public void run() { //taken from m0 Application
         while(!stop) {
             stdin = new BufferedReader(new InputStreamReader(System.in));
@@ -44,6 +47,12 @@ public class KVClient implements IKVClient, ClientSocketListener {
         }
     }
 
+    /**
+     * Parses user input and takes appropriate actions.
+     * @param cmdLine the String command entered by user.
+     * @return String
+     * @throws Exception
+     */
     public String handleCommand(String cmdLine) throws Exception{ //structure taken from m0 and adapted for m1
         String[] tokens = cmdLine.split("\\s+");
 
@@ -163,10 +172,17 @@ public class KVClient implements IKVClient, ClientSocketListener {
         return "";
     }
 
+    /**
+     * Prints given error.
+     * @param error the desired error to be output.
+     */
     public void printError(String error){
         System.out.println(PROMPT + "Error: " +  error);
     }
 
+    /**
+     * Prints help text
+     */
     public void printHelpText(){
         StringBuilder sb = new StringBuilder();
         sb.append(PROMPT).append("CLIENT HELP (Usage):\n");
@@ -192,6 +208,9 @@ public class KVClient implements IKVClient, ClientSocketListener {
         System.out.println(sb.toString());
     }
 
+    /**
+     * Disconnects the client from the server
+     */
     public void disconnect(){
         if (kvstore != null){
             kvstore.disconnect();
@@ -201,17 +220,11 @@ public class KVClient implements IKVClient, ClientSocketListener {
         }
     }
 
-    /*
-    private void sendMessage(String msg){
-        try {
-            kvstore.sendMessage(new Message(msg));
-        } catch (IOException e) {
-            printError("Unable to send message!");
-            disconnect();
-        }
-    }
+    /**
+     * Sets the level of the client logger.
+     * @param levelString the desired log level.
+     * @return String
      */
-
     private String setLevel(String levelString) {
 
         if(levelString.equals(Level.ALL.toString())) {
@@ -241,6 +254,9 @@ public class KVClient implements IKVClient, ClientSocketListener {
         }
     }
 
+    /**
+     * Prints the possible log levels.
+     */
     private void printPossibleLogLevels() {
         System.out.println(PROMPT
                 + "Possible log levels are:");
@@ -248,6 +264,12 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 + "ALL | DEBUG | INFO | WARN | ERROR | FATAL | OFF");
     }
 
+    /**
+     * Instantiates new functional client and connects it to server
+     * @param hostname the server host
+     * @param port the server port number
+     * @throws Exception
+     */
     @Override
     public void newConnection(String hostname, int port) throws Exception{
             kvstore = new KVStore(hostname, port);
@@ -255,20 +277,31 @@ public class KVClient implements IKVClient, ClientSocketListener {
             kvstore.addListener(this);
     }
 
+    /**
+     * Returns the KVStore object associated with this client.
+     * @return KVCommInterface
+     */
     @Override
     public KVCommInterface getStore(){
         // TODO Auto-generated method stub
         return kvstore;
     }
 
+    /**
+     * Prints the message returned by the server.
+     * @param msg the message returned by the server
+     */
     @Override
     public void handleNewMessage(KVMessage msg) {
         if(!stop) {
             System.out.println(msg.toString());
-            //System.out.print(PROMPT);
         }
     }
 
+    /**
+     * Acts on the socket status.
+     * @param status the socket status.
+     */
     @Override
     public void handleStatus(SocketStatus status) {
         if(status == SocketStatus.CONNECTED) {

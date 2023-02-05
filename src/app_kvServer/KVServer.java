@@ -2,7 +2,6 @@ package app_kvServer;
 
 import app_kvServer.cache.Cache;
 import app_kvServer.cache.FIFOCache;
-import app_kvServer.cache.LFUCache;
 import app_kvServer.cache.LRUCache;
 import database.IKVDatabase;
 import database.KVdatabase;
@@ -86,9 +85,11 @@ public class KVServer implements IKVServer {
 			case LRU:
 				this.cache = new LRUCache(cacheSize);
 				break;
+				/*
 			case LFU:
 				this.cache = new LFUCache(cacheSize);
 				break;
+				 */
 		}
 
 		this.db = new KVdatabase(this, dataPath);
@@ -259,6 +260,11 @@ public class KVServer implements IKVServer {
 		}
 	}
 
+	/**
+	 * Converts given String to LogLevel.
+	 * @param levelString
+	 * @return Level
+	 */
 	private static Level StringToLevel(String levelString) {
 
 		if(levelString.equals(Level.ALL.toString())) {
@@ -279,6 +285,12 @@ public class KVServer implements IKVServer {
 			return null;
 		}
 	}
+
+	/**
+	 * Parses server arguments and initializes server appropriately.
+	 * @param args, run_server (run_server is used for testing)
+	 * @return String for purpose of testing
+	 */
 
 	public static String parseCommandLine(String[] args, boolean run_server){
 		try {
@@ -395,7 +407,6 @@ public class KVServer implements IKVServer {
 	 * replacement strategy if caching is enabled.
 	 * @param args
 	 *
-	 * Someone needs to work on parsing the arguments as specified in the spec:
 	 * java -jar m1-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>
 	 */
 	public static void main(String[] args) {
