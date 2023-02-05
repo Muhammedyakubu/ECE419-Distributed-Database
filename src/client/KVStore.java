@@ -12,6 +12,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * KVStore provides an API for the client side application to communicate with
+ * the KVServer. It implements methods responsible for sending get and put
+ * requests to the server, as well as receiving responses from the server.
+ * To do this, it also implements communication methods sendMessage and
+ * receiveMessage.
+ *
  * Looking through echoClient & echoServer, I realize that receiveMessage and
  * sendMessage can be implemented in a separate class. But the similarities
  * between the two are so few that I don't think it's worth it.
