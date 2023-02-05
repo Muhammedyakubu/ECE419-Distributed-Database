@@ -394,7 +394,6 @@ public class KVServer implements IKVServer {
 	 * java -jar m1-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>
 	 */
 	public static void main(String[] args) {
-//		TODO: parse arguments and set defaults
 		parseCommandLine(args, true);
 	}
 
