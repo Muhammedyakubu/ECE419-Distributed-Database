@@ -228,6 +228,9 @@ public class KVServer implements IKVServer {
 		} catch (IOException e) {
 			logger.error("Error! " +
 					"Unable to close socket on port: " + port, e);
+		} catch (NullPointerException npe) {
+			logger.error("Error! " +
+					"ServerSocket already closed, unable to close socket on port: " + port);
 		}
 
 		if (this.cache != null) clearCache();

@@ -10,6 +10,8 @@ import org.apache.log4j.BasicConfigurator;
 
 import java.io.IOException;
 
+import static testing.InteractionTest.available;
+
 public class LRUCacheTest extends TestCase{
 
     private KVStore client;
@@ -22,11 +24,15 @@ public class LRUCacheTest extends TestCase{
     public void setUpServer() {
         if (setup) return;
 
-        try {
-            new LogSetup("logs/testing/test.log", Level.ALL);
-        } catch (IOException e) {
-            e.printStackTrace();
+        // check if testsuite is running and skip logger setup if so
+        if (available(50000)) {
+            try {
+                new LogSetup("logs/testing/test.log", Level.ALL);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
         setup = true;
 
         System.out.println("Starting server...");
