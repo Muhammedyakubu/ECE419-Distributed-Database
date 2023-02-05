@@ -283,7 +283,6 @@ public class KVClient implements IKVClient, ClientSocketListener {
      */
     @Override
     public KVCommInterface getStore(){
-        // TODO Auto-generated method stub
         return kvstore;
     }
 

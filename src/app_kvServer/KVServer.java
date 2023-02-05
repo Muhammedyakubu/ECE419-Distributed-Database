@@ -229,6 +229,9 @@ public class KVServer implements IKVServer {
 		} catch (IOException e) {
 			logger.error("Error! " +
 					"Unable to close socket on port: " + port, e);
+		} catch (NullPointerException npe) {
+			logger.error("Error! " +
+					"ServerSocket already closed, unable to close socket on port: " + port);
 		}
 
 		if (this.cache != null) clearCache();
@@ -410,7 +413,6 @@ public class KVServer implements IKVServer {
 	 * java -jar m1-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>
 	 */
 	public static void main(String[] args) {
-//		TODO: parse arguments and set defaults
 		parseCommandLine(args, true);
 	}
 

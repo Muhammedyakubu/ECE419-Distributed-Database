@@ -14,6 +14,8 @@ import shared.messages.IKVMessage;
 import shared.messages.IKVMessage.StatusType;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.ServerSocket;
 
 
 public class InteractionTest extends TestCase{
@@ -24,17 +26,66 @@ public class InteractionTest extends TestCase{
 	private KVClient client_app;
 	private static boolean setup = false;
 
+	/**
+	 * Checks to see if a specific port is available.
+	 *
+	 * @param port the port to check for availability
+	 */
+	public static boolean available(int port) {
+		if (port < 1024 || port > 65535) {
+			throw new IllegalArgumentException("Invalid start port: " + port);
+		}
+
+		ServerSocket ss = null;
+		DatagramSocket ds = null;
+		try {
+			ss = new ServerSocket(port);
+			ss.setReuseAddress(true);
+			ds = new DatagramSocket(port);
+			ds.setReuseAddress(true);
+			return true;
+		} catch (IOException e) {
+		} finally {
+			if (ds != null) {
+				ds.close();
+			}
+
+			if (ss != null) {
+				try {
+					ss.close();
+				} catch (IOException e) {
+					/* should not be thrown */
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public void setUpServer() {
 		if (setup) return;
-		try {
-			new LogSetup("logs/testing/test.log", Level.ALL);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		setup = true;
 
-		System.out.println("Starting server...");
+		// check if testsuite server is already running
+		// skip logger setup if testsuite server is already running
+		boolean testsuiteServerRunning = !available(50000);
+		if (testsuiteServerRunning) {
+			System.out.println("Testsuite server is already running, skipping logger setup");
+		} else {
+			System.out.println("Testsuite server is not running, setting up logger");
+			try {
+				new LogSetup("logs/testing/test.log", Level.ALL);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		System.out.println("Creating server...");
 		kvServer = new KVServer(50000, 10, "None", false);
+		if (testsuiteServerRunning) {
+			System.out.println("Testsuite server is already running, skipping server start");
+			return;
+		}
 		serverThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -181,7 +232,8 @@ public class InteractionTest extends TestCase{
 			client_app.kvstore = this.kvClient;
 			//client_app.handleCommand("connect localhost 5000");
 			client_app.handleCommand(command);
-			kvServer.kill();
+			kvServer.close();
+			setup = false;
 			setUpServer();
 			response = client_app.handleCommand(command2);
 		} catch (Exception e) {
@@ -201,7 +253,8 @@ public class InteractionTest extends TestCase{
 			client_app.kvstore = this.kvClient;
 			//client_app.handleCommand("connect localhost 5000");
 			client_app.handleCommand(command);
-			kvServer.kill();
+			kvServer.close();
+			setup = false;
 			setUpServer();
 			response = client_app.handleCommand(command2);
 		} catch (Exception e) {
