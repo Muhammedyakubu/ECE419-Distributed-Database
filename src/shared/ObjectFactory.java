@@ -17,7 +17,7 @@ public final class ObjectFactory {
      * Creates a KVServer object for auto-testing purposes
      */
 	public static IKVServer createKVServerObject(int port, int cacheSize, String strategy) {
-		IKVServer kvServer = new KVServer(port, cacheSize, strategy, false);
+		final IKVServer kvServer = new KVServer(port, cacheSize, strategy, false);
 		Thread serverThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
