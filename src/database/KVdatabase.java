@@ -9,10 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileLock;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -29,7 +26,7 @@ public class KVdatabase implements IKVDatabase{
      * File channels are thread safe, allowing concurrent reads and locked writes
      * Store the file channel for all open keys in the system
      */
-    ConcurrentHashMap<String, RandomAccessFile> channels;
+    ConcurrentHashMap<String, FileChannel> channels;
     KVServer sv;
     public String keyPath;
     String defaultPath = "./src/KVStorage";
@@ -72,33 +69,35 @@ public class KVdatabase implements IKVDatabase{
         String kvFile =  keyPath + "/" +  key + ".txt";
         String value = "";
         Path path = Paths.get(kvFile);
+        FileChannel reader = channels.get(key);
         try {
-            RandomAccessFile reader = channels.get(kvFile);//First check if file channel already open
             if (reader == null) {
-                boolean exists = Files.exists(path); //next check if file was persisted but not in hashmap
-                if (exists) {
-                    reader = new RandomAccessFile(kvFile, "rw");
-                    channels.put(kvFile, reader);
-                }
-                else {
-                    if (sv != null)
-                        sv.logger.warn("The file you are locking for does not exist");
-                    return null; //file does not exist
-                }
+                reader = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
+                channels.put(kvFile, reader);
+
             }
 
-            //perform read operation
-            FileChannel channel = reader.getChannel();
+            /*boolean exists = Files.exists(path); //next check if file was persisted but not in hashmap
+            if (exists) {
+                reader = FileChannel.open(kvFile, "rw");
+                channels.put(kvFile, reader);
+            }
+            else {
+                if (sv != null)
+                    sv.logger.warn("The file you are locking for does not exist");
+                return null; //file does not exist
+            }*/
+            reader.position(0);
+
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
             int bufferSize = 1024;
             ByteBuffer buff = ByteBuffer.allocate(bufferSize);
 
-            while (channel.read(buff) > 0) {
+            while (reader.read(buff) > 0) {
                 out.write(buff.array(), 0, buff.position());
                 buff.clear();
             }
-            channel.position(0);//set channel position to zero for future access
             value = new String(out.toByteArray(), StandardCharsets.UTF_8);
 
 
@@ -120,21 +119,24 @@ public class KVdatabase implements IKVDatabase{
         Path path = Paths.get(kvFile);
 
         try {
-            RandomAccessFile writer = channels.get(kvFile);
+            FileChannel writer = channels.get(kvFile);
             if (writer == null) {
-                exists = Files.exists(path);
-                if (exists == false)
-                    Files.createFile(path);
-                writer = new RandomAccessFile(kvFile, "rw");
+                exists = false;
+                writer = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
                 channels.put(kvFile, writer);
             }
 
-            //perform write operation
+            writer.position(0);
+            writer.truncate(0);
+            writer.write(ByteBuffer.wrap(value.getBytes(StandardCharsets.UTF_8)));
+
+
+            /*/perform write operation
             FileChannel channel = writer.getChannel();
             ByteBuffer buff = ByteBuffer.wrap(value.getBytes(StandardCharsets.UTF_8));
             channel.write(buff);
             channel.truncate(value.getBytes("UTF-8").length); //remove excess in case of update
-            channel.position(0);//set position to zero
+            channel.position(0);//set position to zero*/
         }
         catch (Exception e) {
             if (sv != null)
@@ -150,8 +152,12 @@ public class KVdatabase implements IKVDatabase{
         Path path = Paths.get(kvFile);
         boolean success;
         try {
-            success = Files.deleteIfExists(path);
+            FileChannel channel = channels.get(key);
+            if (channel != null) channel.close();
             channels.remove(kvFile);
+            Files.delete(path);
+            success = true;
+
 
         }
         catch(Exception e){
@@ -174,12 +180,23 @@ public class KVdatabase implements IKVDatabase{
         Path rootPath = Paths.get(keyPath);
 
 
+        channels.clear();
         try{
             Stream<Path> pathStream = Files.walk(rootPath);
             List<Path> pathList = pathStream.collect(Collectors.<Path>toList());
             //List<Path> pathList = (Files.walk(rootPath)).toList();
             for (Path curr:pathList){
                 if (Files.isDirectory(curr)) continue;
+                String key  = curr.getFileName().toString();
+                String keySub = key.substring(0, 4);
+                if (keySub.equals(".nfs")) continue;
+                FileChannel channel = channels.get(key);
+
+                if (channel != null) {
+                    channel.close();
+                    channels.remove(key);
+                }
+
                 boolean success = Files.deleteIfExists(curr);
                 if (!success) {
                     return false;
@@ -190,9 +207,11 @@ public class KVdatabase implements IKVDatabase{
         catch (Exception e){
             if (sv != null)
                 sv.logger.warn("Exception occurred when deleting files: ", e);
+            else
+                e.printStackTrace();
             return false;
         }
-        channels.clear();
+
 
         return true;
     }

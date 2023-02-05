@@ -283,6 +283,11 @@ public class KVServer implements IKVServer {
 	public static String parseCommandLine(String[] args, boolean run_server){
 		try {
 
+			if(args[0].equals("-h")){
+				System.out.println("Usage: java -jar m1-server.jar " +
+						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
+				return "Help printed.";
+			}
 			//WRONG ARGUMENT ENTRY
 			if(args.length % 2 != 0){
 				System.out.println("Error! Invalid entry of arguments!");
