@@ -3,21 +3,22 @@ package app_kvServer.cache;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class LRUCache implements Cache{
-    private LinkedHashMap<String, String> cache;
+    private Map<String, String> cache;
     private static int maxCacheSize;
 
     public LRUCache(int cacheSize) {
         this.maxCacheSize = cacheSize;
         // For the Order attribute, true is passed for the last access order (LRU) and false is passed for the insertion order (FIFO)
-        this.cache = new LinkedHashMap<String, String>(cacheSize + 1, 0.75f, true) {
+        this.cache = Collections.synchronizedMap(new LinkedHashMap<String, String>(cacheSize + 1, 0.75f, true) {
+            private static final long serialVersionUID = 12345L; // use something random or just suppress the warning
             @Override
-            protected boolean removeEldestEntry(HashMap.Entry<String, String> eldest) {
-                return size() > maxCacheSize;
+            protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
+                return size() > maxCacheSize; // how many entries you want to keep
             }
-        };
-//        this.cache = (LinkedHashMap<String, String>) Collections.synchronizedMap(cache);
+        });
     }
 
     /**
