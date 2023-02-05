@@ -162,6 +162,10 @@ public class KVServer implements IKVServer {
 
 	@Override
     public boolean putKV(String key, String value) throws Exception{
+		byte[] byteArr = key.getBytes("UTF-8");
+		if (key == "" || byteArr.length > 20) throw new Exception("Invalid key length, must be more than 0 bytes and less than 20");
+
+
 		boolean keyInStorage = false;
 		if (value == null) {
 			keyInStorage = db.deletePair(key);
