@@ -14,6 +14,7 @@ public interface Cache {
 
     /**
      * Get the value associated with the key
+     * @param key key of the key-value pair to be retrieved
      * @return  value associated with key
      * @throws Exception
      *      when key not in the key range of the server
@@ -22,6 +23,8 @@ public interface Cache {
 
     /**
      * Put the key-value pair into cache
+     * @param key key of the key-value pair to be put
+     * @param value value of the key-value pair to be put
      * @throws Exception
      *      when key not in the key range of the server
      */
@@ -37,6 +40,7 @@ public interface Cache {
 
     /**
      * Delete a key-value pair from cache
+     * @param key  key of the key-value pair to be deleted
      */
     public void deleteKV(String key);
 

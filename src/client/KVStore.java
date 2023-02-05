@@ -94,10 +94,6 @@ public class KVStore implements KVCommInterface {
 		return response;
 	}
 
-	public boolean isRunning() {
-		return running;
-	}
-
 	public void addListener(ClientSocketListener listener){
 		listeners.add(listener);
 	}

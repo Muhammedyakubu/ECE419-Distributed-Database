@@ -36,9 +36,7 @@ public class KVServer implements IKVServer {
 	private String dataPath;
 	private boolean running;
 	private ServerSocket serverSocket;
-	// should I use a more efficient data structure?
-	private List<ClientConnection> clientConnections = new LinkedList<ClientConnection>();
-	
+
 	
 	/**
 	 * Start KV Server at given port
@@ -199,7 +197,6 @@ public class KVServer implements IKVServer {
 					Socket clientSocket = serverSocket.accept();
 					ClientConnection connection =
 							new ClientConnection(clientSocket, this);
-					clientConnections.add(connection);
 					new Thread(connection).start();
 
 					logger.info("Connected to " +
@@ -217,7 +214,6 @@ public class KVServer implements IKVServer {
 	@Override
     public void kill(){
 		running = false;
-//		System.exit(0);
 	}
 
 	@Override
@@ -233,6 +229,7 @@ public class KVServer implements IKVServer {
 					"ServerSocket already closed, unable to close socket on port: " + port);
 		}
 
+		// clear cache
 		if (this.cache != null) clearCache();
 		kill();
 	}

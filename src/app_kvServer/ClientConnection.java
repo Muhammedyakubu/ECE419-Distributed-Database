@@ -1,7 +1,6 @@
 package app_kvServer;
 
 import org.apache.log4j.Logger;
-import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 
 import java.io.IOException;
@@ -13,8 +12,7 @@ import java.net.Socket;
 /**
  * Represents a connection end point for a particular client that is 
  * connected to the server. This class is responsible for message reception 
- * and sending. 
- *
+ * and sending.
  * The class handles the communication completely and handles client requests
  */
 public class ClientConnection implements Runnable {
@@ -82,6 +80,13 @@ public class ClientConnection implements Runnable {
 		}
 	}
 
+	/**
+	 * Handles the client message, performs the corresponding actions and
+	 * returns a response to be sent back to the client.
+	 *
+	 * @param msg the message received from the client
+	 * @return the response to be sent to the client
+	 */
 	public KVMessage handleClientMessage(KVMessage msg) {
 		switch (msg.getStatus()) {
 			case GET:
@@ -149,6 +154,11 @@ public class ClientConnection implements Runnable {
 				+ msg +"'");
     }
 
+	/**
+	 * Method receives a KVMessage using this socket.
+	 * @return the received message as a KVMessage object
+	 * @throws IOException some I/O error regarding the input stream
+	 */
 	private KVMessage receiveMessage() throws IOException {
 		
 		int index = 0;
@@ -214,5 +224,4 @@ public class ClientConnection implements Runnable {
 				+ msg + "'");
 		return msg;
     }
-
 }
