@@ -3,22 +3,21 @@ package database;
 import app_kvServer.KVServer;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileLock;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class for manipulating key-value store database using a simple key to file mapping
  * for each pair.
- * TODO Test read/write locks
  */
 public class KVdatabase implements IKVDatabase{
 
@@ -32,12 +31,18 @@ public class KVdatabase implements IKVDatabase{
     String defaultPath = "./src/KVStorage";
 
     /**
-     * Three constructors provided: with server and custom store location, with default store location,
-     * and with no server
+     * Constructor with default path
+     * @param sv
      */
     public KVdatabase(KVServer sv) {
         this(sv, null);
     }
+
+    /**
+     * Constructor with user-defined path
+     * @param sv
+     * @param dir
+     */
     public KVdatabase(KVServer sv, String dir) {
         this.sv = sv;
 
@@ -60,6 +65,9 @@ public class KVdatabase implements IKVDatabase{
         channels = new ConcurrentHashMap<>();
     }
 
+    /**
+     * Constructor with no server initialization
+     */
     public KVdatabase() {
         this(null, null);
     }
@@ -71,22 +79,12 @@ public class KVdatabase implements IKVDatabase{
         Path path = Paths.get(kvFile);
         FileChannel reader = channels.get(key);
         try {
+            //open the file channel and read
             if (reader == null) {
                 reader = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
                 channels.put(kvFile, reader);
 
             }
-
-            /*boolean exists = Files.exists(path); //next check if file was persisted but not in hashmap
-            if (exists) {
-                reader = FileChannel.open(kvFile, "rw");
-                channels.put(kvFile, reader);
-            }
-            else {
-                if (sv != null)
-                    sv.logger.warn("The file you are locking for does not exist");
-                return null; //file does not exist
-            }*/
             reader.position(0);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -129,14 +127,6 @@ public class KVdatabase implements IKVDatabase{
             writer.position(0);
             writer.truncate(0);
             writer.write(ByteBuffer.wrap(value.getBytes(StandardCharsets.UTF_8)));
-
-
-            /*/perform write operation
-            FileChannel channel = writer.getChannel();
-            ByteBuffer buff = ByteBuffer.wrap(value.getBytes(StandardCharsets.UTF_8));
-            channel.write(buff);
-            channel.truncate(value.getBytes("UTF-8").length); //remove excess in case of update
-            channel.position(0);//set position to zero*/
         }
         catch (Exception e) {
             if (sv != null)
@@ -150,7 +140,7 @@ public class KVdatabase implements IKVDatabase{
     public boolean deletePair(String key) {
         String kvFile = keyPath + "/" +  key + ".txt";
         Path path = Paths.get(kvFile);
-        boolean success;
+        boolean success = false;
         try {
             FileChannel channel = channels.get(key);
             if (channel != null) channel.close();
@@ -184,7 +174,6 @@ public class KVdatabase implements IKVDatabase{
         try{
             Stream<Path> pathStream = Files.walk(rootPath);
             List<Path> pathList = pathStream.collect(Collectors.<Path>toList());
-            //List<Path> pathList = (Files.walk(rootPath)).toList();
             for (Path curr:pathList){
                 if (Files.isDirectory(curr)) continue;
                 String key  = curr.getFileName().toString();
@@ -196,7 +185,6 @@ public class KVdatabase implements IKVDatabase{
                     channel.close();
                     channels.remove(key);
                 }
-
                 boolean success = Files.deleteIfExists(curr);
                 if (!success) {
                     return false;
@@ -211,8 +199,6 @@ public class KVdatabase implements IKVDatabase{
                 e.printStackTrace();
             return false;
         }
-
-
         return true;
     }
 
