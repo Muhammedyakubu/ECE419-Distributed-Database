@@ -152,8 +152,12 @@ public class KVdatabase implements IKVDatabase{
         Path path = Paths.get(kvFile);
         boolean success;
         try {
-            success = Files.deleteIfExists(path);
+            FileChannel channel = channels.get(key);
+            if (channel != null) channel.close();
             channels.remove(kvFile);
+            Files.delete(path);
+            success = true;
+
 
         }
         catch(Exception e){
@@ -176,12 +180,23 @@ public class KVdatabase implements IKVDatabase{
         Path rootPath = Paths.get(keyPath);
 
 
+        channels.clear();
         try{
             Stream<Path> pathStream = Files.walk(rootPath);
             List<Path> pathList = pathStream.collect(Collectors.<Path>toList());
             //List<Path> pathList = (Files.walk(rootPath)).toList();
             for (Path curr:pathList){
                 if (Files.isDirectory(curr)) continue;
+                String key  = curr.getFileName().toString();
+                String keySub = key.substring(0, 4);
+                if (keySub.equals(".nfs")) continue;
+                FileChannel channel = channels.get(key);
+
+                if (channel != null) {
+                    channel.close();
+                    channels.remove(key);
+                }
+
                 boolean success = Files.deleteIfExists(curr);
                 if (!success) {
                     return false;
@@ -192,9 +207,11 @@ public class KVdatabase implements IKVDatabase{
         catch (Exception e){
             if (sv != null)
                 sv.logger.warn("Exception occurred when deleting files: ", e);
+            else
+                e.printStackTrace();
             return false;
         }
-        channels.clear();
+
 
         return true;
     }

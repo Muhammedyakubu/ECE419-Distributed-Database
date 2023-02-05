@@ -15,6 +15,7 @@ public class KVDatabaseTest extends TestCase{
     public void setUp() {
         BasicConfigurator.configure();
         db = new KVdatabase();
+        db.clearStorage();
     }
 
     public void tearDown() {
