@@ -1,1 +1,1 @@
-# ECE419-Distributed-Database
+# ECE419-Distributed-Database project
