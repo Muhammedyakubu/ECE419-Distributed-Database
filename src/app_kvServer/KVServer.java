@@ -11,9 +11,6 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.LinkedList;
-import java.util.List;
-import java.lang.*;
 
 
 /**
@@ -35,6 +32,8 @@ public class KVServer implements IKVServer {
 	private String dataPath;
 	private boolean running;
 	private ServerSocket serverSocket;
+
+	private Range keyRange;
 
 	
 	/**
@@ -64,6 +63,7 @@ public class KVServer implements IKVServer {
 		this.cacheSize = cacheSize;
 		this.dataPath = dataPath;
 		this.bind_address = bind_address;
+		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 
 		// handle invalid cacheSize and strategy
 		if (cacheSize <= 0 || strategy == null) {
