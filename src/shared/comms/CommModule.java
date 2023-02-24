@@ -26,7 +26,7 @@ public final class CommModule /*implements ICommModule*/ {
         byte[] msgBytes = msg.toByteArray();
         output.write(msgBytes, 0, msgBytes.length);
         output.flush();
-        logger.info("SEND \t<"
+        logger.debug("SEND \t<"
                 + socket.getInetAddress().getHostAddress() + ":"
                 + socket.getPort() + ">: '"
                 + msg +"'");
@@ -93,7 +93,7 @@ public final class CommModule /*implements ICommModule*/ {
 
         /* build final String */
         KVMessage msg = new KVMessage(msgBytes);
-        logger.info("RECEIVE \t<"
+        logger.debug("RECEIVE \t<"
                 + socket.getInetAddress().getHostAddress() + ":"
                 + socket.getPort() + ">: '"
                 + msg + "'");
