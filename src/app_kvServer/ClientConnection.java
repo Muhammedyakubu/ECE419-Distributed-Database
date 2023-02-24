@@ -1,6 +1,7 @@
 package app_kvServer;
 
 import org.apache.log4j.Logger;
+import shared.comms.CommModule;
 import shared.messages.KVMessage;
 
 import java.io.IOException;
@@ -52,8 +53,10 @@ public class ClientConnection implements Runnable {
 			
 			while(isOpen) {
 				try {
-					KVMessage response = handleClientMessage(receiveMessage());
-					sendMessage(response);
+					/*KVMessage response = handleClientMessage(receiveMessage());
+					sendMessage(response);*/
+					KVMessage response = handleClientMessage(CommModule.receiveMessage(clientSocket));
+					CommModule.sendMessage(response, clientSocket);
 					
 				/* connection either terminated by the client or lost due to 
 				 * network problems */

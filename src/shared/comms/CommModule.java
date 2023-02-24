@@ -21,7 +21,6 @@ public final class CommModule /*implements ICommModule*/ {
 
 //    @Override
     public static void sendMessage(KVMessage msg, Socket socket) throws IOException {
-        if (socket == null) return;
         OutputStream output = socket.getOutputStream();
 
         byte[] msgBytes = msg.toByteArray();
@@ -35,7 +34,6 @@ public final class CommModule /*implements ICommModule*/ {
 
 //    @Override
     public static KVMessage receiveMessage(Socket socket) throws IOException {
-        if (socket == null) return null;
         InputStream input = socket.getInputStream();
 
         int index = 0;

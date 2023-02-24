@@ -1,6 +1,7 @@
 package client;
 
 import org.apache.log4j.Logger;
+import shared.comms.CommModule;
 import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 
@@ -87,16 +88,16 @@ public class KVStore implements KVCommInterface {
 	@Override
 	public KVMessage put(String key, String value) throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.PUT, key, value);
-		sendMessage(msg); // this should throw an exception if the connection is closed... right?
-		KVMessage response = receiveMessage();
+		CommModule.sendMessage(msg, clientSocket); // this should throw an exception if the connection is closed... right?
+		KVMessage response = CommModule.receiveMessage(clientSocket);
 		return response;
 	}
 
 	@Override
 	public IKVMessage get(String key) throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.GET, key, null);
-		sendMessage(msg);
-		KVMessage response = receiveMessage();
+		CommModule.sendMessage(msg, clientSocket); // this should throw an exception if the connection is closed... right?
+		KVMessage response = CommModule.receiveMessage(clientSocket);
 		return response;
 	}
 
