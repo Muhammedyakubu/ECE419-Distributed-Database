@@ -7,6 +7,7 @@ import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import shared.messages.KVMessage;
+import shared.messages.KVMetadata;
 
 import java.util.*;
 import java.lang.*;
@@ -25,6 +26,8 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private boolean stop = false;
     private String serverAddress;
     private int serverPort;
+
+    private KVMetadata metadata;
 
     /**
      * Runs the client application and takes input from user.
@@ -316,6 +319,18 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     + serverAddress + " / " + serverPort);
         }
     }
+    /*
+    public void handleNotResponsible(String cmdLine, String md){
+        String[] tokens = cmdLine.split("\\s+");
+        KVMetadata metadata = md.toMetadata(); //DEFINE THIS
+        //HASH THE KEY (tokens[1])
+        //FIND IP:PORT
+        String[] IPPort = server.split(":");
+        disconnect()
+        connect(IPPort[0], IPPort[1]);
+        handleCommand(cmdLine);
+    }
+     */
 
     public static void main(String[] args) {
         try {
