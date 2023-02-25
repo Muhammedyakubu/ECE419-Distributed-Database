@@ -8,10 +8,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public final class CommModule /*implements ICommModule*/ {
+/**
+ * This class implements methods to send and receive KVMessages over a TCP socket
+ */
+public final class CommModule {
 
-    // Is inheriting loggers okay?
-    public static Logger logger = Logger.getRootLogger();
+    public static Logger logger = Logger.getLogger(CommModule.class);
     private static final int BUFFER_SIZE = 1024;
     private static final int DROP_SIZE = 128 * BUFFER_SIZE;
 
@@ -19,7 +21,12 @@ public final class CommModule /*implements ICommModule*/ {
 
     }
 
-//    @Override
+    /**
+     * Method sends a KVMessage using this socket.
+     * @param msg the message that is to be sent.
+     * @param socket the socket over which the message should be sent
+     * @throws IOException some I/O error regarding the output stream
+     */
     public static void sendMessage(KVMessage msg, Socket socket) throws IOException {
         OutputStream output = socket.getOutputStream();
 
@@ -32,7 +39,12 @@ public final class CommModule /*implements ICommModule*/ {
                 + msg +"'");
     }
 
-//    @Override
+    /**
+     * Method receives a KVMessage using this socket.
+     * @param socket the socket over which the message should be sent
+     * @return the received message as a KVMessage object
+     * @throws IOException some I/O error regarding the input stream
+     */
     public static KVMessage receiveMessage(Socket socket) throws IOException {
         InputStream input = socket.getInputStream();
 
@@ -100,7 +112,10 @@ public final class CommModule /*implements ICommModule*/ {
         return msg;
     }
 
-//    @Override
+    /**
+     * Closes the given socket
+     * @param socket the socket to close
+     */
     public static void closeSocket(Socket socket) throws IOException {
         if (socket == null) {
             logger.warn("cannot close null socket");
