@@ -1,15 +1,14 @@
 package database;
 
 import app_kvServer.KVServer;
+import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -29,6 +28,7 @@ public class KVdatabase implements IKVDatabase{
     KVServer sv;
     public String keyPath;
     String defaultPath = "./src/KVStorage";
+    public static Logger logger = Logger.getLogger(KVdatabase.class);
 
     /**
      * Constructor with default path
@@ -58,8 +58,7 @@ public class KVdatabase implements IKVDatabase{
                 Files.createDirectory(Paths.get(this.keyPath));
             }
             catch(Exception e){
-                if (sv != null)
-                    sv.logger.warn("Error while initializing database: ", e);
+                logger.warn("Error while initializing database: ", e);
             }
         }
         channels = new ConcurrentHashMap<>();
@@ -101,8 +100,8 @@ public class KVdatabase implements IKVDatabase{
 
         }
         catch(Exception e) {
-            if (sv != null)
-                sv.logger.warn("Exception thrown when trying to read key-value pair: ", e);
+            if (!(e instanceof NoSuchFileException))
+                logger.warn("Exception thrown when trying to read key-value pair: ", e);
             return null;
         }
 
@@ -130,14 +129,14 @@ public class KVdatabase implements IKVDatabase{
         }
         catch (Exception e) {
             if (sv != null)
-                sv.logger.warn("Exception thrown when writing to the key-value store:", e);
+                logger.warn("Exception thrown when writing to the key-value store:", e);
             throw new Exception("Write Exception");
         }
         return exists;
     }
 
     @Override
-    public boolean deletePair(String key) {
+    public boolean deletePair(String key) throws IOException {
         String kvFile = keyPath + "/" +  key + ".txt";
         Path path = Paths.get(kvFile);
         boolean success = false;
@@ -151,14 +150,16 @@ public class KVdatabase implements IKVDatabase{
 
         }
         catch(Exception e){
-            if (sv != null)
-                sv.logger.warn("An Exception occured during deletion: ", e);
+            if (e instanceof NoSuchFileException) {
+                logger.debug("The file you are attempting to delete does not exist");
+                throw e;
+            }
+            logger.warn("An Exception occured during deletion: ", e);
             return false;
         }
 
         if (!success){
-            if (sv != null)
-                sv.logger.info("The file you are attempting to delete does not exist");
+            logger.info("The file you are attempting to delete does not exist");
         }
 
         return success;
@@ -193,10 +194,7 @@ public class KVdatabase implements IKVDatabase{
 
         }
         catch (Exception e){
-            if (sv != null)
-                sv.logger.warn("Exception occurred when deleting files: ", e);
-            else
-                e.printStackTrace();
+            logger.warn("Exception occurred when deleting files: ", e);
             return false;
         }
         return true;

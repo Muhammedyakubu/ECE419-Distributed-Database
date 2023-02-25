@@ -1,6 +1,8 @@
 package database;
 
 
+import java.io.IOException;
+
 /**
  * Interface for handling persistent database storage system.
  * Acts independent of caching mechanism, and can be implemented using different
@@ -32,7 +34,7 @@ public interface IKVDatabase {
      * @param key
      * @return Successful or unsuccessful deletion
      */
-    public boolean deletePair(String key);
+    public boolean deletePair(String key) throws IOException;
 
     /**
      * Clears all existing KV pairs

@@ -1,6 +1,7 @@
 package app_kvServer;
 
 import org.apache.log4j.Logger;
+import shared.comms.CommModule;
 import shared.messages.KVMessage;
 
 import java.io.IOException;
@@ -17,7 +18,7 @@ import java.net.Socket;
  */
 public class ClientConnection implements Runnable {
 
-	private static Logger logger = Logger.getRootLogger();
+	private static Logger logger = Logger.getLogger(ClientConnection.class);
 	
 	private boolean isOpen;
 	private static final int BUFFER_SIZE = 1024;
@@ -52,8 +53,10 @@ public class ClientConnection implements Runnable {
 			
 			while(isOpen) {
 				try {
-					KVMessage response = handleClientMessage(receiveMessage());
-					sendMessage(response);
+					/*KVMessage response = handleClientMessage(receiveMessage());
+					sendMessage(response);*/
+					KVMessage response = handleClientMessage(CommModule.receiveMessage(clientSocket));
+					CommModule.sendMessage(response, clientSocket);
 					
 				/* connection either terminated by the client or lost due to 
 				 * network problems */
@@ -103,6 +106,7 @@ public class ClientConnection implements Runnable {
 				}
 				break;
 			case PUT:
+				boolean isUpdate = false;
 				try {
 					// convert all forms of null to null
 					if (msg.getValue() == null) {
@@ -111,7 +115,7 @@ public class ClientConnection implements Runnable {
 					}
 
 					// do the put
-					boolean isUpdate = kvServer.putKV(msg.getKey(), msg.getValue());
+					isUpdate = kvServer.putKV(msg.getKey(), msg.getValue());
 					boolean deleteSuccessful = isUpdate && (msg.getValue() == null);
 
 					// set the status
@@ -125,7 +129,6 @@ public class ClientConnection implements Runnable {
 				} catch (Exception e) {
 					if (msg.getValue() == null) {
 						msg.setStatus(KVMessage.StatusType.DELETE_ERROR);
-						logger.error("Error! Unable to delete key: " + msg.getKey(), e);
 					} else {
 						msg.setStatus(KVMessage.StatusType.PUT_ERROR);
 						logger.error("Error! Unable to put value for key: " + msg.getKey(), e);

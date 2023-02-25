@@ -56,6 +56,7 @@ public interface IKVServer {
 
     /**
      * Put the key-value pair into storage
+     * @return true if key exist(ed) in storage, false otherwise
      * @throws Exception
      *      when key not in the key range of the server
      */

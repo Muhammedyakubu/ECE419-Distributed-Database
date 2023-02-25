@@ -4,6 +4,7 @@ import database.KVdatabase;
 import junit.framework.TestCase;
 import org.apache.log4j.BasicConfigurator;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,7 +62,12 @@ public class KVDatabaseTest extends TestCase{
         }
         String key = "foo";
         boolean expected = true;
-        boolean actual = db.deletePair(key);
+        boolean actual = false;
+        try {
+            actual = db.deletePair(key);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         String kvFile = db.keyPath + "/" +  key + ".txt";
         Path path = Paths.get(kvFile);
         boolean exists = Files.exists(path);

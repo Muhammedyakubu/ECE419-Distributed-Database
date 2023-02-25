@@ -22,7 +22,7 @@ import java.net.*;
  */
 public class KVServer implements IKVServer {
 	
-	public static Logger logger = Logger.getRootLogger();
+	public static Logger logger = Logger.getLogger(KVServer.class);
 	private int port;
 	private InetAddress bind_address;
 	private int cacheSize;

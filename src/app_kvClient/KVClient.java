@@ -19,7 +19,7 @@ import java.net.UnknownHostException;
 
 public class KVClient implements IKVClient, ClientSocketListener {
 
-    private static Logger logger = Logger.getRootLogger();
+    private static Logger logger = Logger.getLogger(KVClient.class);
     private static final String PROMPT = "M1Client> ";
     private BufferedReader stdin;
     public KVStore kvstore = null;
