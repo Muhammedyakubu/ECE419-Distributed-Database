@@ -1,6 +1,9 @@
 package shared.messages;
 
 
+import app_kvServer.KVServer;
+import org.apache.log4j.Logger;
+
 /**
  * Message class for KV messages
  * The same class is used for both client and server messages
@@ -14,6 +17,7 @@ package shared.messages;
  */
 public class KVMessage implements IKVMessage {
 
+    public static Logger logger = Logger.getLogger(KVMessage.class);
     StatusType status;
     String key;
     String value;
@@ -46,7 +50,7 @@ public class KVMessage implements IKVMessage {
             this.key = parts[1].replace("\n", ""); // key won't contain spaces or control characters
             this.value = (parts[2].equals("") || parts[2].equals("null")) ? null : parts[2];
         } catch (Exception e) {
-            System.out.println("Error decoding message: '" + msg + "'");
+            logger.error("Error decoding message: '" + msg + "'");
             this.status = StatusType.FAILED;
             this.key = msg;
             this.value = null;

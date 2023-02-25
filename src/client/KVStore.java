@@ -25,7 +25,7 @@ import java.util.Set;
  */
 public class KVStore implements KVCommInterface {
 
-	private static Logger logger = Logger.getRootLogger();
+	private static Logger logger = Logger.getLogger(KVStore.class);
 	private Set<ClientSocketListener> listeners;
 	private boolean running;
 
