@@ -1,31 +1,33 @@
-package app_kvServer;
+package shared;
+
+import java.math.BigInteger;
 
 /**
  * Class responsible for managing individual key ranges of a server
  */
 public class Range {
-    public int start;
-    public int end;
+    public BigInteger start;
+    public BigInteger end;
 
     /**
      * Constructors initialize to a definite range or to -1 indicating unincorporated server
      * @param first
      * @param second
      */
-    public Range(int first, int second){
+    public Range(BigInteger first, BigInteger second){
         start = first;
         end = second;
     }
     public Range() {
-        start = -1;
-        end = -1;
+        start = null;
+        end = null;
     }
     /**
      * Updates the key range of a server
      * @param first
      * @param second
      */
-    public void updateRange(int first, int second){
+    public void updateRange(BigInteger first, BigInteger second){
         start = first;
         end = second;
     };
@@ -35,8 +37,8 @@ public class Range {
      * @param hash
      * @return
      */
-    public boolean inRange(int hash){
-        if (hash <= end && hash > start) return true;
+    public boolean inRange(BigInteger hash){
+        if (hash.compareTo(end) <= 0  && hash.compareTo(start) == 1) return true;
 
         else return false;
 

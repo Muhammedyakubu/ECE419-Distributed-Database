@@ -1,10 +1,9 @@
 package shared.messages;
 
-import app_kvServer.Range;
+import shared.Range;
 
-import java.util.LinkedHashMap;
+import java.math.BigInteger;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 public class KVMetadata {
@@ -24,19 +23,27 @@ public class KVMetadata {
         metadata.add(new_pair);
     }
 
-    public void addServer(String serverAddPort, int startpoint, int endpoint){
-
+    public void addServer(String serverAddPort, BigInteger startpoint, BigInteger endpoint){
+        Range range = new Range(startpoint, endpoint);
+        Pair<String, Range> new_pair = new Pair<String, Range>();
+        new_pair.setValue(serverAddPort, range);
+        metadata.add(new_pair);
     }
 
-    public void addServer(String server, String port, int startpoint, int endpoint){
-
+    public void addServer(String server, String port, BigInteger startpoint, BigInteger endpoint){
+        String serverAddPort = server + ":" + port;
+        Range range = new Range(startpoint, endpoint);
+        Pair<String, Range> new_pair = new Pair<String, Range>();
+        new_pair.setValue(serverAddPort, range);
+        metadata.add(new_pair);
     }
 
     public String toString() {
         String returned_string = "";
         for (int i = 0; i < this.metadata.size(); i++)
         {
-            returned_string = metadata.get(i).p1 + " " + metadata.get(i).p2.start + " " + metadata.get(i).p2.end + ",";
+            returned_string = metadata.get(i).p1 + " " + metadata.get(i).p2.start.toString(16)
+                    + " " + metadata.get(i).p2.end.toString(16) + ",";
         }
 
         return returned_string;
@@ -50,11 +57,9 @@ public class KVMetadata {
         for(int i = 0; i < tokens.length; i++)
         {
             String[] vals = tokens[i].split(" ");
-            String serverAddPort = vals[0];
-            Range range = new Range(Integer.parseInt(vals[1]), Integer.parseInt(vals[2]));
-            Pair<String, Range> new_pair = new Pair<String, Range>();
-            new_pair.setValue(serverAddPort, range);
-            metadata.metadata.add(new_pair);
+            BigInteger start = new BigInteger(vals[1], 16);
+            BigInteger end = new BigInteger(vals[2], 16);
+            metadata.addServer(vals[0], start, end);
         }
 
         return metadata;

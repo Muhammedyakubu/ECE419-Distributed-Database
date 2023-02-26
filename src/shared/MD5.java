@@ -5,7 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class MD5 {
-    public static String getHash(String input) {
+    public static BigInteger getHash(String input) {
         try {
 
             // Static getInstance method is called with hashing MD5
@@ -18,12 +18,15 @@ public class MD5 {
             // Convert byte array into signum representation
             BigInteger no = new BigInteger(1, messageDigest);
 
+            /*
             // Convert message digest into hex value
             String hashtext = no.toString(16);
             while (hashtext.length() < 32) {
                 hashtext = "0" + hashtext;
             }
             return hashtext;
+             */
+            return no;
         }
 
         // For specifying wrong message digest algorithms

@@ -8,6 +8,7 @@ import database.KVdatabase;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import shared.Range;
 
 import java.io.IOException;
 import java.net.*;
