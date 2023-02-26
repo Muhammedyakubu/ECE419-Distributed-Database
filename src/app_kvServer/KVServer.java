@@ -25,6 +25,8 @@ public class KVServer implements IKVServer {
 	public static Logger logger = Logger.getLogger(KVServer.class);
 	private int port;
 	private InetAddress bind_address;
+	private InetAddress ecs_Address;
+	private int ecsPort;
 	private int cacheSize;
 	private CacheStrategy strategy;
 	public Cache cache;
@@ -48,22 +50,24 @@ public class KVServer implements IKVServer {
 	 */
 
 	public KVServer(int port, int cacheSize, String strategy) {
-		this(port, cacheSize, strategy, null, null, true);
+		this(port, cacheSize, strategy, null, null,null, -1, true);
 	}
 
 	public KVServer(int port, int cacheSize, String strategy, boolean run) {
-		this(port, cacheSize, strategy, null, null, run);
+		this(port, cacheSize, strategy, null, null, null, -1, run);
 	}
 
-	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath) {
-		this(port, cacheSize, strategy, bind_address, dataPath, true);
+	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath, InetAddress ecsAddr, int ecs_port) {
+		this(port, cacheSize, strategy, bind_address, dataPath, ecsAddr, ecs_port, true);
 	}
-	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath, boolean run) {
+	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath, InetAddress ecsAddr, int ecs_port, boolean run) {
 		this.port = port;
 		this.cacheSize = cacheSize;
 		this.dataPath = dataPath;
 		this.bind_address = bind_address;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
+		this.ecs_Address = ecsAddr;
+		this.ecsPort = ecs_port;
 
 		// handle invalid cacheSize and strategy
 		if (cacheSize <= 0 || strategy == null) {
@@ -298,24 +302,32 @@ public class KVServer implements IKVServer {
 
 	public static String parseCommandLine(String[] args, boolean run_server){
 		try {
-
+			if (args.length == 0) {
+				System.out.println("Error! Missing port number and ECS bootstrap!");
+				System.out.println("Usage: java -jar m2-server.jar " +
+						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
+				return "Invalid";
+			}
 			if(args[0].equals("-h")){
-				System.out.println("Usage: java -jar m1-server.jar " +
-						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
+				System.out.println("Usage: java -jar m2-server.jar " +
+						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
 				return "Help printed.";
 			}
 			//WRONG ARGUMENT ENTRY
 			if(args.length % 2 != 0){
 				System.out.println("Error! Invalid entry of arguments!");
-				System.out.println("Usage: java -jar m1-server.jar " +
-						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
+				System.out.println("Usage: java -jar m2-server.jar " +
+						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
 				return "Invalid";
 				//System.exit(0);
 			}
 
 			int port_num = -1;
+			int ecs_port = -1;
 			boolean port_present = false;
+			boolean ecs_present = false;
 			String address = "localhost";
+			String ecsAddress = "localhost";
 			String dataPath = ""; //DEFAULT HANDLED IN KVDATABASE
 			String logPath = "logs/server.log";
 			String logLevel = " "; //DEFAULT IS SET TO ALL LATER
@@ -330,6 +342,23 @@ public class KVServer implements IKVServer {
 						System.exit(0);
 					}
 					port_present = true;
+				}
+
+				if(args[i].equals("-b")) {
+					String ecs = args[i+1];
+					String[] ecsSplit = ecs.split(":");
+					if (ecsSplit.length == 1)
+						ecs_port = Integer.parseInt(ecsSplit[0]);
+					else {
+						ecsAddress = ecsSplit[0];
+						ecs_port = Integer.parseInt(ecsSplit[1]);
+					}
+					if(ecs_port < 0 || ecs_port > 65535){
+						System.out.println("Error! ECS Port number out of range!");
+						System.out.println("Port number must fall between 0 and 65535, inclusive.");
+						System.exit(0);
+					}
+					ecs_present = true;
 				}
 
 				//ADDRESS CHECK
@@ -355,14 +384,21 @@ public class KVServer implements IKVServer {
 
 			if(port_present == false) {
 				System.out.println("Error! No port number found!");
-				System.out.println("Usage: java -jar m1-server.jar " +
-						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
+				System.out.println("Usage: java -jar m2-server.jar " +
+						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
 				return("No port, invalid");
 				//System.exit(0);
+			}
+			if (ecs_present == false){
+				System.out.println("Error! No ECS bootstrap found!");
+				System.out.println("Usage: java -jar m2-server.jar " +
+						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
+				return("No ECS bootstrap, invalid");
 			}
 
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
 			InetAddress bind_address = InetAddress.getByName(address);
+			InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
 
 			Level level = Level.ALL;
 
@@ -379,11 +415,11 @@ public class KVServer implements IKVServer {
 			if(run_server) {
 				new LogSetup(logPath, level);
 
-				KVServer server = new KVServer(port_num, 10, "FIFO", bind_address, dataPath);
+				KVServer server = new KVServer(port_num, 10, "FIFO", bind_address, dataPath, ecs_bind, ecs_port);
 			}
 
 			String returned = "Port: " + port_num + " Address: " + address + " Datapath: " + dataPath +
-								" Logpath: " + logPath + " Loglevel: " + logLevel;
+								" Logpath: " + logPath + " Loglevel: " + logLevel + " Bootstrap ECS: " + ecsAddress + ":" + ecs_port;
 			return returned;
 
 		} catch (IOException e) {
@@ -392,15 +428,15 @@ public class KVServer implements IKVServer {
 			} else {
 				System.out.println("Error! Unable to find logPath!");
 			}
-			System.out.println("Usage: java -jar m1-server.jar " +
-					"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
+			System.out.println("Usage: java -jar m2-server.jar " +
+					"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
 			return "Invalid";
 			//e.printStackTrace();
 			//System.exit(1);
 		} catch (NumberFormatException nfe) {
 			System.out.println("Error! Invalid argument <port>! Not a number!");
-			System.out.println("Usage: java -jar m1-server.jar " +
-					"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>!");
+			System.out.println("Usage: java -jar m2-server.jar " +
+					"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
 			return "Invalid";
 			//System.exit(1);
 		}
@@ -411,7 +447,7 @@ public class KVServer implements IKVServer {
 	 * replacement strategy if caching is enabled.
 	 * @param args
 	 *
-	 * java -jar m1-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel>
+	 * java -jar m2-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number>
 	 */
 	public static void main(String[] args) {
 		parseCommandLine(args, true);
