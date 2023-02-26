@@ -13,6 +13,7 @@ public interface IKVMessage {
 		DELETE_SUCCESS, /* Delete - request successful */
 		DELETE_ERROR, 	/* Delete - request successful */
 		FAILED,			/* message format unknown, message size exceeded, etc. */
+		SERVER_NOT_RESPONSIBLE, /* Put/Get - Key was not found in connected server*/
 	}
 
 	/**

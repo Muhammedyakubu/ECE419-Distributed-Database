@@ -6,6 +6,7 @@ import client.ClientSocketListener;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
 
@@ -107,12 +108,20 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     try {
                         KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
                         handleNewMessage(response);
+                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+                        {
+                            handleNotResponsible(cmdLine, response.getValue());
+                        }
                         return response.getStatus().toString();
                     } catch (IOException e){
                         logger.info("Connection to server was lost. Attempting to reconnect...");
                         kvstore.connect();
                         KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
                         handleNewMessage(response);
+                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+                        {
+                            handleNotResponsible(cmdLine, response.getValue());
+                        }
                         return response.getStatus().toString();
                     }
                 } else {
@@ -132,12 +141,20 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     try {
                         KVMessage response = (KVMessage) kvstore.get(key);
                         handleNewMessage(response);
+                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+                        {
+                            handleNotResponsible(cmdLine, response.getValue());
+                        }
                         return response.getStatus().toString();
                     } catch(IOException e){
                         logger.info("Connection to server was lost. Attempting to reconnect...");
                         kvstore.connect();
                         KVMessage response = (KVMessage) kvstore.get(key);
                         handleNewMessage(response);
+                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+                        {
+                            handleNotResponsible(cmdLine, response.getValue());
+                        }
                         return response.getStatus().toString();
                     }
 
@@ -319,18 +336,33 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     + serverAddress + " / " + serverPort);
         }
     }
-    /*
+
     public void handleNotResponsible(String cmdLine, String md){
         String[] tokens = cmdLine.split("\\s+");
-        KVMetadata metadata = md.toMetadata(); //DEFINE THIS
-        //HASH THE KEY (tokens[1])
-        //FIND IP:PORT
-        String[] IPPort = server.split(":");
-        disconnect()
-        connect(IPPort[0], IPPort[1]);
-        handleCommand(cmdLine);
+        KVMetadata metadata = new KVMetadata(md); //DEFINE THIS
+        String serverAddPort = metadata.findServer(tokens[1]);
+        String[] IPPort = serverAddPort.split(":");
+        disconnect();
+        serverAddress = IPPort[1];
+        serverPort = Integer.parseInt(IPPort[2]);
+        try {
+            newConnection(serverAddress, serverPort);
+            handleCommand(cmdLine);
+        } catch(NumberFormatException nfe) {
+            printError("No valid address. Port must be a number!");
+            logger.info("Unable to parse argument <port>", nfe);
+        } catch (UnknownHostException e) {
+            printError("Unknown Host!");
+            logger.info("Unknown Host!", e);
+        } catch (IOException e) {
+            printError("Could not establish connection!");
+            logger.warn("Could not establish connection!", e);
+        } catch (Exception e) {
+            printError("Another issue occurred!");
+            logger.warn("Unknown error occurred!", e);
+        }
     }
-     */
+
 
     public static void main(String[] args) {
         try {

@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Vector;
 
+import static shared.MD5.getHash;
+
 public class KVMetadata {
 
     //LIST ORDERED BY SERVER/PORT HASHES
@@ -23,6 +25,20 @@ public class KVMetadata {
         metadata.add(new_pair);
     }
 
+    public KVMetadata(String value){
+        KVMetadata metadata = new KVMetadata();
+
+        String[] tokens = value.split(",");
+
+        for(int i = 0; i < tokens.length; i++)
+        {
+            String[] vals = tokens[i].split(" ");
+            BigInteger start = new BigInteger(vals[1], 16);
+            BigInteger end = new BigInteger(vals[2], 16);
+            metadata.addServer(vals[0], start, end);
+        }
+    }
+
     public void addServer(String serverAddPort, BigInteger startpoint, BigInteger endpoint){
         Range range = new Range(startpoint, endpoint);
         Pair<String, Range> new_pair = new Pair<String, Range>();
@@ -30,12 +46,26 @@ public class KVMetadata {
         metadata.add(new_pair);
     }
 
-    public void addServer(String server, String port, BigInteger startpoint, BigInteger endpoint){
+    public void addServer(String server, String port){
         String serverAddPort = server + ":" + port;
-        Range range = new Range(startpoint, endpoint);
-        Pair<String, Range> new_pair = new Pair<String, Range>();
-        new_pair.setValue(serverAddPort, range);
-        metadata.add(new_pair);
+        BigInteger hash = getHash(serverAddPort);
+        //DON'T WANT TO IMPLEMENT THIS YET UNTIL WE'RE IMPLEMENTING REBALANCING
+        //PROBABLY WANT TO PASS SOME THINGS BY REFERENCE SO WE CAN RETURN OTHER THINGS FROM THIS METHOD
+    }
+
+    /**
+     * Finds server associated with given key
+     * @param key
+     * @return <ip>:<port> String
+     */
+    public String findServer(String key){
+        BigInteger hash = getHash(key);
+        for (int i = 0; i < metadata.size(); i++)
+        {
+            if(metadata.get(i).p2.inRange(hash))
+                return metadata.get(i).p1;
+        }
+        return null;
     }
 
     public String toString() {
@@ -49,19 +79,4 @@ public class KVMetadata {
         return returned_string;
     }
 
-    public KVMetadata toMetadata(String value){
-        KVMetadata metadata = new KVMetadata();
-
-        String[] tokens = value.split(",");
-
-        for(int i = 0; i < tokens.length; i++)
-        {
-            String[] vals = tokens[i].split(" ");
-            BigInteger start = new BigInteger(vals[1], 16);
-            BigInteger end = new BigInteger(vals[2], 16);
-            metadata.addServer(vals[0], start, end);
-        }
-
-        return metadata;
-    }
 }
