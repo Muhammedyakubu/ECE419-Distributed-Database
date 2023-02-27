@@ -55,12 +55,33 @@ public class KVMetadata implements IKVMetadata{
         metadata.add(new_pair);
     }
 
-    public void addServer(String server, String port){
-        String serverAddPort = server + ":" + port;
+    /**
+     * adds a new server to the metadata and returns the new server's
+     * keyrange and its successor's address info
+     * This function will also have to deal with when the new server is the
+     * first server, in which case it will return null for the successor's
+     * address info
+     *
+     * @param serverAddress the address of the server
+     * @param port          the port the server is listening on
+     * @return a pair containing the new server's keyrange and its successor
+     */
+    public Pair<Range, String> addServer(String serverAddress, int port){
+        String serverAddPort = serverAddress + ":" + port;
         BigInteger hash = getHash(serverAddPort);
         //DON'T WANT TO IMPLEMENT THIS YET UNTIL WE'RE IMPLEMENTING REBALANCING
         //PROBABLY WANT TO PASS SOME THINGS BY REFERENCE SO WE CAN RETURN OTHER THINGS FROM THIS METHOD
+        return null;
     }
+
+    /**
+     * removes a server from the metadata and returns the successor's
+     * keyrange and address info
+     *
+     * @param serverAddress the address of the server
+     * @param port          the port the server is listening on
+     * @return a pair containing the removed server's successor's <addr>:<port> and the successor's keyrange
+     */
 
     public String findServer(String key){
         BigInteger hash = getHash(key);

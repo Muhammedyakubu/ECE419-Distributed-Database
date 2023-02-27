@@ -1,8 +1,10 @@
 package app_kvECS;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Collection;
@@ -13,7 +15,13 @@ import ecs.IECSNode;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import shared.MD5;
+import shared.Range;
+import shared.messages.IKVMessage;
+import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
+import shared.comms.CommModule;
+import shared.messages.Pair;
 
 public class ECSClient implements IECSClient {
     public static Logger logger = Logger.getLogger(ECSClient.class);
@@ -27,11 +35,11 @@ public class ECSClient implements IECSClient {
     /**
      * Initialize the ECSClient with a given address and port
      * @param address the address of the ecs server
-     * @param port the port where the ecs server is listening for server connections
+     * @param port the port where the ecs server will listen for server connections
      * @throws UnknownHostException
      */
     public ECSClient(String address, int port) throws UnknownHostException {
-        this.address = InetAddress.getByName(address);
+        this.address = (address == null) ? null : InetAddress.getByName(address);
         this.port = port;
         this.running = false;
         this.metadata = new KVMetadata();
@@ -39,10 +47,14 @@ public class ECSClient implements IECSClient {
 
     @Override
     public boolean start() {
-        // TODO
+
         return false;
     }
 
+    /**
+     * Initialize the ECSClient's server socket
+     * @return true if the socket was initialized successfully, false otherwise
+     */
     public boolean initialize() {
         logger.info("Initializing ECS ...");
         try {
@@ -64,8 +76,52 @@ public class ECSClient implements IECSClient {
         }
     }
 
+    /**
+     * Start the ECSClient's server socket and listen for incoming connections
+     */
     public void run() {
+        running = initialize();
+
+        if (ecsSocket != null) {
+            while (running) {
+                try {
+                    Socket kvSeverSocket = ecsSocket.accept();
+                    initalizeECSNode(kvSeverSocket);
+                } catch (IOException e) {
+                    logger.error("Error! " +
+                            "Unable to establish connection. \n", e);
+                }
+            }
+        }
+    }
+
+    public void initalizeECSNode(Socket socket) {
+        try {
+            KVMessage addressMessage = receiveMessage(socket);
+            if (addressMessage.getStatus() != KVMessage.StatusType.CONNECT_ECS) {
+                logger.error("Error! Received unexpected message from KVServer");
+                return;
+            }
+            int serverPort = Integer.parseInt(addressMessage.getKey());
+            String serverAddress = addressMessage.getValue();
+
+            ECSNode node = new ECSNode(socket, serverAddress, serverPort, null);
+            Pair<Range, String> rangeAndSuccessor = metadata.addServer(node.getNodeHost(), node.getNodePort());
+            BigInteger hash = MD5.getHash(node.getNodeName());
+            this.kvNodes.put(node.getNodeName(), node);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public boolean rebalance(ECSNode sender, ECSNode receiver) {
         // TODO
+        return false;
+    }
+
+    public KVMessage receiveMessage(Socket socket) throws IOException {
+        return CommModule.receiveMessage(socket);
     }
 
     @Override
