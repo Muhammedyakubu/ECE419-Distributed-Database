@@ -15,10 +15,10 @@ public class KVMetadata {
 
     List<Pair<String, Range>> metadata = new Vector<Pair<String, Range>>(1);
 
-    KVMetadata(){
+    public KVMetadata(){
 
     }
-    KVMetadata(int port, String address, Range range){
+    public KVMetadata(int port, String address, Range range){
         String key = address + ":" + String.valueOf(port);
         Pair<String, Range> new_pair = new Pair<String, Range>();
         new_pair.setValue(key, range);
@@ -26,7 +26,6 @@ public class KVMetadata {
     }
 
     public KVMetadata(String value){
-        KVMetadata metadata = new KVMetadata();
 
         String[] tokens = value.split(",");
 
@@ -35,7 +34,7 @@ public class KVMetadata {
             String[] vals = tokens[i].split(" ");
             BigInteger start = new BigInteger(vals[1], 16);
             BigInteger end = new BigInteger(vals[2], 16);
-            metadata.addServer(vals[0], start, end);
+            this.addServer(vals[0], start, end);
         }
     }
 
@@ -70,9 +69,9 @@ public class KVMetadata {
 
     public String toString() {
         String returned_string = "";
-        for (int i = 0; i < this.metadata.size(); i++)
+        for (int i = 0; i < metadata.size(); i++)
         {
-            returned_string = metadata.get(i).p1 + " " + metadata.get(i).p2.start.toString(16)
+            returned_string = returned_string + metadata.get(i).p1 + " " + metadata.get(i).p2.start.toString(16)
                     + " " + metadata.get(i).p2.end.toString(16) + ",";
         }
 
