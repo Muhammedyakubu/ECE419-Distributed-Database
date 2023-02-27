@@ -2,11 +2,13 @@ package app_kvServer;
 
 import org.apache.log4j.Logger;
 import shared.comms.CommModule;
+import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.Socket;
 
 
@@ -91,6 +93,14 @@ public class ClientConnection implements Runnable {
 	 * @return the response to be sent to the client
 	 */
 	public KVMessage handleClientMessage(KVMessage msg) {
+		if (kvServer.currStatus == KVServer.serverStatus.SERVER_STOPPED) {
+			msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
+			return msg;
+		}
+		if (!kvServer.keyRange.inRange(new BigInteger(1, msg.getKey().getBytes()))) {
+			msg.setStatus(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
+			return msg;
+		}
 		switch (msg.getStatus()) {
 			case GET:
 				try {
@@ -106,6 +116,11 @@ public class ClientConnection implements Runnable {
 				}
 				break;
 			case PUT:
+				if (kvServer.currStatus == KVServer.serverStatus.SERVER_WRITE_LOCK){
+					msg.setStatus(IKVMessage.StatusType.SERVER_WRITE_LOCK);
+					return msg;
+				}
+
 				boolean isUpdate = false;
 				try {
 					// convert all forms of null to null

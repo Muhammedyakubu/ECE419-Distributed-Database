@@ -38,8 +38,17 @@ public class Range {
      * @return
      */
     public boolean inRange(BigInteger hash){
-        if (hash.compareTo(end) <= 0  && hash.compareTo(start) == 1) return true;
 
+        //handle corner case when keyrange wraps around zero
+        if (start.compareTo(end) == 1) {
+            if (hash.compareTo(BigInteger.ZERO) >=0 && hash.compareTo(end) <= 0) return true;
+            else if (hash.compareTo(start) == 1) return true;
+            else return false;
+        }
+
+
+
+        if (hash.compareTo(end) <= 0  && hash.compareTo(start) == 1) return true;
         else return false;
 
     }
