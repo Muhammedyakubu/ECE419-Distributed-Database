@@ -8,7 +8,7 @@ import java.util.Vector;
 
 import static shared.MD5.getHash;
 
-public class KVMetadata {
+public class KVMetadata implements IKVMetadata{
 
     //LIST ORDERED BY SERVER/PORT HASHES
     //WHEN INSERTING, SEARCH FOR SERVER WITH KEY RANGE AND UPDATE THOSE TWO RANGES
