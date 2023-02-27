@@ -261,7 +261,8 @@ public class KVServer implements IKVServer {
 			}
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
-			ecsSocket = new Socket(ecsAddress,ecsPort);
+			if (port == -1)
+				ecsSocket = new Socket(ecsAddress,ecsPort);
 			return true;
 
 		} catch (IOException e) {
@@ -341,7 +342,7 @@ public class KVServer implements IKVServer {
 			int port_num = -1;
 			int ecs_port = -1;
 			boolean port_present = false;
-			boolean ecs_present = false;
+			//boolean ecs_present = false;
 			String address = "localhost";
 			String ecsAddress = "localhost";
 			String dataPath = ""; //DEFAULT HANDLED IN KVDATABASE
@@ -374,7 +375,7 @@ public class KVServer implements IKVServer {
 						System.out.println("Port number must fall between 0 and 65535, inclusive.");
 						System.exit(0);
 					}
-					ecs_present = true;
+					//ecs_present = true;
 				}
 
 				//ADDRESS CHECK
@@ -405,12 +406,12 @@ public class KVServer implements IKVServer {
 				return("No port, invalid");
 				//System.exit(0);
 			}
-			if (ecs_present == false){
+			/*if (ecs_present == false){
 				System.out.println("Error! No ECS bootstrap found!");
 				System.out.println("Usage: java -jar m2-server.jar " +
 						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
 				return("No ECS bootstrap, invalid");
-			}
+			}*/
 
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
 			InetAddress bind_address = InetAddress.getByName(address);
