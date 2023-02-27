@@ -18,6 +18,9 @@ public interface IKVMessage {
 		SERVER_STOPPED,/* Put/Get - Server not configured yet*/
 		SERVER_WRITE_LOCK, /*Put - Server rebalancing keys, only gets can be made */
 	}
+	public enum serverStatus {SERVER_STOPPED,
+		ACTIVE,
+		SERVER_WRITE_LOCK}
 
 	/**
 	 * @return the key that is associated with this message, 

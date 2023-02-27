@@ -9,6 +9,7 @@ import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import shared.Range;
+import shared.messages.KVMessage;
 
 import java.io.IOException;
 import java.net.*;
@@ -26,7 +27,7 @@ public class KVServer implements IKVServer {
 	public static Logger logger = Logger.getLogger(KVServer.class);
 	private int port;
 	private InetAddress bind_address;
-	private InetAddress ecs_Address;
+	private InetAddress ecsAddress;
 	private int ecsPort;
 	private int cacheSize;
 	private CacheStrategy strategy;
@@ -35,8 +36,12 @@ public class KVServer implements IKVServer {
 	private String dataPath;
 	private boolean running;
 	private ServerSocket serverSocket;
+	private Socket ecsSocket;
 
-	private Range keyRange;
+	public Range keyRange;
+
+
+	public KVMessage.serverStatus currStatus;
 
 	
 	/**
@@ -67,8 +72,9 @@ public class KVServer implements IKVServer {
 		this.dataPath = dataPath;
 		this.bind_address = bind_address;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
-		this.ecs_Address = ecsAddr;
+		this.ecsAddress = ecsAddr;
 		this.ecsPort = ecs_port;
+		this.currStatus = KVMessage.serverStatus.SERVER_STOPPED;
 
 		// handle invalid cacheSize and strategy
 		if (cacheSize <= 0 || strategy == null) {
@@ -255,6 +261,7 @@ public class KVServer implements IKVServer {
 			}
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
+			ecsSocket = new Socket(ecsAddress,ecsPort);
 			return true;
 
 		} catch (IOException e) {
@@ -267,6 +274,14 @@ public class KVServer implements IKVServer {
 			}
 			return false;
 		}
+	}
+
+	/**
+	 * Configures the server with ECS
+	 * @return
+	 */
+	private boolean configureECS() {
+		return false;
 	}
 
 	/**

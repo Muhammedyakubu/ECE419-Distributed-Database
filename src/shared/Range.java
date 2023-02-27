@@ -46,8 +46,6 @@ public class Range {
             else return false;
         }
 
-
-
         if (hash.compareTo(end) <= 0  && hash.compareTo(start) == 1) return true;
         else return false;
 
