@@ -10,6 +10,7 @@ import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.lang.*;
 import java.io.*;
@@ -27,7 +28,6 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private boolean stop = false;
     private String serverAddress;
     private int serverPort;
-
     private KVMetadata metadata;
 
     /**
@@ -104,6 +104,17 @@ public class KVClient implements IKVClient, ClientSocketListener {
                             msg.append(" ");
                         }
                     }
+                    String currServerAddPort = serverAddress + ":" + serverPort;
+                    String newServerAddPort = metadata.findServer(key);
+
+                    if(currServerAddPort.compareTo(newServerAddPort) != 0)
+                    {
+                        disconnect();
+                        String[] IPPort = newServerAddPort.split(":");
+                        serverAddress = IPPort[0];
+                        serverPort = Integer.parseInt(IPPort[1]);
+                        newConnection(serverAddress, serverPort);
+                    }
 
                     try {
                         KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
@@ -137,7 +148,19 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 //if there is a connected client
                 if(kvstore != null){
                     String key = tokens[1];
-                    //RETURNS THE RESPONSE HERE, HANDLE IT
+
+                    String currServerAddPort = serverAddress + ":" + serverPort;
+                    String newServerAddPort = metadata.findServer(key);
+
+                    if(currServerAddPort.compareTo(newServerAddPort) != 0)
+                    {
+                        disconnect();
+                        String[] IPPort = newServerAddPort.split(":");
+                        serverAddress = IPPort[0];
+                        serverPort = Integer.parseInt(IPPort[1]);
+                        newConnection(serverAddress, serverPort);
+                    }
+
                     try {
                         KVMessage response = (KVMessage) kvstore.get(key);
                         handleNewMessage(response);
@@ -182,7 +205,8 @@ public class KVClient implements IKVClient, ClientSocketListener {
             } else {
                 printError("Invalid number of parameters!");
             }
-
+        } else if(tokens[0].equals("keyrange")) {
+            System.out.println("NEED TO IMPLEMENT THIS FUNCTIONALITY");
         } else if(tokens[0].equals("help")) {
             printHelpText();
         } else {
@@ -339,12 +363,13 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
     public void handleNotResponsible(String cmdLine, String md){
         String[] tokens = cmdLine.split("\\s+");
-        KVMetadata metadata = new KVMetadata(md); //DEFINE THIS
+        metadata = null;
+        metadata = new KVMetadata(md);
         String serverAddPort = metadata.findServer(tokens[1]);
         String[] IPPort = serverAddPort.split(":");
         disconnect();
-        serverAddress = IPPort[1];
-        serverPort = Integer.parseInt(IPPort[2]);
+        serverAddress = IPPort[0];
+        serverPort = Integer.parseInt(IPPort[1]);
         try {
             newConnection(serverAddress, serverPort);
             handleCommand(cmdLine);
