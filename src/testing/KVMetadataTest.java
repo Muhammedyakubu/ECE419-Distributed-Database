@@ -16,14 +16,14 @@ public class KVMetadataTest extends TestCase{
     KVMetadata md = new KVMetadata(5000, "localhost", range);
     @Test
     public void testKVMetadataToString(){
-        String expected = "localhost:5000 0 5,";
+        String expected = "0,5,localhost:5000;";
         String actual = md.toString();
         assertEquals(expected, actual);
     }
     @Test
     public void testKVMetadataAddServerWStartEndpoint(){
         md.addServer("localhost:5001", BigInteger.valueOf(6), BigInteger.valueOf(10));
-        String expected = "localhost:5000 0 5,localhost:5001 6 a,";
+        String expected = "0,5,localhost:5000;6,a,localhost:5001;";
         String actual = md.toString();
         assertEquals(expected, actual);
     }

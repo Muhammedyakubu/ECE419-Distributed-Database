@@ -27,14 +27,14 @@ public class KVMetadata {
 
     public KVMetadata(String value){
 
-        String[] tokens = value.split(",");
+        String[] tokens = value.split(";");
 
         for(int i = 0; i < tokens.length; i++)
         {
-            String[] vals = tokens[i].split(" ");
-            BigInteger start = new BigInteger(vals[1], 16);
-            BigInteger end = new BigInteger(vals[2], 16);
-            this.addServer(vals[0], start, end);
+            String[] vals = tokens[i].split(",");
+            BigInteger start = new BigInteger(vals[0], 16);
+            BigInteger end = new BigInteger(vals[1], 16);
+            this.addServer(vals[2], start, end);
         }
     }
 
@@ -71,8 +71,7 @@ public class KVMetadata {
         String returned_string = "";
         for (int i = 0; i < metadata.size(); i++)
         {
-            returned_string = returned_string + metadata.get(i).p1 + " " + metadata.get(i).p2.start.toString(16)
-                    + " " + metadata.get(i).p2.end.toString(16) + ",";
+            returned_string = returned_string + metadata.get(i).p2.start.toString(16) + "," + metadata.get(i).p2.end.toString(16) + "," + metadata.get(i).p1 + ";";
         }
 
         return returned_string;

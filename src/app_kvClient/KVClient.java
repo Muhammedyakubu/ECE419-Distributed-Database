@@ -205,8 +205,29 @@ public class KVClient implements IKVClient, ClientSocketListener {
             } else {
                 printError("Invalid number of parameters!");
             }
+            /*
         } else if(tokens[0].equals("keyrange")) {
             System.out.println("NEED TO IMPLEMENT THIS FUNCTIONALITY");
+            //if there is a connected client
+            if(kvstore != null){
+
+                try {
+                    KVMessage response = (KVMessage) kvstore.getKeyRange(); //NEED TO IMPLEMENT THIS
+                    handleNewMessage(response);
+                    //SAVE RESPONSE TO METADATA
+                    return response.getStatus().toString();
+                } catch(IOException e){
+                    logger.info("Connection to server was lost. Attempting to reconnect...");
+                    kvstore.connect();
+                    KVMessage response = (KVMessage) kvstore.getKeyRange(); //NEED TO IMPLEMENT THIS
+                    handleNewMessage(response);
+                    //SAVE RESPONSE TO METADATA
+                    return response.getStatus().toString();
+                }
+
+            } else {
+                printError("Not connected!");
+            }*/
         } else if(tokens[0].equals("help")) {
             printHelpText();
         } else {
