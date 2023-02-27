@@ -2,21 +2,70 @@ package app_kvECS;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Collection;
 
 import app_kvServer.KVServer;
+import ecs.ECSNode;
 import ecs.IECSNode;
 import logger.LogSetup;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import shared.messages.KVMetadata;
 
 public class ECSClient implements IECSClient {
+    public static Logger logger = Logger.getLogger(ECSClient.class);
+    private int port;
+    private InetAddress address;
+    private boolean running;
+    private ServerSocket ecsSocket;
+    private KVMetadata metadata;
+    private Map<String, ECSNode> kvNodes;
+
+    /**
+     * Initialize the ECSClient with a given address and port
+     * @param address the address of the ecs server
+     * @param port the port where the ecs server is listening for server connections
+     * @throws UnknownHostException
+     */
+    public ECSClient(String address, int port) throws UnknownHostException {
+        this.address = InetAddress.getByName(address);
+        this.port = port;
+        this.running = false;
+        this.metadata = new KVMetadata();
+    }
 
     @Override
     public boolean start() {
         // TODO
         return false;
+    }
+
+    public boolean initialize() {
+        logger.info("Initializing ECS ...");
+        try {
+            if (this.address.equals(null))
+                this.ecsSocket = new ServerSocket(port);
+            else
+                this.ecsSocket = new ServerSocket(port, 10, address);
+            logger.info("ECS listening on port: " + port);
+            return true;
+        } catch (IOException e) {
+            logger.error("Error! Cannot open ECS socket:");
+            if(e instanceof java.net.BindException) {
+                logger.error("Port " + port + " is already bound!");
+            }
+            if(e instanceof UnknownHostException){
+                logger.error("Bind address could not be found!");
+            }
+            return false;
+        }
+    }
+
+    public void run() {
+        // TODO
     }
 
     @Override
