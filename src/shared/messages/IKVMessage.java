@@ -14,15 +14,29 @@ public interface IKVMessage {
 		DELETE_ERROR, 	/* Delete - request successful */
 		FAILED,			/* message format unknown, message size exceeded, etc. */
 
-		//Client-Server
-		SERVER_NOT_RESPONSIBLE,/* Put/Get - Key was not found in connected server*/
+		//Client-Server Status
+		SERVER_NOT_RESPONSIBLE,	/* Put/Get - Key was not found in connected server*/
 
-		SERVER_STOPPED,/* Put/Get - Server not configured yet*/
+		SERVER_STOPPED,	/* Put/Get - Server not configured yet*/
 		SERVER_WRITE_LOCK, /*Put - Server rebalancing keys, only gets can be made */
 
 		//ECS-Server Status Messages
+		CONNECT_ECS, 	/*Server sends to ECS to configure*/
+		UPDATE_METADATA, /*ECS sends to servers to update their stored metadata*/
+		SET_STATE, 		/*ECS sends to server to update its serverStatus*/
+		REBALANCE, 		/*ECS sends to successor to initiate rebalance*/
+		REBALANCE_SUCCESS, /*Successor sends to ECS to confirm success*/
+		REBALANCE_ERROR, /*Rebalance not successful,*/
+		SHUTTING_DOWN, 	/*Server sends upon its own shutdown*/
+
+		//Keyrange commands
+		KEYRANGE,		/* Request keyrange of server */
+		KEYRANGE_SUCCESS, /* Successful keyrange return */
+
+
 	}
-	public enum serverStatus {SERVER_STOPPED,
+	public enum serverStatus {
+	SERVER_STOPPED,
 		ACTIVE,
 		SERVER_WRITE_LOCK}
 
