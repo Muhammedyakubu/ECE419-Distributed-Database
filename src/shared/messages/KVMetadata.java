@@ -8,16 +8,23 @@ import java.util.Vector;
 
 import static shared.MD5.getHash;
 
-public class KVMetadata {
+public class KVMetadata implements IKVMetadata{
 
     //LIST ORDERED BY SERVER/PORT HASHES
     //WHEN INSERTING, SEARCH FOR SERVER WITH KEY RANGE AND UPDATE THOSE TWO RANGES
 
     List<Pair<String, Range>> metadata = new Vector<Pair<String, Range>>(1);
 
+    /**
+     * Default constructor
+     */
     public KVMetadata(){
 
     }
+
+    /**
+     * Constructor with initial (single) metadata value
+     */
     public KVMetadata(int port, String address, Range range){
         String key = address + ":" + String.valueOf(port);
         Pair<String, Range> new_pair = new Pair<String, Range>();
@@ -25,6 +32,9 @@ public class KVMetadata {
         metadata.add(new_pair);
     }
 
+    /**
+     * Constructor with string for use of String to Metadata conversion
+     */
     public KVMetadata(String value){
 
         String[] tokens = value.split(";");
@@ -52,11 +62,6 @@ public class KVMetadata {
         //PROBABLY WANT TO PASS SOME THINGS BY REFERENCE SO WE CAN RETURN OTHER THINGS FROM THIS METHOD
     }
 
-    /**
-     * Finds server associated with given key
-     * @param key
-     * @return <ip>:<port> String
-     */
     public String findServer(String key){
         BigInteger hash = getHash(key);
         for (int i = 0; i < metadata.size(); i++)
