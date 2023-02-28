@@ -67,10 +67,32 @@ public class KVMetadata implements IKVMetadata{
      * @return a pair containing the new server's keyrange and its successor
      */
     public Pair<Range, String> addServer(String serverAddress, int port){
+
         String serverAddPort = serverAddress + ":" + port;
         BigInteger hash = getHash(serverAddPort);
-        //DON'T WANT TO IMPLEMENT THIS YET UNTIL WE'RE IMPLEMENTING REBALANCING
-        //PROBABLY WANT TO PASS SOME THINGS BY REFERENCE SO WE CAN RETURN OTHER THINGS FROM THIS METHOD
+        Range range;
+        Pair rangeServer = new Pair();
+
+        //If this is the first server being added...
+        if(metadata.isEmpty()){
+            addServer(serverAddPort, hash, hash);
+            range = new Range(hash, hash);
+            rangeServer.setValue(range, null);
+            return rangeServer;
+        }
+
+        else{
+            for (int i = 0; i < metadata.size(); i++)
+            {
+                if(metadata.get(i).p2.inRange(hash)) {
+                    range = new Range(metadata.get(i).p2.start, hash);
+                    metadata.get(i).p2.updateStart(hash);
+                    rangeServer.setValue(range, metadata.get(i).p1);
+                    return rangeServer;
+                }
+            }
+        }
+        //Shouldn't get here
         return null;
     }
 

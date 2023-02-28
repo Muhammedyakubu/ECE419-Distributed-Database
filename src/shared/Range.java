@@ -32,6 +32,14 @@ public class Range {
         end = second;
     };
 
+    public void updateStart(BigInteger first){
+        start = first;
+    };
+
+    public void updateEnd(BigInteger second){
+        end = second;
+    };
+
     /**
      * Tests if a hash value is in the key range of a server
      * @param hash
@@ -40,7 +48,8 @@ public class Range {
     public boolean inRange(BigInteger hash){
 
         //handle corner case when keyrange wraps around zero
-        if (start.compareTo(end) == 1) {
+        //start and end are equal if there is one server, hence >= 0
+        if (start.compareTo(end) >= 0) {
             if (hash.compareTo(BigInteger.ZERO) >=0 && hash.compareTo(end) <= 0) return true;
             else if (hash.compareTo(start) == 1) return true;
             else return false;
