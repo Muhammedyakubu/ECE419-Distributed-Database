@@ -76,7 +76,7 @@ public class KVMetadata implements IKVMetadata{
 
         //If this is the first server being added...
         if(metadata.isEmpty()){
-            addServer(serverAddPort, hash, hash);
+            addServer(serverAddPort, start, hash);
             range = new Range(start, hash);
             rangeServer.setValue(range, null);
             return rangeServer;
