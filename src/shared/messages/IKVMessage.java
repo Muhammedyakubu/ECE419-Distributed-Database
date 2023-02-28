@@ -23,7 +23,7 @@ public interface IKVMessage {
 		//ECS-Server Status Messages
 		CONNECT_ECS, 	/*Server sends to ECS to configure*/
 		UPDATE_METADATA, /*ECS sends to servers to update their stored metadata*/
-		SET_STATE, 		/*ECS sends to server to update its serverStatus*/
+		SET_STATE, 		/*ECS sends to server to update its ServerState*/
 		REBALANCE, 		/*ECS sends to successor to initiate rebalance*/
 		REBALANCE_SUCCESS, /*Successor sends to ECS to confirm success*/
 		REBALANCE_ERROR, /*Rebalance not successful,*/
@@ -35,10 +35,11 @@ public interface IKVMessage {
 
 
 	}
-	public enum serverStatus {
-	SERVER_STOPPED,
+	public enum ServerState {
+		SERVER_STOPPED,
 		ACTIVE,
-		SERVER_WRITE_LOCK}
+		SERVER_WRITE_LOCK
+	}
 
 	/**
 	 * @return the key that is associated with this message, 
