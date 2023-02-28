@@ -47,15 +47,14 @@ public class Range {
      */
     public boolean inRange(BigInteger hash){
 
-        //handle corner case when keyrange wraps around zero
-        //start and end are equal if there is one server, hence >= 0
-        if (start.compareTo(end) >= 0) {
+        //handle corner case when keyrange wraps around zero>=
+        if (start.compareTo(end) > 1) {
             if (hash.compareTo(BigInteger.ZERO) >=0 && hash.compareTo(end) <= 0) return true;
             else if (hash.compareTo(start) == 1) return true;
             else return false;
         }
 
-        if (hash.compareTo(end) <= 0  && hash.compareTo(start) == 1) return true;
+        if (hash.compareTo(end) <= 0  && hash.compareTo(start) >= 0) return true;
         else return false;
 
     }
