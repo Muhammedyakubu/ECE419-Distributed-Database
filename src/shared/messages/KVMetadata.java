@@ -70,13 +70,14 @@ public class KVMetadata implements IKVMetadata{
 
         String serverAddPort = serverAddress + ":" + port;
         BigInteger hash = getHash(serverAddPort);
+        BigInteger start = hash.add(BigInteger.ONE);
         Range range;
         Pair rangeServer = new Pair();
 
         //If this is the first server being added...
         if(metadata.isEmpty()){
             addServer(serverAddPort, hash, hash);
-            range = new Range(hash, hash);
+            range = new Range(start, hash);
             rangeServer.setValue(range, null);
             return rangeServer;
         }
@@ -86,7 +87,7 @@ public class KVMetadata implements IKVMetadata{
             {
                 if(metadata.get(i).p2.inRange(hash)) {
                     range = new Range(metadata.get(i).p2.start, hash);
-                    metadata.get(i).p2.updateStart(hash);
+                    metadata.get(i).p2.updateStart(start);
                     rangeServer.setValue(range, metadata.get(i).p1);
                     return rangeServer;
                 }
