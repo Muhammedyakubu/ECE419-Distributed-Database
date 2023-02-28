@@ -12,6 +12,16 @@ public class Pair<T, t> {
             this.p1 = a;
             this.p2 = b;
         }
+
+        public T getFirst()
+        {
+            return p1;
+        }
+
+        public t getSecond()
+        {
+            return p2;
+        }
         Pair getValue()
         {
             return this;

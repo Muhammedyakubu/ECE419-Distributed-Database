@@ -17,7 +17,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import shared.MD5;
 import shared.Range;
-import shared.messages.IKVMessage;
+import shared.messages.IKVMessage.ServerState;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
 import shared.comms.CommModule;
@@ -86,7 +86,7 @@ public class ECSClient implements IECSClient {
             while (running) {
                 try {
                     Socket kvSeverSocket = ecsSocket.accept();
-                    initalizeECSNode(kvSeverSocket);
+                    initializeECSNode(kvSeverSocket);
                 } catch (IOException e) {
                     logger.error("Error! " +
                             "Unable to establish connection. \n", e);
@@ -95,9 +95,9 @@ public class ECSClient implements IECSClient {
         }
     }
 
-    public void initalizeECSNode(Socket socket) {
+    public void initializeECSNode(Socket socket) {
         try {
-            KVMessage addressMessage = receiveMessage(socket);
+            KVMessage addressMessage = CommModule.receiveMessage(socket);
             if (addressMessage.getStatus() != KVMessage.StatusType.CONNECT_ECS) {
                 logger.error("Error! Received unexpected message from KVServer");
                 return;
@@ -105,23 +105,60 @@ public class ECSClient implements IECSClient {
             int serverPort = Integer.parseInt(addressMessage.getKey());
             String serverAddress = addressMessage.getValue();
 
-            ECSNode node = new ECSNode(socket, serverAddress, serverPort, null);
-            Pair<Range, String> rangeAndSuccessor = metadata.addServer(node.getNodeHost(), node.getNodePort());
-            BigInteger hash = MD5.getHash(node.getNodeName());
-            this.kvNodes.put(node.getNodeName(), node);
+            // recalculate metadata
+            Pair<Range, String> rangeAndSuccessor =
+                    metadata.addServer(serverAddress, serverPort);
+            ECSNode node = new ECSNode(socket, serverAddress,
+                            serverPort, rangeAndSuccessor.getFirst());
+
+            // two checks to see if this is the first node
+            // if it is, send the metadata to the node
+            if (kvNodes.isEmpty() && rangeAndSuccessor.getSecond() == null) {
+                node.sendMetadata(metadata);
+            }
+            // if it's not the first node, rebalance the metadata
+            else {
+                boolean success = false;
+                while (!success) {
+                    success = rebalance(kvNodes.get(rangeAndSuccessor.getSecond()), node);
+                }
+            }
+            kvNodes.put(node.getNodeName(), node);
+
+            // start listening for messages from the server
+            new Thread(node).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public boolean rebalance(ECSNode sender, ECSNode receiver) {
-        // TODO
-        return false;
-    }
+        receiver.sendMetadata(metadata);
+        /**
+         * Initiate a rebalance by sending a KVMessage containing with the receiver's name and range
+         * in the value field. It has the format "Address:Port;Range"
+         */
+        String payload = receiver + ";" + receiver.getNodeHashRange().toString();
+        sender.sendMessage(new KVMessage(KVMessage.StatusType.REBALANCE, null, payload));
+        sender.setState(ServerState.SERVER_WRITE_LOCK);
 
-    public KVMessage receiveMessage(Socket socket) throws IOException {
-        return CommModule.receiveMessage(socket);
+        // wait for a rebalance success message.
+        KVMessage rebalanceAck = sender.receiveMessage();
+
+        if (rebalanceAck.getStatus() != KVMessage.StatusType.REBALANCE_SUCCESS) {
+            logger.error("Error! Received unexpected message from KVServer");
+            return false;
+        }
+
+        // update metadata for all servers
+        for (Map.Entry<String, ECSNode> entry : kvNodes.entrySet()) {
+            entry.getValue().sendMetadata(metadata);
+        }
+
+        // release write lock
+        sender.setState(ServerState.ACTIVE);
+
+        return true;
     }
 
     @Override

@@ -42,7 +42,7 @@ public class KVServer implements IKVServer {
 	private KVMetadata md;
 
 
-	public KVMessage.serverStatus currStatus;
+	public KVMessage.ServerState currStatus;
 
 	
 	/**
@@ -75,7 +75,7 @@ public class KVServer implements IKVServer {
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.ecsAddress = ecsAddr;
 		this.ecsPort = ecs_port;
-		this.currStatus = KVMessage.serverStatus.SERVER_STOPPED;
+		this.currStatus = KVMessage.ServerState.SERVER_STOPPED;
 		this.md = new KVMetadata("a,b,default:default;");
 
 		// handle invalid cacheSize and strategy
