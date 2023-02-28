@@ -101,6 +101,13 @@ public class KVStore implements KVCommInterface {
 		return response;
 	}
 
+	public IKVMessage getKeyRange() throws Exception {
+		KVMessage msg = new KVMessage(KVMessage.StatusType.KEYRANGE, null, null);
+		CommModule.sendMessage(msg, clientSocket); // this should throw an exception if the connection is closed... right?
+		KVMessage response = CommModule.receiveMessage(clientSocket);
+		return response;
+	}
+
 	public void addListener(ClientSocketListener listener){
 		listeners.add(listener);
 	}

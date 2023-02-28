@@ -263,6 +263,22 @@ public class InteractionTest extends TestCase{
 		Assert.assertTrue(ex == null && response.equals(StatusType.GET_SUCCESS.toString()));
 	}
 
+	@Test
+	public void testKeyrangeRequest() {
+		String command = "keyrange";
+		String response = null;
+		Exception ex = null;
+		client_app = new KVClient();
+		//NEED TO FIX SERVER_STOPPED STATUS
+		try {
+			client_app.kvstore = this.kvClient;
+			response = client_app.handleCommand(command);
+		} catch (Exception e) {
+			ex = e;
+		}
+		Assert.assertTrue(ex == null && response.equals(StatusType.GET_SUCCESS.toString() + " a,b,default:default;"));
+	}
+
 	/* Our tests start here */
 
 //	@Test

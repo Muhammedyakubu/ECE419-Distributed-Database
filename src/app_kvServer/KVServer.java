@@ -10,6 +10,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import shared.Range;
 import shared.messages.KVMessage;
+import shared.messages.KVMetadata;
 
 import java.io.IOException;
 import java.net.*;
@@ -37,8 +38,8 @@ public class KVServer implements IKVServer {
 	private boolean running;
 	private ServerSocket serverSocket;
 	private Socket ecsSocket;
-
 	public Range keyRange;
+	private KVMetadata md;
 
 
 	public KVMessage.serverStatus currStatus;
@@ -75,6 +76,7 @@ public class KVServer implements IKVServer {
 		this.ecsAddress = ecsAddr;
 		this.ecsPort = ecs_port;
 		this.currStatus = KVMessage.serverStatus.SERVER_STOPPED;
+		this.md = new KVMetadata("a,b,default:default;");
 
 		// handle invalid cacheSize and strategy
 		if (cacheSize <= 0 || strategy == null) {
@@ -189,6 +191,10 @@ public class KVServer implements IKVServer {
 				cache.putKV(key, value);
 		}
 		return keyInStorage;
+	}
+
+	public KVMetadata getMetadata(){
+		return md;
 	}
 
 	@Override
