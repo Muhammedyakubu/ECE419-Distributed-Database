@@ -1,5 +1,7 @@
 package shared.messages;
 
+import shared.Range;
+
 import java.math.BigInteger;
 
 public interface IKVMetadata {
@@ -11,10 +13,12 @@ public interface IKVMetadata {
 	public void addServer(String serverAddPort, BigInteger startpoint, BigInteger endpoint);
 
 	/**
-	 * Adds server to metadata. Used in ECS. NEED TO IMPLEMENT
-	 * @param server, port
-	 */
-	public void addServer(String server, String port);
+     * Adds server to metadata. Used in ECS. NEED TO IMPLEMENT
+     *
+     * @param server, port
+     * @return
+     */
+	public Pair<Range, String> addServer(String server, int port);
 
 	/**
 	 * Finds server associated with given key

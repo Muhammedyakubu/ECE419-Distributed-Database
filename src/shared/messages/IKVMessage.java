@@ -11,7 +11,7 @@ public interface IKVMessage {
 		PUT_UPDATE, 	/* Put - request successful, i.e. value updated */
 		PUT_ERROR, 		/* Put - request not successful */
 		DELETE_SUCCESS, /* Delete - request successful */
-		DELETE_ERROR, 	/* Delete - request successful */
+		DELETE_ERROR, 	/* Delete - request unsuccessful */
 		FAILED,			/* message format unknown, message size exceeded, etc. */
 
 		//Client-Server Status
