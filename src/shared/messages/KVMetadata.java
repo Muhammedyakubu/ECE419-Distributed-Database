@@ -112,22 +112,25 @@ public class KVMetadata implements IKVMetadata{
 
         for (int i = 0; i < metadata.size(); i++)
         {
-            if (metadata.size() == 1){
+            if (metadata.size() == 1 && metadata.get(0).p1.compareTo(serverAddPort) == 0){
                 metadata.remove(0);
                 return null;
             }
-            //if last elements, wraps
-            if(i == metadata.size()-1){
-                metadata.get(0).p2.updateStart(metadata.get(i).p2.start);
-                rangeServer = metadata.get(0);
+            //if last element, wraps
+            if(metadata.get(i).p1.compareTo(serverAddPort) == 0) {
+                if (i == metadata.size() - 1) {
+                    //return metadata.get(0);
+                    metadata.get(0).p2.updateStart(metadata.get(i).p2.start);
+                    rangeServer = metadata.get(0);
+                    metadata.remove(i);
+                    return rangeServer;
+                }
+                //return metadata.get(0);
+                metadata.get(i + 1).p2.updateStart(metadata.get(i).p2.start);
+                rangeServer = metadata.get(i + 1);
                 metadata.remove(i);
                 return rangeServer;
             }
-
-            metadata.get(i+1).p2.updateStart(metadata.get(i).p2.start);
-            rangeServer = metadata.get(i+1);
-            metadata.remove(i);
-            return rangeServer;
         }
         return null;
     }
