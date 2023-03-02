@@ -3,6 +3,7 @@ package app_kvECS;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Collection;
 
@@ -101,20 +102,23 @@ public class ECSClient implements IECSClient {
     }
 
     public void pollNodes() {
+        ArrayList<ECSNode> lostNodes = new ArrayList<>();
+        ArrayList<ECSNode> dyingNodes = new ArrayList<>();
         for (ECSNode node: kvNodes.values()) {
 
             if (node.getAvailableSocketBytes() <= 2) continue;
 
             KVMessage request = node.receiveMessage();
             if (request == null) {
-                removeLostNode(node);
+                lostNodes.add(node);
                 continue;
             }
 
             // should only receive a shutdown message
             if (request.getStatus() == KVMessage.StatusType.SHUTTING_DOWN) {
-                logger.debug("Received shutdown message from " + node.getNodeName());
-                deleteNode(node);
+                dyingNodes.add(node);
+                logger.debug("Received shutdown message from " + node.getNodeName()
+                                + " adding to dying nodes");
             } else {
                 logger.error("Error! Received unexpected message from KVServer");
                 node.sendMessage(new KVMessage(
@@ -122,6 +126,12 @@ public class ECSClient implements IECSClient {
                         null,
                         "Unexpected message received from KVServer"));
             }
+        }
+        for (ECSNode node: lostNodes) {
+            removeLostNode(node);
+        }
+        for (ECSNode node: dyingNodes) {
+            deleteNode(node);
         }
     }
 
@@ -144,7 +154,7 @@ public class ECSClient implements IECSClient {
         if (successor != null) {
             String successorName = successor.getFirst();
             ECSNode successorNode = kvNodes.get(successorName);
-            rebalance(node, successorNode);
+            rebalance(node, successorNode, true);
         }
         // remove node from kvNodes
         kvNodes.remove(node.getNodeName());
@@ -175,7 +185,7 @@ public class ECSClient implements IECSClient {
                 node.sendMetadata(metadata);
             } else {
                 // if it's not the first node, rebalance the metadata
-                Boolean success = rebalance(kvNodes.get(successor), node);
+                boolean success = rebalance(kvNodes.get(successor), node);
                 if (!success) {
                     logger.error("Error! Rebalance from " + successor + " to " + node.getNodeName() + " failed");
                 }
@@ -187,8 +197,11 @@ public class ECSClient implements IECSClient {
             e.printStackTrace();
         }
     }
-
     public boolean rebalance(ECSNode sender, ECSNode receiver) {
+        return rebalance(sender, receiver, false);
+    }
+
+    public boolean rebalance(ECSNode sender, ECSNode receiver, boolean isShutdown) {
         if (sender == null || receiver == null) {
             logger.error("Error! Sender or receiver is null");
             return false;
@@ -201,8 +214,6 @@ public class ECSClient implements IECSClient {
          */
         String payload = receiver.getMetadataFormat();
         sender.sendMessage(new KVMessage(KVMessage.StatusType.REBALANCE, null, payload));
-        // won't need to do this, server will handle it
-//        sender.setState(ServerState.SERVER_WRITE_LOCK);
 
         // wait for a rebalance success message.
         KVMessage rebalanceAck = sender.receiveMessage();
@@ -218,6 +229,8 @@ public class ECSClient implements IECSClient {
             logger.error("Error! Received unexpected message from KVServer");
             return false;
         }
+
+        if (isShutdown) return true;
 
         // update metadata for all servers
         for (ECSNode node : kvNodes.values()) {

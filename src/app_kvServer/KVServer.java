@@ -49,6 +49,7 @@ public class KVServer implements IKVServer {
 	private List<String> keysToSend = new ArrayList<>();
 	public KVMessage.ServerState currStatus;
 	ECSConnection ecsConnection;
+	Thread ecsThread;
 
 	/**
 	 * Shutdown hook for when the server shutsdown
@@ -58,16 +59,32 @@ public class KVServer implements IKVServer {
 	{
 
 		public void run(){
+			logger.info("Shutting down server...");
 			KVMessage msg = new KVMessage(IKVMessage.StatusType.SHUTTING_DOWN, "null", "null");
 			try {
 				CommModule.sendMessage(msg,ecsSocket);
+				if (getMetadata().metadata.size() == 1) {
+					logger.debug("Last node in cluster, no need to rebalance");
+					System.exit(0);
+				}
+				if (!ecsConnection.isOpen.get()) {
+					logger.debug("ECSConnection thread already closed");
+					System.exit(0);
+				}
+
+				// allow the ECSConnection thread handle the rebalance, but
+				// we need to set isOpen to false so it will stop listening after
+				ecsConnection.isOpen.set(false);
+				logger.debug("Waiting for ECSConnection thread to finish...");
+				ecsThread.join();
+				logger.debug("ECSConnection thread finished");
+				// assume server has most updated metadata
 			} catch (IOException e) {
-				logger.warn("Server Not closed properly", e);
-				System.exit(0);
+				logger.warn("Connection to ECS lost. Server Not closed properly", e);
+			} catch (InterruptedException e) {
+				logger.error("ECSConnection thread interrupted before rebalance completed", e);
 			}
-
 		}
-
 	}
 
 
@@ -128,17 +145,12 @@ public class KVServer implements IKVServer {
 			case LRU:
 				this.cache = new LRUCache(cacheSize);
 				break;
-				/*
-			case LFU:
-				this.cache = new LFUCache(cacheSize);
-				break;
-				 */
 		}
 
 		this.db = new KVdatabase(this, dataPath);
 
 		Runtime current = Runtime.getRuntime();
-//		current.addShutdownHook(new ShutDownHook());
+		current.addShutdownHook(new ShutDownHook());
 
 		if (run) run();
 	}
@@ -290,7 +302,8 @@ public class KVServer implements IKVServer {
 				logger.warn("Server-Server connection lost!", ioe);
 				return -1;
 			}
-			if (response.getStatus() != IKVMessage.StatusType.PUT_SUCCESS){
+			if (response.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
+					response.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
 				logger.warn("Failure in rebalancing keys!");
 				return -1;
 			}
@@ -324,7 +337,8 @@ public class KVServer implements IKVServer {
 		running = initializeServer();
 
 		ecsConnection = new ECSConnection(ecsSocket, this);
-		new Thread(ecsConnection).start();
+		ecsThread = new Thread(ecsConnection);
+		ecsThread.start();
 		// handle client connections & stuff
 		if (serverSocket != null) {
 			while (running) {
@@ -528,7 +542,7 @@ public class KVServer implements IKVServer {
 					logLevel = args[i+1];
 				}
 
-				//Check for testing
+				//Check for testing. Set -t to 1 to enable testing
 				if(args[i].equals("-t")) {
 					// TODO: remove randomize port for testing
 					port_num = getRandomNumberUsingInts(50000, 60000);

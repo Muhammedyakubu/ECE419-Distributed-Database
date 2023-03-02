@@ -9,11 +9,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ECSConnection implements Runnable{
 
     private static Logger logger = Logger.getLogger(ECSConnection.class);
-    public boolean isOpen;
+    public AtomicBoolean isOpen = new AtomicBoolean(false);
 
     private Socket ecs_socket;
     private KVServer kvServer;
@@ -28,7 +29,7 @@ public class ECSConnection implements Runnable{
     public ECSConnection(Socket ecs_socket, KVServer kvServer){
         this.ecs_socket = ecs_socket;
         this.kvServer = kvServer;
-        this.isOpen = true;
+        this.isOpen.set(true);
     }
 
     public void run() {
@@ -39,7 +40,7 @@ public class ECSConnection implements Runnable{
             configureECS();
 
             // Continously
-            while(isOpen) {
+            while(isOpen.get()) {
                 try {
                     KVMessage response = handleECSMessage(CommModule.receiveMessage(ecs_socket));
                     CommModule.sendMessage(response, ecs_socket);
@@ -48,7 +49,7 @@ public class ECSConnection implements Runnable{
                      * network problems */
                 } catch (IOException ioe) {
                     logger.info("Error! Connection to ECS lost!");
-                    isOpen = false;
+                    isOpen.set(false);
                     System.exit(1);
                 }
             }
@@ -60,6 +61,7 @@ public class ECSConnection implements Runnable{
 
             try {
                 if (ecs_socket != null) {
+                    logger.info("Closing ECS-Server connection!");
                     input.close();
                     output.close();
                     ecs_socket.close();
@@ -76,7 +78,7 @@ public class ECSConnection implements Runnable{
             CommModule.sendMessage(init,ecs_socket);
         } catch (IOException ioe) {
             logger.info("Error! Connection lost!");
-            isOpen = false;
+            isOpen.set(false);
         }
     }
 
