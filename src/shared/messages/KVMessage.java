@@ -90,6 +90,12 @@ public class KVMessage implements IKVMessage {
     }
 
     /**
+     * Sets the key of the message (Used by server)
+     * @param key
+     */
+    public void setKey(String key){ this.key = key;}
+
+    /**
      * return a string representation of the message
      * @return String
      */
