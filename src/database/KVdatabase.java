@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -198,6 +199,27 @@ public class KVdatabase implements IKVDatabase{
             return false;
         }
         return true;
+    }
+
+    public String[] getAllKeys() {
+        Path rootPath = Paths.get(keyPath);
+        List<String> res = new ArrayList<>();
+        try {
+            Stream<Path> pathStream = Files.walk(rootPath);
+            List<Path> pathList = pathStream.collect(Collectors.<Path>toList());
+            for (Path curr : pathList) {
+                if (Files.isDirectory(curr)) continue;
+
+                String key = curr.getFileName().toString();
+                String keySub = key.substring(0, 4);
+                if (keySub.equals(".nfs")) continue;
+                res.add(key);
+
+            }
+        } catch (Exception e) {
+            logger.warn("Exception occurred when deleting files: ", e);
+        }
+        return (String[]) res.toArray();
     }
 
 }

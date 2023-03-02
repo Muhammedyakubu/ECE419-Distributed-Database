@@ -18,6 +18,11 @@ public class Range {
         start = first;
         end = second;
     }
+    public Range(String range){
+        String[] values = range.split(":");
+        this.start = new BigInteger(1, values[0].getBytes());
+        this.end = new BigInteger(1, values[1].getBytes());
+    }
     public Range() {
         start = null;
         end = null;
@@ -67,6 +72,7 @@ public class Range {
         String res = start.toString() + ":" + end.toString();
         return res;
     }
+
 
 
 }

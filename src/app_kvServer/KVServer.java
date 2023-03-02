@@ -8,13 +8,17 @@ import database.KVdatabase;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import shared.MD5;
 import shared.Range;
+import shared.comms.CommModule;
 import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -41,10 +45,23 @@ public class KVServer implements IKVServer {
 	private Socket ecsSocket;
 	public Range keyRange;
 	private KVMetadata kvMetadata;
+	private List<String> keysToSend = new ArrayList<>();
 	public KVMessage.ServerState currStatus;
-	private ECSConnection ecsConnection;
 
-	
+	/**
+	 * Shutdown hook for when the server shutsdown
+	 *
+	 */
+	public static class ShutDownHook extends Thread
+	{
+		public void run(){
+			KVMessage msg = new KVMessage(IKVMessage.StatusType.SHUTTING_DOWN, "null", "null");
+			//CommModule.sendMessage(msg,ecsSocket);
+		}
+
+	}
+
+
 	/**
 	 * Start KV Server at given port
 	 * @param port given port for storage server to operate
@@ -219,7 +236,67 @@ public class KVServer implements IKVServer {
 
 	public void updateMetadata(String metadata){
 		this.kvMetadata = new KVMetadata(metadata);
-		//TODO NEED TO UPDATE INTERNAL KEYRANGE HERE
+
+		//TODO NEED TO UPDATE INTERNAL KEYRANGE HERE this.getRange
+
+	}
+	public void setState(IKVMessage.ServerState state) {
+		this.currStatus = state;
+	}
+	public boolean rebalance(String port, String address, String range){
+		this.currStatus = IKVMessage.ServerState.SERVER_WRITE_LOCK;
+
+		//Populate keys to send
+		buildKeysToSend(range);
+		Socket receiver;
+		//send keys to new server
+		try {
+			receiver = new Socket(address, Integer.parseInt(port));
+		}
+		catch(IOException ioe){
+			logger.warn("Server-Server connection lost!", ioe);
+			return false;
+		}
+		for (String key:keysToSend){
+			KVMessage msg = new KVMessage(IKVMessage.StatusType.PUT, key, db.getValue(key));
+			try {
+				CommModule.sendMessage(msg, receiver);
+			}
+			catch(IOException ioe){
+				logger.warn("Server-Server connection lost!", ioe);
+				return false;
+			}
+			KVMessage response;
+			try {
+				response = CommModule.receiveMessage(receiver);
+			} catch (IOException ioe) {
+				logger.warn("Server-Server connection lost!", ioe);
+				return false;
+			}
+			if (response.getStatus() != IKVMessage.StatusType.PUT_SUCCESS){
+				logger.warn("Failure in rebalancing keys!");
+				return false;
+			}
+		}
+		//delete keys
+		for (String key: keysToSend){
+			try {
+				db.deletePair(key);
+			} catch (IOException ioe) {
+				logger.warn("Failure in deleting rebalanced keys");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public void buildKeysToSend(String range){
+		Range newRange = new Range(range);
+		String[] keys = db.getAllKeys();
+		for (String key: keys){
+			if (newRange.inRange(MD5.getHash(key)))
+				keysToSend.add(key);
+		}
 
 	}
 
@@ -491,6 +568,8 @@ public class KVServer implements IKVServer {
 	 * java -jar m2-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number>
 	 */
 	public static void main(String[] args) {
+		Runtime current = Runtime.getRuntime();
+		current.addShutdownHook(new ShutDownHook());
 		parseCommandLine(args, true);
 	}
 

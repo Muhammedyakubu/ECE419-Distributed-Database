@@ -42,4 +42,10 @@ public interface IKVDatabase {
      */
     public boolean clearStorage();
 
+    /**
+     * Get all keys in the current db
+     * @return String[] of keys
+     */
+    public String[] getAllKeys();
+
 }
