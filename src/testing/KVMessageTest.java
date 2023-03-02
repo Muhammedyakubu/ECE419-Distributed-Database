@@ -1,5 +1,6 @@
 package testing;
 
+import app_kvECS.ECSClient;
 import shared.messages.KVMessage;
 import shared.messages.IKVMessage.StatusType;
 
@@ -128,5 +129,18 @@ public class KVMessageTest extends TestCase{
         printByteArray(expected, actual);
         assertEquals(new KVMessage(expected), new KVMessage(actual));
         assertEquals(expected.length, actual.length);
+    }
+
+    public void testParseKeyrange() {
+        Exception e = null;
+        KVMessage msg = new KVMessage(StatusType.FAILED, "", "");
+        try {
+            msg = new KVMessage((StatusType.KEYRANGE.toString().toLowerCase() + "\r\n").getBytes());
+        } catch (Exception ex) {
+            e = ex;
+            fail("Should not throw exception");
+        }
+        assertEquals(StatusType.KEYRANGE, msg.getStatus());
+        assertNull(e);
     }
 }
