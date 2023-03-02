@@ -86,6 +86,15 @@ public class ClientConnection implements Runnable {
 	}
 
 	/**
+	 * Check if the server is stopped
+	 * @return true or false
+	 */
+	private boolean checkStopped() {
+		if (kvServer.currStatus == IKVMessage.ServerState.SERVER_STOPPED) return true;
+		else return false;
+	}
+
+	/**
 	 * Handles the client message, performs the corresponding actions and
 	 * returns a response to be sent back to the client.
 	 *
@@ -93,13 +102,7 @@ public class ClientConnection implements Runnable {
 	 * @return the response to be sent to the client
 	 */
 	public KVMessage handleClientMessage(KVMessage msg) {
-		if (msg.getStatus() != IKVMessage.StatusType.SERVER_PUT &&
-				kvServer.currStatus == KVMessage.ServerState.SERVER_STOPPED) {
-			msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
-			return msg;
-		}
 
-		//TODO Add once we're ready with ECS and server
 		if (msg.getStatus() != IKVMessage.StatusType.KEYRANGE && !kvServer.isResponsible(msg.getKey())) {
 			msg.setStatus(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
 			return msg;
@@ -107,6 +110,14 @@ public class ClientConnection implements Runnable {
 
 		switch (msg.getStatus()) {
 			case GET:
+				if (!checkStopped()){
+					msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
+					return msg;
+				}
+				if (!kvServer.isResponsible(msg.getKey())){
+					msg.setStatus(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
+					return msg;
+				}
 				try {
 					String value = kvServer.getKV(msg.getKey());
 					msg.setValue(value);
@@ -122,6 +133,14 @@ public class ClientConnection implements Runnable {
 			case SERVER_PUT:
 				// we want this to do the same thing as a regular put
 			case PUT:
+				if (!checkStopped() && msg.getStatus() != IKVMessage.StatusType.SERVER_PUT){
+					msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
+					return msg;
+				}
+				if (!kvServer.isResponsible(msg.getKey())){
+					msg.setStatus(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
+					return msg;
+				}
 				if (kvServer.currStatus == KVMessage.ServerState.SERVER_WRITE_LOCK){
 					msg.setStatus(IKVMessage.StatusType.SERVER_WRITE_LOCK);
 					return msg;

@@ -546,7 +546,7 @@ public class KVServer implements IKVServer {
 				if(args[i].equals("-t")) {
 					// TODO: remove randomize port for testing
 					port_num = getRandomNumberUsingInts(50000, 60000);
-					dataPath = "./src/KVStorage/" + port_num;
+					//dataPath = "./src/KVStorage/" + port_num;
 				}
 
 			}
@@ -569,7 +569,7 @@ public class KVServer implements IKVServer {
 			InetAddress bind_address = InetAddress.getByName(address);
 			InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
 			if (!ecs_present) ecs_bind = null;
-
+			dataPath = "./src/KVStorage/" + bind_address.getHostAddress()+":"+port_num;
 			Level level = Level.ALL;
 
 			if(!logLevel.equals(" ")){
