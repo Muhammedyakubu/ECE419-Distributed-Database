@@ -150,21 +150,22 @@ public class ECSClient implements IECSClient {
             String serverAddress = addressMessage.getValue();
 
             // recalculate metadata
-            Pair<String, Range> rangeAndSuccessor =
-                    metadata.addServer(serverAddress, serverPort);
-            ECSNode node = new ECSNode(socket, serverAddress,
-                            serverPort, rangeAndSuccessor.getSecond());
+            Pair<String, Range> succAndRange = metadata.addServer(serverAddress, serverPort);
+            String successor = succAndRange.getFirst();
+            Range hashRange = succAndRange.getSecond();
+            ECSNode node = new ECSNode(socket, serverAddress, serverPort, hashRange);
 
             // two checks to see if this is the first node
             // if it is, send the metadata to the node
-            if (kvNodes.isEmpty() && rangeAndSuccessor.getSecond() == null) {
+            if (kvNodes.isEmpty() && successor == null) {
                 node.sendMetadata(metadata);
             }
+
             // if it's not the first node, rebalance the metadata
             else {
                 boolean success = false;
                 while (!success) {
-                    success = rebalance(kvNodes.get(rangeAndSuccessor.getFirst()), node);
+                    success = rebalance(kvNodes.get(successor), node);
                 }
             }
             kvNodes.put(node.getNodeName(), node);
@@ -179,7 +180,7 @@ public class ECSClient implements IECSClient {
          * Initiate a rebalance by sending a KVMessage containing with the receiver's name and range
          * in the value field. It has the format "Address:Port;Range"
          */
-        String payload = receiver + ";" + receiver.getNodeHashRange().toString();
+        String payload = receiver.getMetadataFormat();
         sender.sendMessage(new KVMessage(KVMessage.StatusType.REBALANCE, null, payload));
         sender.setState(ServerState.SERVER_WRITE_LOCK);
 

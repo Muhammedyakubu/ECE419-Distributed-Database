@@ -168,6 +168,10 @@ public class KVServer implements IKVServer {
 		return port;
 	}
 
+	public String getHostAddress(){
+		return bind_address.getHostAddress();
+	}
+
 	@Override
     public String getHostname(){
 		InetAddress ip;
