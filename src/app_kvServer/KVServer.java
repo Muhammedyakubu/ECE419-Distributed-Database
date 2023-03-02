@@ -9,6 +9,7 @@ import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import shared.Range;
+import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
 
@@ -39,7 +40,7 @@ public class KVServer implements IKVServer {
 	private ServerSocket serverSocket;
 	private Socket ecsSocket;
 	public Range keyRange;
-	private KVMetadata md;
+	private KVMetadata kvMetadata;
 
 
 	public KVMessage.ServerState currStatus;
@@ -63,6 +64,9 @@ public class KVServer implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy, boolean run) {
 		this(port, cacheSize, strategy, null, null, null, -1, run);
 	}
+	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, boolean run) {
+		this(port, cacheSize, strategy, bind_address, null, null, -1, run);
+	}
 
 	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath, InetAddress ecsAddr, int ecs_port) {
 		this(port, cacheSize, strategy, bind_address, dataPath, ecsAddr, ecs_port, true);
@@ -73,10 +77,13 @@ public class KVServer implements IKVServer {
 		this.dataPath = dataPath;
 		this.bind_address = bind_address;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
+		this.kvMetadata = new KVMetadata();
 		this.ecsAddress = ecsAddr;
 		this.ecsPort = ecs_port;
-		this.currStatus = KVMessage.ServerState.SERVER_STOPPED;
-		this.md = new KVMetadata("a,b,default:default;");
+		if (ecsAddr != null)
+			this.currStatus = IKVMessage.ServerState.SERVER_STOPPED;
+		else
+			this.currStatus = IKVMessage.ServerState.ACTIVE;
 
 		// handle invalid cacheSize and strategy
 		if (cacheSize <= 0 || strategy == null) {
@@ -194,7 +201,7 @@ public class KVServer implements IKVServer {
 	}
 
 	public KVMetadata getMetadata(){
-		return md;
+		return kvMetadata;
 	}
 
 	@Override
@@ -205,6 +212,12 @@ public class KVServer implements IKVServer {
 	@Override
     public void clearStorage(){
 		db.clearStorage();
+	}
+
+	public void updateMetadata(String metadata){
+		this.kvMetadata = new KVMetadata(metadata);
+		//TODO NEED TO UPDATE INTERNAL KEYRANGE HERE
+
 	}
 
 	@Override
@@ -256,6 +269,8 @@ public class KVServer implements IKVServer {
 		kill();
 	}
 
+
+
 	//ADDRESS GOES IN HERE
 	private boolean initializeServer() {
 		logger.info("Initialize server ...");
@@ -267,7 +282,7 @@ public class KVServer implements IKVServer {
 			}
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
-			if (port == -1)
+			if (ecsPort != -1)
 				ecsSocket = new Socket(ecsAddress,ecsPort);
 			return true;
 
@@ -348,7 +363,7 @@ public class KVServer implements IKVServer {
 			int port_num = -1;
 			int ecs_port = -1;
 			boolean port_present = false;
-			//boolean ecs_present = false;
+			boolean ecs_present = false;
 			String address = "localhost";
 			String ecsAddress = "localhost";
 			String dataPath = ""; //DEFAULT HANDLED IN KVDATABASE
@@ -381,7 +396,7 @@ public class KVServer implements IKVServer {
 						System.out.println("Port number must fall between 0 and 65535, inclusive.");
 						System.exit(0);
 					}
-					//ecs_present = true;
+					ecs_present = true;
 				}
 
 				//ADDRESS CHECK
@@ -422,6 +437,7 @@ public class KVServer implements IKVServer {
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
 			InetAddress bind_address = InetAddress.getByName(address);
 			InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
+			if (!ecs_present) ecs_bind = null;
 
 			Level level = Level.ALL;
 
@@ -437,7 +453,6 @@ public class KVServer implements IKVServer {
 			//WILL THROW I/O EXCEPTION IF PATH IS INVALID
 			if(run_server) {
 				new LogSetup(logPath, level);
-
 				KVServer server = new KVServer(port_num, 10, "FIFO", bind_address, dataPath, ecs_bind, ecs_port);
 			}
 
