@@ -8,6 +8,8 @@ import java.util.Vector;
 
 import static shared.MD5.getHash;
 
+//IMPLEMENT REMOVE NODE THAT RETURNS SUCCESSOR
+//IMPLEMENT GET RANGE FROM SERVER
 public class KVMetadata implements IKVMetadata{
 
     //LIST ORDERED BY SERVER/PORT HASHES

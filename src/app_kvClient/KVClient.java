@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
 
+import static shared.MD5.getHash;
+
 public class KVClient implements IKVClient, ClientSocketListener {
 
     private static Logger logger = Logger.getLogger(KVClient.class);
@@ -28,7 +30,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private boolean stop = false;
     private String serverAddress;
     private int serverPort;
-    private KVMetadata metadata;
+    private KVMetadata metadata = null;
 
     /**
      * Runs the client application and takes input from user.
@@ -105,7 +107,11 @@ public class KVClient implements IKVClient, ClientSocketListener {
                         }
                     }
                     String currServerAddPort = serverAddress + ":" + serverPort;
-                    String newServerAddPort = metadata.findServer(key);
+                    String newServerAddPort;
+                    if (metadata != null) {
+                        newServerAddPort = metadata.findServer(key);
+                    }
+                    else newServerAddPort = currServerAddPort;
 
                     if(currServerAddPort.compareTo(newServerAddPort) != 0)
                     {
