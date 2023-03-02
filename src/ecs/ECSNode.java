@@ -78,6 +78,14 @@ public class ECSNode implements IECSNode{
         return this.hashRange;
     }
 
+    public int getAvailableSocketBytes() {
+        try {
+            return socket.getInputStream().available();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void sendMetadata(KVMetadata metadata) {
         sendMessage(new KVMessage(KVMessage.StatusType.UPDATE_METADATA, null, metadata.toString()));
 

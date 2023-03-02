@@ -44,6 +44,7 @@ public class ECSClient implements IECSClient {
         this.port = port;
         this.running = false;
         this.metadata = new KVMetadata();
+        this.kvNodes = new java.util.HashMap<>();
         run();
     }
 
@@ -100,6 +101,9 @@ public class ECSClient implements IECSClient {
 
     public void pollNodes() {
         for (ECSNode node: kvNodes.values()) {
+
+            if (node.getAvailableSocketBytes() <= 2) continue;
+
             KVMessage request = node.receiveMessage();
             if (request == null) continue;
             KVMessage response = node.receiveMessage();
@@ -118,6 +122,8 @@ public class ECSClient implements IECSClient {
     }
 
     synchronized public void deleteNode(ECSNode node) {
+        logger.debug("Deleting node " + node.getNodeName());
+
         kvNodes.remove(node.getNodeName());
         Pair<String, Range> successor = metadata.removeServer(
                 node.getNodeHost(),
@@ -127,7 +133,10 @@ public class ECSClient implements IECSClient {
             ECSNode successorNode = kvNodes.get(successorName);
             rebalance(node, successorNode);
         }
-        // if this is the last node, do nothing?
+        // remove node from kvNodes
+        kvNodes.remove(node.getNodeName());
+
+        // if this is the last node, do nothing special?
     }
 
     public void initializeECSNode(Socket socket) {
