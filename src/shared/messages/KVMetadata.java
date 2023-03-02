@@ -78,6 +78,10 @@ public class KVMetadata implements IKVMetadata{
             for (int i = 0; i < metadata.size(); i++)
             {
                 if(metadata.get(i).p2.inRange(hash)) {
+                    //System.out.println("test");
+//                    Range testrange = new Range(BigInteger.ZERO, BigInteger.ONE);
+//                    rangeServer.setValue("hi", testrange);
+//                    return rangeServer;
                     range = new Range(metadata.get(i).p2.start, hash);
                     metadata.get(i).p2.updateStart(start);
                     newEntry.setValue(serverAddPort, range);
@@ -101,10 +105,6 @@ public class KVMetadata implements IKVMetadata{
      */
 
     public Pair<String, Range> removeServer(String serverAddress, int port){
-        if (metadata.size() == 1){
-            metadata.remove(0);
-            return null;
-        }
 
         String serverAddPort = serverAddress + ":" + port;
         BigInteger hash = getHash(serverAddPort);
@@ -112,6 +112,10 @@ public class KVMetadata implements IKVMetadata{
 
         for (int i = 0; i < metadata.size(); i++)
         {
+            if (metadata.size() == 1){
+                metadata.remove(0);
+                return null;
+            }
             //if last elements, wraps
             if(i == metadata.size()-1){
                 metadata.get(0).p2.updateStart(metadata.get(i).p2.start);

@@ -7,6 +7,7 @@ import shared.messages.KVMetadata;
 import java.math.BigInteger;
 
 import junit.framework.TestCase;
+import shared.messages.Pair;
 
 import static shared.MD5.getHash;
 
@@ -47,7 +48,32 @@ public class KVMetadataTest extends TestCase{
 
     @Test
     public void testKVMetadataRemoveLastServer(){
-        md.removeServer("localhost",5001);
+        md.removeServer("localhost",5000);
         assert(md.isEmpty());
+    }
+
+    public void testKVMetadataAddFirstServer(){
+        md.removeServer("localhost",5000);
+        md.addServer("localhost",5001);
+        BigInteger hash = getHash("localhost:5001");
+        BigInteger start = hash.add(BigInteger.ONE);
+        String expected = start.toString(16) + "," + hash.toString(16) + "," + "localhost:5001;";
+        String actual = md.toString();
+        assertEquals(expected, actual);
+    }
+
+    public void testKVMetadataAddServer(){
+        md.removeServer("localhost",5000);
+        md.addServer("localhost",5000);
+        Pair<String, Range> test = md.addServer("localhost",5200);
+        BigInteger hash_one = getHash("localhost:5000");
+        BigInteger hash_two = getHash("localhost:5200");
+        BigInteger start_one = hash_two.add(BigInteger.ONE);
+        BigInteger start_two = hash_one.add(BigInteger.ONE);
+        String expected = start_two.toString(16) + "," + hash_two.toString(16) + "," + "localhost:5200;"
+                            + start_one.toString(16) + "," + hash_one.toString(16) + "," + "localhost:5000;";
+        String actual = md.toString();
+        assertNotNull(test);
+        //assertEquals(expected, actual);
     }
 }
