@@ -53,9 +53,9 @@ public class Range {
     public boolean inRange(BigInteger hash){
 
         //handle corner case when keyrange wraps around zero>=
-        if (start.compareTo(end) > 1) {
+        if (start.compareTo(end) == 1) {
             if (hash.compareTo(BigInteger.ZERO) >=0 && hash.compareTo(end) <= 0) return true;
-            else if (hash.compareTo(start) == 1) return true;
+            else if (hash.compareTo(start) == 1 || hash.compareTo(end) == 1) return true;
             else return false;
         }
 

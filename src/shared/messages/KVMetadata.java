@@ -86,7 +86,7 @@ public class KVMetadata implements IKVMetadata{
                     metadata.get(i).p2.updateStart(start);
                     newEntry.setValue(serverAddPort, range);
                     metadata.add(i, newEntry);
-                    rangeServer.setValue(metadata.get(i).p1, range);
+                    rangeServer.setValue(metadata.get(i+1).p1, range);
                     return rangeServer;
                 }
             }

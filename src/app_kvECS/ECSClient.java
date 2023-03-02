@@ -164,9 +164,9 @@ public class ECSClient implements IECSClient {
 
             // if it's not the first node, rebalance the metadata
             else {
-                boolean success = false;
-                while (!success) {
-                    success = rebalance(kvNodes.get(successor), node);
+                Boolean success = rebalance(kvNodes.get(successor), node);
+                if (!success) {
+                    logger.error("Error! Rebalance from " + successor + " to " + node.getNodeName() + " failed");
                 }
             }
             kvNodes.put(node.getNodeName(), node);
@@ -176,6 +176,11 @@ public class ECSClient implements IECSClient {
     }
 
     public boolean rebalance(ECSNode sender, ECSNode receiver) {
+        if (sender == null || receiver == null) {
+            logger.error("Error! Sender or receiver is null");
+            return false;
+        }
+
         receiver.sendMetadata(metadata);
         /**
          * Initiate a rebalance by sending a KVMessage containing with the receiver's name and range

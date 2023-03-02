@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -143,7 +144,7 @@ public class KVServer implements IKVServer {
 
 
 		Runtime current = Runtime.getRuntime();
-		current.addShutdownHook(new ShutDownHook());
+//		current.addShutdownHook(new ShutDownHook());
 
 		if (run) run();
 	}
@@ -432,6 +433,14 @@ public class KVServer implements IKVServer {
 		}
 	}
 
+	public static int getRandomNumberUsingInts(int min, int max) {
+		Random random = new Random();
+		return random.ints(min, max)
+				.findFirst()
+				.getAsInt();
+	}
+
+
 	/**
 	 * Parses server arguments and initializes server appropriately.
 	 * @param args, run_server (run_server is used for testing)
@@ -473,7 +482,9 @@ public class KVServer implements IKVServer {
 			for(int i = 0; i < args.length; i++) {
 				//PORT CHECK
 				if(args[i].equals("-p")) {
-					port_num = Integer.parseInt(args[i+1]);
+//					port_num = Integer.parseInt(args[i+1]);
+					// TODO: remove randomize port for testing
+					port_num = getRandomNumberUsingInts(50000, 60000);
 					if(port_num < 0 || port_num > 65535){
 						System.out.println("Error! Port number out of range!");
 						System.out.println("Port number must fall between 0 and 65535, inclusive.");
