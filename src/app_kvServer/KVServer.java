@@ -41,9 +41,8 @@ public class KVServer implements IKVServer {
 	private Socket ecsSocket;
 	public Range keyRange;
 	private KVMetadata kvMetadata;
-
-
 	public KVMessage.ServerState currStatus;
+	private ECSConnection ecsConnection;
 
 	
 	/**
@@ -111,6 +110,10 @@ public class KVServer implements IKVServer {
 		}
 
 		this.db = new KVdatabase(this, dataPath);
+
+		// initialize ecsConnection and start it
+		ecsConnection = new ECSConnection(ecsSocket, this);
+		new Thread(ecsConnection).start();
 
 		if (run) run();
 	}

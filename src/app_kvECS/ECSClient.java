@@ -44,6 +44,7 @@ public class ECSClient implements IECSClient {
         this.port = port;
         this.running = false;
         this.metadata = new KVMetadata();
+        run();
     }
 
     @Override
@@ -116,7 +117,7 @@ public class ECSClient implements IECSClient {
         }
     }
 
-    public void deleteNode(ECSNode node) {
+    synchronized public void deleteNode(ECSNode node) {
         kvNodes.remove(node.getNodeName());
         Pair<String, Range> successor = metadata.removeServer(
                 node.getNodeHost(),
@@ -154,7 +155,7 @@ public class ECSClient implements IECSClient {
             else {
                 boolean success = false;
                 while (!success) {
-                    success = rebalance(kvNodes.get(rangeAndSuccessor.getSecond()), node);
+                    success = rebalance(kvNodes.get(rangeAndSuccessor.getFirst()), node);
                 }
             }
             kvNodes.put(node.getNodeName(), node);
@@ -350,6 +351,7 @@ public class ECSClient implements IECSClient {
                 new LogSetup(logPath, level);
 
                 //LAUNCH ECS HERE WITH SPECIFIED PORT AND ADDRESS!
+                new ECSClient(address, port_num).start();
             }
 
             String returned = "Port: " + port_num + " Address: " + address +

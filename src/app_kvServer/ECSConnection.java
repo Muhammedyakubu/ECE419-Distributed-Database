@@ -51,12 +51,6 @@ public class ECSConnection implements Runnable{
                     isOpen = false;
                 }
             }
-
-
-
-
-
-
         }
         catch(IOException ioe){
             logger.error("Error! Server Connection with ECS could not be established", ioe);
