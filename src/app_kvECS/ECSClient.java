@@ -17,6 +17,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import shared.MD5;
 import shared.Range;
+import shared.messages.IKVMessage;
 import shared.messages.IKVMessage.ServerState;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
@@ -87,12 +88,45 @@ public class ECSClient implements IECSClient {
                 try {
                     Socket kvSeverSocket = ecsSocket.accept();
                     initializeECSNode(kvSeverSocket);
+                    pollNodes();
                 } catch (IOException e) {
                     logger.error("Error! " +
                             "Unable to establish connection. \n", e);
                 }
             }
         }
+    }
+
+    public void pollNodes() {
+        for (ECSNode node: kvNodes.values()) {
+            KVMessage request = node.receiveMessage();
+            if (request == null) continue;
+            KVMessage response = node.receiveMessage();
+
+            // should only receive a shutdown message
+            if (response.getStatus() == KVMessage.StatusType.SHUTTING_DOWN) {
+                deleteNode(node);
+            } else {
+                logger.error("Error! Received unexpected message from KVServer");
+                node.sendMessage(new KVMessage(
+                        KVMessage.StatusType.FAILED,
+                        null,
+                        "Unexpected message received from KVServer"));
+            }
+        }
+    }
+
+    public void deleteNode(ECSNode node) {
+        kvNodes.remove(node.getNodeName());
+        Pair<String, Range> successor = metadata.removeServer(
+                node.getNodeHost(),
+                node.getNodePort());
+        String successorName = successor.getFirst();
+        if (successorName != null) {
+            ECSNode successorNode = kvNodes.get(successorName);
+            rebalance(node, successorNode);
+        }
+        // if this is the last node, do nothing?
     }
 
     public void initializeECSNode(Socket socket) {
@@ -106,10 +140,10 @@ public class ECSClient implements IECSClient {
             String serverAddress = addressMessage.getValue();
 
             // recalculate metadata
-            Pair<Range, String> rangeAndSuccessor =
+            Pair<String, Range> rangeAndSuccessor =
                     metadata.addServer(serverAddress, serverPort);
             ECSNode node = new ECSNode(socket, serverAddress,
-                            serverPort, rangeAndSuccessor.getFirst());
+                            serverPort, rangeAndSuccessor.getSecond());
 
             // two checks to see if this is the first node
             // if it is, send the metadata to the node
@@ -124,9 +158,6 @@ public class ECSClient implements IECSClient {
                 }
             }
             kvNodes.put(node.getNodeName(), node);
-
-            // start listening for messages from the server
-            new Thread(node).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -151,8 +182,8 @@ public class ECSClient implements IECSClient {
         }
 
         // update metadata for all servers
-        for (Map.Entry<String, ECSNode> entry : kvNodes.entrySet()) {
-            entry.getValue().sendMetadata(metadata);
+        for (ECSNode node : kvNodes.values()) {
+            node.sendMetadata(metadata);
         }
 
         // release write lock
