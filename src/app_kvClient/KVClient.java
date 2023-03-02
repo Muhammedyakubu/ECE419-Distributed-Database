@@ -121,7 +121,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                         handleNewMessage(response);
                         if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
                         {
-                            handleNotResponsible(cmdLine, response.getValue());
+                            handleNotResponsible(cmdLine);
                         }
                         return response.getStatus().toString();
                     } catch (IOException e){
@@ -131,7 +131,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                         handleNewMessage(response);
                         if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
                         {
-                            handleNotResponsible(cmdLine, response.getValue());
+                            handleNotResponsible(cmdLine);
                         }
                         return response.getStatus().toString();
                     }
@@ -166,7 +166,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                         handleNewMessage(response);
                         if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
                         {
-                            handleNotResponsible(cmdLine, response.getValue());
+                            handleNotResponsible(cmdLine);
                         }
                         return response.getStatus().toString();
                     } catch(IOException e){
@@ -176,7 +176,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                         handleNewMessage(response);
                         if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
                         {
-                            handleNotResponsible(cmdLine, response.getValue());
+                            handleNotResponsible(cmdLine);
                         }
                         return response.getStatus().toString();
                     }
@@ -382,18 +382,19 @@ public class KVClient implements IKVClient, ClientSocketListener {
         }
     }
 
-    public void handleNotResponsible(String cmdLine, String md){
+    public void handleNotResponsible(String cmdLine){
         String[] tokens = cmdLine.split("\\s+");
         metadata = null;
-        metadata = new KVMetadata(md);
-        String serverAddPort = metadata.findServer(tokens[1]);
-        String[] IPPort = serverAddPort.split(":");
-        disconnect();
-        serverAddress = IPPort[0];
-        serverPort = Integer.parseInt(IPPort[1]);
         try {
             newConnection(serverAddress, serverPort);
             handleCommand(cmdLine);
+            IKVMessage response = kvstore.getKeyRange();
+            metadata = new KVMetadata(response.getValue());
+            String serverAddPort = metadata.findServer(tokens[1]);
+            String[] IPPort = serverAddPort.split(":");
+            disconnect();
+            serverAddress = IPPort[0];
+            serverPort = Integer.parseInt(IPPort[1]);
         } catch(NumberFormatException nfe) {
             printError("No valid address. Port must be a number!");
             logger.info("Unable to parse argument <port>", nfe);
