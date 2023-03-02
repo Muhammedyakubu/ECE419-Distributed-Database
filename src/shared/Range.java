@@ -59,5 +59,14 @@ public class Range {
 
     }
 
+    /**
+     * Converts range to string in format start:end
+     * @return String
+     */
+    public String toString(){
+        String res = start.toString() + ":" + end.toString();
+        return res;
+    }
+
 
 }

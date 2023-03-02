@@ -8,6 +8,8 @@ import java.util.Vector;
 
 import static shared.MD5.getHash;
 
+//IMPLEMENT REMOVE NODE THAT RETURNS SUCCESSOR
+//IMPLEMENT GET RANGE FROM SERVER
 public class KVMetadata implements IKVMetadata{
 
     //LIST ORDERED BY SERVER/PORT HASHES
@@ -55,30 +57,20 @@ public class KVMetadata implements IKVMetadata{
         metadata.add(new_pair);
     }
 
-    /**
-     * adds a new server to the metadata and returns the new server's
-     * keyrange and its successor's address info
-     * This function will also have to deal with when the new server is the
-     * first server, in which case it will return null for the successor's
-     * address info
-     *
-     * @param serverAddress the address of the server
-     * @param port          the port the server is listening on
-     * @return a pair containing the new server's keyrange and its successor
-     */
-    public Pair<Range, String> addServer(String serverAddress, int port){
+    public Pair<String, Range> addServer(String serverAddress, int port){
 
         String serverAddPort = serverAddress + ":" + port;
         BigInteger hash = getHash(serverAddPort);
         BigInteger start = hash.add(BigInteger.ONE);
         Range range;
         Pair rangeServer = new Pair();
+        Pair newEntry = new Pair();
 
         //If this is the first server being added...
         if(metadata.isEmpty()){
             addServer(serverAddPort, start, hash);
             range = new Range(start, hash);
-            rangeServer.setValue(range, null);
+            rangeServer.setValue(null, range);
             return rangeServer;
         }
 
@@ -88,7 +80,9 @@ public class KVMetadata implements IKVMetadata{
                 if(metadata.get(i).p2.inRange(hash)) {
                     range = new Range(metadata.get(i).p2.start, hash);
                     metadata.get(i).p2.updateStart(start);
-                    rangeServer.setValue(range, metadata.get(i).p1);
+                    newEntry.setValue(serverAddPort, range);
+                    metadata.add(i, newEntry);
+                    rangeServer.setValue(metadata.get(i).p1, range);
                     return rangeServer;
                 }
             }
@@ -106,12 +100,49 @@ public class KVMetadata implements IKVMetadata{
      * @return a pair containing the removed server's successor's <addr>:<port> and the successor's keyrange
      */
 
+    public Pair<String, Range> removeServer(String serverAddress, int port){
+        if (metadata.size() == 1){
+            metadata.remove(0);
+            return null;
+        }
+
+        String serverAddPort = serverAddress + ":" + port;
+        BigInteger hash = getHash(serverAddPort);
+        Pair rangeServer = new Pair();
+
+        for (int i = 0; i < metadata.size(); i++)
+        {
+            //if last elements, wraps
+            if(i == metadata.size()-1){
+                metadata.get(0).p2.updateStart(metadata.get(i).p2.start);
+                rangeServer = metadata.get(0);
+                metadata.remove(i);
+                return rangeServer;
+            }
+
+            metadata.get(i+1).p2.updateStart(metadata.get(i).p2.start);
+            rangeServer = metadata.get(i+1);
+            metadata.remove(i);
+            return rangeServer;
+        }
+        return null;
+    }
+
     public String findServer(String key){
         BigInteger hash = getHash(key);
         for (int i = 0; i < metadata.size(); i++)
         {
             if(metadata.get(i).p2.inRange(hash))
                 return metadata.get(i).p1;
+        }
+        return null;
+    }
+
+    public Range getRange(String serverAddPort){
+        for (int i = 0; i < metadata.size(); i++)
+        {
+            if(metadata.get(i).p1.compareTo(serverAddPort) == 0)
+                return metadata.get(i).p2;
         }
         return null;
     }

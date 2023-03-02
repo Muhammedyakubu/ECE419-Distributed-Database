@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 public class KVMessage implements IKVMessage {
 
     public static Logger logger = Logger.getLogger(KVMessage.class);
+    public static ServerState serverStatus;
     StatusType status;
     String key;
     String value;
