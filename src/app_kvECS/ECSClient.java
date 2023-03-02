@@ -89,13 +89,13 @@ public class ECSClient implements IECSClient {
                 try {
                     Socket kvSeverSocket = ecsSocket.accept();
                     initializeECSNode(kvSeverSocket);
-                    pollNodes();
                 } catch (SocketTimeoutException e) {
                     // do nothing
                 } catch (IOException e) {
                     logger.error("Error! " +
                             "Unable to establish connection. \n", e);
                 }
+                pollNodes();
             }
         }
     }
@@ -106,11 +106,13 @@ public class ECSClient implements IECSClient {
             if (node.getAvailableSocketBytes() <= 2) continue;
 
             KVMessage request = node.receiveMessage();
-            if (request == null) continue;
-            KVMessage response = node.receiveMessage();
+            if (request == null) {
+                removeLostNode(node);
+                continue;
+            }
 
             // should only receive a shutdown message
-            if (response.getStatus() == KVMessage.StatusType.SHUTTING_DOWN) {
+            if (request.getStatus() == KVMessage.StatusType.SHUTTING_DOWN) {
                 logger.debug("Received shutdown message from " + node.getNodeName());
                 deleteNode(node);
             } else {
@@ -123,20 +125,31 @@ public class ECSClient implements IECSClient {
         }
     }
 
+    /**
+     * Forcefully remove a node from the cluster when it is unresponsive
+     * @param node
+     */
+    public void removeLostNode(ECSNode node) {
+        logger.info("Removing lost node " + node.getNodeName());
+        metadata.removeServer(node.getNodeHost(), node.getNodePort());
+        kvNodes.remove(node.getNodeName());
+    }
+
     synchronized public void deleteNode(ECSNode node) {
 
         kvNodes.remove(node.getNodeName());
         Pair<String, Range> successor = metadata.removeServer(
                 node.getNodeHost(),
                 node.getNodePort());
-        String successorName = successor.getFirst();
-        if (successorName != null) {
+        if (successor != null) {
+            String successorName = successor.getFirst();
             ECSNode successorNode = kvNodes.get(successorName);
             rebalance(node, successorNode);
         }
         // remove node from kvNodes
         kvNodes.remove(node.getNodeName());
 
+        logger.info("Node " + node.getNodeName() + " removed from cluster");
         // if this is the last node, do nothing special?
     }
 
