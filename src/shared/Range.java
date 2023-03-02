@@ -69,7 +69,7 @@ public class Range {
      * @return String
      */
     public String toString(){
-        String res = start.toString() + ":" + end.toString();
+        String res = start.toString() + "," + end.toString();
         return res;
     }
 
