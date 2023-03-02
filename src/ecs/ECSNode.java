@@ -27,7 +27,6 @@ public class ECSNode implements IECSNode{
         this.address = InetAddress.getByName(hostAddress);
         this.port = port;
         this.hashRange = hashRange;
-        this.running = false;
     }
 
     public void sendMessage(KVMessage message) {
@@ -79,22 +78,25 @@ public class ECSNode implements IECSNode{
         return this.hashRange;
     }
 
-    public KVMessage handleRequest(KVMessage request) {
-        if (request == null) {
-            return null;
-        }
-        return null;
-    }
-
     public void sendMetadata(KVMetadata metadata) {
         sendMessage(new KVMessage(KVMessage.StatusType.UPDATE_METADATA, null, metadata.toString()));
-        // TODO: await response?
+
+        // await response
+        KVMessage response = receiveMessage();
+        boolean success = Boolean.parseBoolean(response.getKey());
+
+        if (!success ||
+                receiveMessage().getStatus() != KVMessage.StatusType.UPDATE_METADATA) {
+            logger.error("Metadata was not acknowledged by " + this.getNodeName());
+            return;
+            // TODO: throw exception? or change return type to boolean?
+        }
+
     }
 
     /**
      *
      * Need to make sure these protocol messages are sent and received consecutively
-     * TODO: Might have to use a lock on the socket
      * @param state
      * @return
      */
