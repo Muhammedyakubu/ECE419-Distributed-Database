@@ -47,6 +47,7 @@ public class KVServer implements IKVServer {
 	private KVMetadata kvMetadata;
 	private List<String> keysToSend = new ArrayList<>();
 	public KVMessage.ServerState currStatus;
+	ECSConnection ecsConnection;
 
 	/**
 	 * Shutdown hook for when the server shutsdown
