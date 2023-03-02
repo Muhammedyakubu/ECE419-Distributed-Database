@@ -42,6 +42,7 @@ public class AllTests {
 		clientSuite.addTestSuite(FIFOCacheTest.class);
 		clientSuite.addTestSuite(LRUCacheUnitTest.class);
 		clientSuite.addTestSuite(LRUCacheTest.class);
+		clientSuite.addTestSuite(KVMetadataTest.class);
 		return clientSuite;
 	}
 	

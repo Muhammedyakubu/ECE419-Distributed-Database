@@ -128,58 +128,15 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
         //GOOD
         } else  if (tokens[0].equals("put")) {
-            if(tokens.length >= 2) {
-                    //if there is a connected client
-                if(kvstore != null){
-                    String key = tokens[1];
-                    StringBuilder msg = new StringBuilder();
-                    for(int i = 2; i < tokens.length; i++) {
-                        msg.append(tokens[i]);
-                        if (i != tokens.length -1 ) {
-                            msg.append(" ");
-                        }
-                    }
-                    String currServerAddPort = serverAddress + ":" + serverPort;
-                    String newServerAddPort;
-                    if (metadata != null) {
-                        newServerAddPort = metadata.findServer(key);
-                    }
-                    else newServerAddPort = currServerAddPort;
-
-                    if(currServerAddPort.compareTo(newServerAddPort) != 0)
-                    {
-                        disconnect();
-                        String[] IPPort = newServerAddPort.split(":");
-                        serverAddress = IPPort[0];
-                        serverPort = Integer.parseInt(IPPort[1]);
-                        newConnection(serverAddress, serverPort);
-                    }
-
-                    try {
-                        KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
-                        handleNewMessage(response);
-                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
-                        {
-                            handleNotResponsible(cmdLine);
-                        }
-                        return response.getStatus().toString();
-                    } catch (IOException e){
-                        logger.info("Connection to server was lost. Attempting to reconnect...");
-                        kvstore.connect();
-                        KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
-                        handleNewMessage(response);
-                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
-                        {
-                            handleNotResponsible(cmdLine);
-                        }
-                        return response.getStatus().toString();
-                    }
-                } else {
-                    printError("Not connected!");
-                }
-            } else {
-                printError("Usage: put <key> <value>!");
+            try {
+                return handlePut(tokens, cmdLine);
+            } catch (IOException e){
+                logger.warn("Connection to server was lost. Attempting to reconnect...");
+            } catch (Exception e){
+                logger.warn("Exception occurred");
             }
+
+
 
         //NEED TO DO
         } else  if (tokens[0].equals("get")) {
@@ -278,6 +235,51 @@ public class KVClient implements IKVClient, ClientSocketListener {
             printHelpText();
         }
         return "";
+    }
+
+    public String handlePut(String[] tokens, String cmdLine) throws Exception{
+        if(tokens.length >= 2) {
+            //if there is a connected client
+            if(kvstore != null){
+                String key = tokens[1];
+                StringBuilder msg = new StringBuilder();
+                for(int i = 2; i < tokens.length; i++) {
+                    msg.append(tokens[i]);
+                    if (i != tokens.length -1 ) {
+                        msg.append(" ");
+                    }
+                }
+                String currServerAddPort = serverAddress + ":" + serverPort;
+                String newServerAddPort;
+                if (metadata != null) {
+                    newServerAddPort = metadata.findServer(key);
+                }
+                else newServerAddPort = currServerAddPort;
+
+                if(currServerAddPort.compareTo(newServerAddPort) != 0)
+                {
+                    disconnect();
+                    String[] IPPort = newServerAddPort.split(":");
+                    serverAddress = IPPort[0];
+                    serverPort = Integer.parseInt(IPPort[1]);
+                    newConnection(serverAddress, serverPort);
+                }
+
+                KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
+                handleNewMessage(response);
+                if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+                {
+                    handleNotResponsible(cmdLine);
+                }
+                return response.getStatus().toString();
+
+            } else {
+                printError("Not connected!");
+            }
+        } else {
+            printError("Usage: put <key> <value>!");
+        }
+        return "Invalid";
     }
 
     /**
