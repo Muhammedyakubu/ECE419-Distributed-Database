@@ -94,6 +94,7 @@ public class ClientConnection implements Runnable {
 	 */
 	public KVMessage handleClientMessage(KVMessage msg) {
 		if (msg.getStatus() != IKVMessage.StatusType.SERVER_PUT &&
+				msg.getStatus() != IKVMessage.StatusType.KEYRANGE &&
 				kvServer.currStatus == KVMessage.ServerState.SERVER_STOPPED) {
 			msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
 			return msg;
