@@ -188,12 +188,20 @@ public class ECSClient implements IECSClient {
          */
         String payload = receiver.getMetadataFormat();
         sender.sendMessage(new KVMessage(KVMessage.StatusType.REBALANCE, null, payload));
-        sender.setState(ServerState.SERVER_WRITE_LOCK);
+        // won't need to do this, server will handle it
+//        sender.setState(ServerState.SERVER_WRITE_LOCK);
 
         // wait for a rebalance success message.
         KVMessage rebalanceAck = sender.receiveMessage();
 
-        if (rebalanceAck.getStatus() != KVMessage.StatusType.REBALANCE_SUCCESS) {
+        if (rebalanceAck.getStatus() == KVMessage.StatusType.REBALANCE_ERROR) {
+            logger.error("Error! Received REBALANCE_ERROR message from KVServer");
+            return false;
+        }
+        else if (rebalanceAck.getStatus() == KVMessage.StatusType.REBALANCE_SUCCESS) {
+            logger.debug("Rebalance from " + sender.getNodeName() + " to " + receiver.getNodeName() + " successful");
+        }
+        else {
             logger.error("Error! Received unexpected message from KVServer");
             return false;
         }

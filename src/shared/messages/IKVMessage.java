@@ -33,6 +33,8 @@ public interface IKVMessage {
 		KEYRANGE,		/* Request keyrange of server */
 		KEYRANGE_SUCCESS, /* Successful keyrange return */
 
+		// Server-Server Status Messages
+		SERVER_PUT,		/* Server put command when rebalancing */
 
 	}
 	public enum ServerState {

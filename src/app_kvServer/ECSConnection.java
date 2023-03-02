@@ -87,9 +87,10 @@ public class ECSConnection implements Runnable{
                 msg.setKey("True");
                 break;
             case REBALANCE:
-                String[] values = msg.getValue().split(";");
-                String[] address = values[0].split(":");
-                boolean success = kvServer.rebalance(address[0],address[1], values[1]);
+                String stripSemiColon = msg.getValue().split(";")[0];
+                String[] values = stripSemiColon.split(",");
+                String[] address = values[2].split(":");
+                boolean success = kvServer.rebalance(address[1],address[0], values[0] + "," + values[1]);
                 if (success)
                     msg.setStatus(IKVMessage.StatusType.REBALANCE_SUCCESS);
                 else

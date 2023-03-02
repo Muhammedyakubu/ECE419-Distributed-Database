@@ -219,7 +219,7 @@ public class KVdatabase implements IKVDatabase{
         } catch (Exception e) {
             logger.warn("Exception occurred when deleting files: ", e);
         }
-        return (String[]) res.toArray();
+        return res.toArray(new String[0]);
     }
 
 }

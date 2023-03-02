@@ -19,7 +19,7 @@ public class Range {
         end = second;
     }
     public Range(String range){
-        String[] values = range.split(":");
+        String[] values = range.split(",");
         this.start = new BigInteger(1, values[0].getBytes());
         this.end = new BigInteger(1, values[1].getBytes());
     }

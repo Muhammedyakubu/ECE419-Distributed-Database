@@ -276,7 +276,7 @@ public class KVServer implements IKVServer {
 			return false;
 		}
 		for (String key:keysToSend){
-			KVMessage msg = new KVMessage(IKVMessage.StatusType.PUT, key, db.getValue(key));
+			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, db.getValue(key));
 			try {
 				CommModule.sendMessage(msg, receiver);
 			}
@@ -482,9 +482,7 @@ public class KVServer implements IKVServer {
 			for(int i = 0; i < args.length; i++) {
 				//PORT CHECK
 				if(args[i].equals("-p")) {
-//					port_num = Integer.parseInt(args[i+1]);
-					// TODO: remove randomize port for testing
-					port_num = getRandomNumberUsingInts(50000, 60000);
+					port_num = Integer.parseInt(args[i+1]);
 					if(port_num < 0 || port_num > 65535){
 						System.out.println("Error! Port number out of range!");
 						System.out.println("Port number must fall between 0 and 65535, inclusive.");
@@ -529,6 +527,14 @@ public class KVServer implements IKVServer {
 				if(args[i].equals("-ll")) {
 					logLevel = args[i+1];
 				}
+
+				//Check for testing
+				if(args[i].equals("-t")) {
+					// TODO: remove randomize port for testing
+					port_num = getRandomNumberUsingInts(50000, 60000);
+					dataPath = "./src/KVStorage/" + port_num;
+				}
+
 			}
 
 			if(port_present == false) {

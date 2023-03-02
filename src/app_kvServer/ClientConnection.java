@@ -93,7 +93,8 @@ public class ClientConnection implements Runnable {
 	 * @return the response to be sent to the client
 	 */
 	public KVMessage handleClientMessage(KVMessage msg) {
-		if (kvServer.currStatus == KVMessage.ServerState.SERVER_STOPPED) {
+		if (msg.getStatus() != IKVMessage.StatusType.SERVER_PUT &&
+				kvServer.currStatus == KVMessage.ServerState.SERVER_STOPPED) {
 			msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
 			return msg;
 		}
@@ -117,6 +118,8 @@ public class ClientConnection implements Runnable {
 					msg.setStatus(KVMessage.StatusType.GET_ERROR);
 				}
 				break;
+			case SERVER_PUT:
+				// we want this to do the same thing as a regular put
 			case PUT:
 				if (kvServer.currStatus == KVMessage.ServerState.SERVER_WRITE_LOCK){
 					msg.setStatus(IKVMessage.StatusType.SERVER_WRITE_LOCK);
