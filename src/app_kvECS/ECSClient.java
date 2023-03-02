@@ -2,10 +2,7 @@ package app_kvECS;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Map;
 import java.util.Collection;
 
@@ -32,6 +29,7 @@ public class ECSClient implements IECSClient {
     private ServerSocket ecsSocket;
     private KVMetadata metadata;
     private Map<String, ECSNode> kvNodes;
+    private final int SOCKET_TIMEOUT = 100;
 
     /**
      * Initialize the ECSClient with a given address and port
@@ -65,6 +63,7 @@ public class ECSClient implements IECSClient {
                 this.ecsSocket = new ServerSocket(port);
             else
                 this.ecsSocket = new ServerSocket(port, 10, address);
+            ecsSocket.setSoTimeout(SOCKET_TIMEOUT);
             logger.info("ECS listening on port: " + port);
             return true;
         } catch (IOException e) {
@@ -91,6 +90,8 @@ public class ECSClient implements IECSClient {
                     Socket kvSeverSocket = ecsSocket.accept();
                     initializeECSNode(kvSeverSocket);
                     pollNodes();
+                } catch (SocketTimeoutException e) {
+                    // do nothing
                 } catch (IOException e) {
                     logger.error("Error! " +
                             "Unable to establish connection. \n", e);

@@ -213,7 +213,7 @@ public class KVdatabase implements IKVDatabase{
                 String key = curr.getFileName().toString();
                 String keySub = key.substring(0, 4);
                 if (keySub.equals(".nfs")) continue;
-                res.add(key);
+                res.add(key.replace(".txt", ""));
 
             }
         } catch (Exception e) {

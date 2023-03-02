@@ -20,8 +20,10 @@ public class Range {
     }
     public Range(String range){
         String[] values = range.split(",");
-        this.start = new BigInteger(1, values[0].getBytes());
-        this.end = new BigInteger(1, values[1].getBytes());
+        this.start = new BigInteger(values[0], 16);
+        this.end = new BigInteger(values[1], 16);
+//        this.start = new BigInteger(1, values[0].getBytes());
+//        this.end = new BigInteger(1, values[1].getBytes());
     }
     public Range() {
         start = null;
@@ -69,7 +71,7 @@ public class Range {
      * @return String
      */
     public String toString(){
-        String res = start.toString() + "," + end.toString();
+        String res = start.toString(16) + "," + end.toString(16);
         return res;
     }
 

@@ -232,6 +232,10 @@ public class KVServer implements IKVServer {
 		return keyInStorage;
 	}
 
+	synchronized boolean isResponsible(String key) {
+		return keyRange.inRange(MD5.getHash(key));
+	}
+
 	public KVMetadata getMetadata(){
 		return kvMetadata;
 	}
@@ -271,8 +275,7 @@ public class KVServer implements IKVServer {
 			return -1;
 		}
 		for (String key:keysToSend){
-			String dbKey = key.replace(".txt", "");
-			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, dbKey, db.getValue(dbKey));
+			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, db.getValue(key));
 			try {
 				CommModule.sendMessage(msg, receiver);
 			}
@@ -295,8 +298,9 @@ public class KVServer implements IKVServer {
 		//delete keys
 		for (String key: keysToSend){
 			try {
-				db.deletePair(key);
-			} catch (IOException ioe) {
+				this.putKV(key, null);
+//				db.deletePair(key);
+			} catch (Exception ioe) {
 				logger.warn("Failure in deleting rebalanced keys");
 				return -1;
 			}
