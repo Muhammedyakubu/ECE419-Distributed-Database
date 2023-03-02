@@ -173,16 +173,14 @@ public class ECSClient implements IECSClient {
             // if it is, send the metadata to the node
             if (kvNodes.isEmpty() && successor == null) {
                 node.sendMetadata(metadata);
-                node.setState(ServerState.ACTIVE);
-            }
-
-            // if it's not the first node, rebalance the metadata
-            else {
+            } else {
+                // if it's not the first node, rebalance the metadata
                 Boolean success = rebalance(kvNodes.get(successor), node);
                 if (!success) {
                     logger.error("Error! Rebalance from " + successor + " to " + node.getNodeName() + " failed");
                 }
             }
+            node.setState(ServerState.ACTIVE);
             kvNodes.put(node.getNodeName(), node);
             logger.info("Added node " + node.getNodeName() + " to the cluster");
         } catch (IOException e) {

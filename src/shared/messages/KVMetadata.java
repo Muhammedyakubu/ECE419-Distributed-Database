@@ -15,7 +15,7 @@ public class KVMetadata implements IKVMetadata{
     //LIST ORDERED BY SERVER/PORT HASHES
     //WHEN INSERTING, SEARCH FOR SERVER WITH KEY RANGE AND UPDATE THOSE TWO RANGES
 
-    List<Pair<String, Range>> metadata = new Vector<Pair<String, Range>>(1);
+    public List<Pair<String, Range>> metadata = new Vector<Pair<String, Range>>(1);
 
     /**
      * Default constructor
