@@ -98,7 +98,7 @@ public class ECSNode implements IECSNode{
         boolean success = Boolean.parseBoolean(response.getKey());
 
         if (!success ||
-                receiveMessage().getStatus() != KVMessage.StatusType.UPDATE_METADATA) {
+                response.getStatus() != KVMessage.StatusType.UPDATE_METADATA) {
             logger.error("Metadata was not acknowledged by " + this.getNodeName());
             // TODO: throw exception? or change return type to boolean?
         }

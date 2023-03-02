@@ -93,9 +93,11 @@ public class ECSConnection implements Runnable{
                     msg.setStatus(IKVMessage.StatusType.REBALANCE_SUCCESS);
                 else
                     msg.setStatus(IKVMessage.StatusType.REBALANCE_ERROR);
+                break;
             case SET_STATE:
                 kvServer.setState(IKVMessage.ServerState.valueOf(msg.getValue()));
                 msg.setKey("true");
+                break;
             default:
                 logger.error("Error! Invalid ECS Message type: " + msg.getStatus());
                 msg.setStatus(KVMessage.StatusType.FAILED);

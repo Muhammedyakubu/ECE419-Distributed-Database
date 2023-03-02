@@ -110,6 +110,7 @@ public class ECSClient implements IECSClient {
 
             // should only receive a shutdown message
             if (response.getStatus() == KVMessage.StatusType.SHUTTING_DOWN) {
+                logger.debug("Received shutdown message from " + node.getNodeName());
                 deleteNode(node);
             } else {
                 logger.error("Error! Received unexpected message from KVServer");
@@ -122,7 +123,6 @@ public class ECSClient implements IECSClient {
     }
 
     synchronized public void deleteNode(ECSNode node) {
-        logger.debug("Deleting node " + node.getNodeName());
 
         kvNodes.remove(node.getNodeName());
         Pair<String, Range> successor = metadata.removeServer(
@@ -159,6 +159,7 @@ public class ECSClient implements IECSClient {
             // if it is, send the metadata to the node
             if (kvNodes.isEmpty() && successor == null) {
                 node.sendMetadata(metadata);
+                node.setState(ServerState.ACTIVE);
             }
 
             // if it's not the first node, rebalance the metadata

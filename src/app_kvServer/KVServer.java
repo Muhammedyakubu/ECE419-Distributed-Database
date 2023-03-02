@@ -268,7 +268,7 @@ public class KVServer implements IKVServer {
 
 	public void updateMetadata(String metadata){
 		this.kvMetadata = new KVMetadata(metadata);
-		Range ownRange = this.kvMetadata.getRange(bind_address.getHostAddress() + Integer.toString(port));
+		Range ownRange = this.kvMetadata.getRange(bind_address.getHostAddress() + ":" + Integer.toString(port));
 		this.keyRange.updateRange(ownRange.start, ownRange.end);
 
 	}
