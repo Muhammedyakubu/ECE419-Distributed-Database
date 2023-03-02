@@ -85,6 +85,17 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 String key = "key" + randomNum;
                 String value = "value" + randomNum;
                 kvstore.put(key, value);
+            }// TODO: remove this once testing is done
+        }
+        else if (tokens[0].equals("testput")) {
+            // send n random put requests
+            int n = Integer.parseInt(tokens[1]);
+            for (int i = 0; i < n; i++) {
+                int randomNum = getRandomNumberUsingInts(0, 10000);
+                String key = "key" + randomNum;
+                String value = "value" + randomNum;
+                String cmd = "put " + key + " " + value;
+                handlePut(new String[]{"put", key, value}, cmd);
             }
         // TODO: also remove when done testing
         } else if (tokens[0].equals("cl")) {

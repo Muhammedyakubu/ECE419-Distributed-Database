@@ -58,7 +58,7 @@ public class Range {
         //handle corner case when keyrange wraps around zero>=
         if (start.compareTo(end) == 1) {
             if (hash.compareTo(BigInteger.ZERO) >=0 && hash.compareTo(end) <= 0) return true;
-            else if (hash.compareTo(start) >= 0 || hash.compareTo(FFFF) <= 0) return true;
+            else if (hash.compareTo(start) >= 0 && hash.compareTo(FFFF) <= 0) return true;
             else return false;
         }
 

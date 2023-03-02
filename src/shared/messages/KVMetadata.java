@@ -16,6 +16,7 @@ public class KVMetadata implements IKVMetadata{
     //WHEN INSERTING, SEARCH FOR SERVER WITH KEY RANGE AND UPDATE THOSE TWO RANGES
 
     public List<Pair<String, Range>> metadata = new Vector<Pair<String, Range>>(1);
+    public final BigInteger FFFF = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
 
     /**
      * Default constructor
@@ -61,7 +62,7 @@ public class KVMetadata implements IKVMetadata{
 
         String serverAddPort = serverAddress + ":" + port;
         BigInteger hash = getHash(serverAddPort);
-        BigInteger start = hash.add(BigInteger.ONE);
+        BigInteger start = hash.add(BigInteger.ONE).mod(FFFF.add(BigInteger.ONE));
         Range range;
         Pair rangeServer = new Pair();
         Pair newEntry = new Pair();

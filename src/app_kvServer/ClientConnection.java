@@ -110,7 +110,7 @@ public class ClientConnection implements Runnable {
 
 		switch (msg.getStatus()) {
 			case GET:
-				if (!checkStopped()){
+				if (checkStopped()){
 					msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
 					return msg;
 				}
@@ -133,7 +133,7 @@ public class ClientConnection implements Runnable {
 			case SERVER_PUT:
 				// we want this to do the same thing as a regular put
 			case PUT:
-				if (!checkStopped() && msg.getStatus() != IKVMessage.StatusType.SERVER_PUT){
+				if (checkStopped() && msg.getStatus() != IKVMessage.StatusType.SERVER_PUT){
 					msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
 					return msg;
 				}

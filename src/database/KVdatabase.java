@@ -53,7 +53,7 @@ public class KVdatabase implements IKVDatabase{
         else
             this.keyPath = dir;
 
-        //create datapath directory if it doesnt exist
+        //create datapath directory if it doesn't exist
         if (!Files.isDirectory(Paths.get(this.keyPath))){
             try {
                 Files.createDirectory(Paths.get(this.keyPath));
