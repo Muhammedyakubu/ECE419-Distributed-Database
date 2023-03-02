@@ -136,24 +136,9 @@ public class KVServer implements IKVServer {
 
 		this.db = new KVdatabase(this, dataPath);
 
-		// initialize ecsConnection and start it
-		if (ecsPort != -1) {
-			try {
-				ecsSocket = new Socket(ecsAddress, ecsPort);
-			}
-			catch(IOException e){
-				logger.error("Error! Cannot open server socket:");
-				if(e instanceof BindException){
-					logger.error("Port " + port + " is already bound!");
-				}
-				if(e instanceof UnknownHostException){
-					logger.error("Bind address could not be found!");
-				}
-			}
-		}
 
-		ecsConnection = new ECSConnection(ecsSocket, this);
-		new Thread(ecsConnection).start();
+
+
 
 
 
@@ -337,6 +322,8 @@ public class KVServer implements IKVServer {
 
 		running = initializeServer();
 
+		ecsConnection = new ECSConnection(ecsSocket, this);
+		new Thread(ecsConnection).start();
 		// handle client connections & stuff
 		if (serverSocket != null) {
 			while (running) {
@@ -392,6 +379,8 @@ public class KVServer implements IKVServer {
 			} else {
 				serverSocket = new ServerSocket(this.port, 50, this.bind_address);
 			}
+			if (ecsPort != -1)
+				ecsSocket = new Socket(ecsAddress, ecsPort);
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
 
