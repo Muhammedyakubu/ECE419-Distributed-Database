@@ -70,7 +70,7 @@ public class ECSConnection implements Runnable{
     }
 
     public void configureECS(){
-        KVMessage init = new KVMessage(KVMessage.StatusType.CONNECT_ECS, Integer.toString(kvServer.getPort()), kvServer.getHostname());
+        KVMessage init = new KVMessage(KVMessage.StatusType.CONNECT_ECS, Integer.toString(kvServer.getPort()), kvServer.getHostAddress());
         try {
             CommModule.sendMessage(init,ecs_socket);
         } catch (IOException ioe) {

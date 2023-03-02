@@ -41,7 +41,7 @@ public class ECSNode implements IECSNode{
         try {
             return CommModule.receiveMessage(this.socket);
         } catch (IOException e) {
-            logger.debug("Error receiving message from " + this.getNodeName());
+            logger.debug("Error receiving message from " + this.getNodeName(), e);
             return null;
         }
     }
@@ -86,6 +86,10 @@ public class ECSNode implements IECSNode{
         }
     }
 
+    public String getMetadataFormat() {
+        return this.hashRange.toString() + "," + this.getNodeName() + ";";
+    }
+
     public void sendMetadata(KVMetadata metadata) {
         sendMessage(new KVMessage(KVMessage.StatusType.UPDATE_METADATA, null, metadata.toString()));
 
@@ -96,10 +100,8 @@ public class ECSNode implements IECSNode{
         if (!success ||
                 receiveMessage().getStatus() != KVMessage.StatusType.UPDATE_METADATA) {
             logger.error("Metadata was not acknowledged by " + this.getNodeName());
-            return;
             // TODO: throw exception? or change return type to boolean?
         }
-
     }
 
     /**
