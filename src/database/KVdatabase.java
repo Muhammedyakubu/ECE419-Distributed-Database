@@ -192,6 +192,7 @@ public class KVdatabase implements IKVDatabase{
                     return false;
                 }
             }
+            Files.delete(rootPath);
 
         }
         catch (Exception e){
@@ -216,6 +217,7 @@ public class KVdatabase implements IKVDatabase{
                 res.add(key.replace(".txt", ""));
 
             }
+
         } catch (Exception e) {
             logger.warn("Exception occurred when deleting files: ", e);
         }

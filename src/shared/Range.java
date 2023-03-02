@@ -8,6 +8,7 @@ import java.math.BigInteger;
 public class Range {
     public BigInteger start;
     public BigInteger end;
+    public final BigInteger FFFF = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
 
     /**
      * Constructors initialize to a definite range or to -1 indicating unincorporated server
@@ -57,7 +58,7 @@ public class Range {
         //handle corner case when keyrange wraps around zero>=
         if (start.compareTo(end) == 1) {
             if (hash.compareTo(BigInteger.ZERO) >=0 && hash.compareTo(end) <= 0) return true;
-            else if (hash.compareTo(start) == 1 || hash.compareTo(end) == 1) return true;
+            else if (hash.compareTo(start) >= 0 || hash.compareTo(FFFF) <= 0) return true;
             else return false;
         }
 

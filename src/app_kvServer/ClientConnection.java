@@ -100,7 +100,6 @@ public class ClientConnection implements Runnable {
 			return msg;
 		}
 
-		//TODO Add once we're ready with ECS and server
 		if (msg.getStatus() != IKVMessage.StatusType.KEYRANGE && !kvServer.isResponsible(msg.getKey())) {
 			msg.setStatus(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
 			return msg;
