@@ -44,4 +44,10 @@ public class KVMetadataTest extends TestCase{
         String actual = md.findServer("hi");
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testKVMetadataRemoveLastServer(){
+        md.removeServer("localhost",5001);
+        assert(md.isEmpty());
+    }
 }

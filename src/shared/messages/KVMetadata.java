@@ -147,6 +147,10 @@ public class KVMetadata implements IKVMetadata{
         return null;
     }
 
+    public boolean isEmpty(){
+        return metadata.isEmpty();
+    }
+
     public String toString() {
         String returned_string = "";
         for (int i = 0; i < metadata.size(); i++)
