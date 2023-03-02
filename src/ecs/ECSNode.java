@@ -13,14 +13,13 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
 
-public class ECSNode implements IECSNode, Runnable{
+public class ECSNode implements IECSNode{
     private static final Logger logger = Logger.getLogger(ECSNode.class);
     private InetAddress address;
     private String hostAddress;
     private int port;
     private Range hashRange;
     private Socket socket;
-    private boolean running;
 
     public ECSNode(Socket socket, String hostAddress, int port, Range hashRange) throws IOException {
         this.socket = socket;
@@ -28,7 +27,6 @@ public class ECSNode implements IECSNode, Runnable{
         this.address = InetAddress.getByName(hostAddress);
         this.port = port;
         this.hashRange = hashRange;
-        this.running = false;
     }
 
     public void sendMessage(KVMessage message) {
@@ -80,23 +78,25 @@ public class ECSNode implements IECSNode, Runnable{
         return this.hashRange;
     }
 
-    /**
-     *
-     */
-    @Override
-    public void run() {
-
-    }
-
     public void sendMetadata(KVMetadata metadata) {
         sendMessage(new KVMessage(KVMessage.StatusType.UPDATE_METADATA, null, metadata.toString()));
-        // TODO: await response?
+
+        // await response
+        KVMessage response = receiveMessage();
+        boolean success = Boolean.parseBoolean(response.getKey());
+
+        if (!success ||
+                receiveMessage().getStatus() != KVMessage.StatusType.UPDATE_METADATA) {
+            logger.error("Metadata was not acknowledged by " + this.getNodeName());
+            return;
+            // TODO: throw exception? or change return type to boolean?
+        }
+
     }
 
     /**
      *
      * Need to make sure these protocol messages are sent and received consecutively
-     * TODO: Might have to use a lock on the socket
      * @param state
      * @return
      */

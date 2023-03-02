@@ -20,7 +20,13 @@ public class KVMessage implements IKVMessage {
     public static Logger logger = Logger.getLogger(KVMessage.class);
     public static ServerState serverStatus;
     StatusType status;
+    /** Represents the key of the key-value pair */
     String key;
+    /**
+     * Represents the value of the key-value pair
+     * null represents a delete request
+     * in non-client-server messages, acts as the message body
+     */
     String value;
     private static final char LINE_FEED = 0x0A;
     private static final char RETURN = 0x0D;

@@ -50,6 +50,8 @@ public interface IKVMetadata {
 	 */
 	public Range getRange(String serverAddPort);
 
+	public boolean isEmpty();
+
 
 	/**
 	 * Converts metadata to String

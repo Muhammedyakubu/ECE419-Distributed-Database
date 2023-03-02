@@ -98,6 +98,9 @@ public final class CommModule {
 
         msgBytes = tmp;
 
+        // TODO: might need to refactor this to return a null
+        //       when there's no message to read
+
         /* Check for empty message indicating a disconnect */
         if(msgBytes.length < 2) {
             throw new IOException("Error! Connection lost!");
