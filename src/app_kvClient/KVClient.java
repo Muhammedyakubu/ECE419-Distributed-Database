@@ -380,6 +380,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
      */
     @Override
     public void newConnection(String hostname, int port) throws Exception{
+            logger.info("Connecting to " + hostname + ":" + port);
             kvstore = new KVStore(hostname, port);
             kvstore.connect();
             kvstore.addListener(this);
@@ -437,13 +438,14 @@ public class KVClient implements IKVClient, ClientSocketListener {
             serverAddress = IPPort[0];
             serverPort = Integer.parseInt(IPPort[1]);
             newConnection(serverAddress, serverPort);
+            logger.info("Connected to new server. Resending request...");
             handleCommand(cmdLine);
         } catch(NumberFormatException nfe) {
             printError("No valid address. Port must be a number!");
-            logger.info("Unable to parse argument <port>", nfe);
+            logger.warn("Unable to parse argument <port>", nfe);
         } catch (UnknownHostException e) {
             printError("Unknown Host!");
-            logger.info("Unknown Host!", e);
+            logger.warn("Unknown Host!", e);
         } catch (IOException e) {
             printError("Could not establish connection!");
             logger.warn("Could not establish connection!", e);
