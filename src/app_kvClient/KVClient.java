@@ -156,7 +156,11 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     String key = tokens[1];
 
                     String currServerAddPort = serverAddress + ":" + serverPort;
-                    String newServerAddPort = metadata.findServer(key);
+                    String newServerAddPort;
+                    if (metadata != null) {
+                        newServerAddPort = metadata.findServer(key);
+                    }
+                    else newServerAddPort = currServerAddPort;
 
                     if(currServerAddPort.compareTo(newServerAddPort) != 0)
                     {
