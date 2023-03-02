@@ -53,11 +53,18 @@ public class KVServer implements IKVServer {
 	 * Shutdown hook for when the server shutsdown
 	 *
 	 */
-	public static class ShutDownHook extends Thread
+	public class ShutDownHook extends Thread
 	{
+
 		public void run(){
 			KVMessage msg = new KVMessage(IKVMessage.StatusType.SHUTTING_DOWN, "null", "null");
-			//CommModule.sendMessage(msg,ecsSocket);
+			try {
+				CommModule.sendMessage(msg,ecsSocket);
+			} catch (IOException e) {
+				logger.warn("Server Not closed properly", e);
+				System.exit(0);
+			}
+
 		}
 
 	}
@@ -130,8 +137,28 @@ public class KVServer implements IKVServer {
 		this.db = new KVdatabase(this, dataPath);
 
 		// initialize ecsConnection and start it
+		if (ecsPort != -1) {
+			try {
+				ecsSocket = new Socket(ecsAddress, ecsPort);
+			}
+			catch(IOException e){
+				logger.error("Error! Cannot open server socket:");
+				if(e instanceof BindException){
+					logger.error("Port " + port + " is already bound!");
+				}
+				if(e instanceof UnknownHostException){
+					logger.error("Bind address could not be found!");
+				}
+			}
+		}
+
 		ecsConnection = new ECSConnection(ecsSocket, this);
 		new Thread(ecsConnection).start();
+
+
+
+		Runtime current = Runtime.getRuntime();
+		current.addShutdownHook(new ShutDownHook());
 
 		if (run) run();
 	}
@@ -237,8 +264,8 @@ public class KVServer implements IKVServer {
 
 	public void updateMetadata(String metadata){
 		this.kvMetadata = new KVMetadata(metadata);
-
-		//TODO NEED TO UPDATE INTERNAL KEYRANGE HERE this.getRange
+		Range ownRange = this.kvMetadata.getRange(bind_address.getHostAddress() + Integer.toString(port));
+		this.keyRange.updateRange(ownRange.start, ownRange.end);
 
 	}
 	public void setState(IKVMessage.ServerState state) {
@@ -363,8 +390,7 @@ public class KVServer implements IKVServer {
 			}
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
-			if (ecsPort != -1)
-				ecsSocket = new Socket(ecsAddress,ecsPort);
+
 			return true;
 
 		} catch (IOException e) {
@@ -569,8 +595,6 @@ public class KVServer implements IKVServer {
 	 * java -jar m2-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number>
 	 */
 	public static void main(String[] args) {
-		Runtime current = Runtime.getRuntime();
-		current.addShutdownHook(new ShutDownHook());
 		parseCommandLine(args, true);
 	}
 

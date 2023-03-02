@@ -13,7 +13,7 @@ import java.net.Socket;
 public class ECSConnection implements Runnable{
 
     private static Logger logger = Logger.getLogger(ECSConnection.class);
-    private boolean isOpen;
+    public boolean isOpen;
 
     private Socket ecs_socket;
     private KVServer kvServer;
