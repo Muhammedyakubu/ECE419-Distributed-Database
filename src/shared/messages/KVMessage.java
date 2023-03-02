@@ -52,6 +52,7 @@ public class KVMessage implements IKVMessage {
     public KVMessage(byte[] bytes) {
         String msg = new String(rmvCtrChars(bytes));
         String[] parts = decode(msg);
+
         try {
             this.status = StatusType.valueOf(parts[0].strip().toUpperCase());
             this.key = parts[1].replace("\n", ""); // key won't contain spaces or control characters
@@ -136,6 +137,9 @@ public class KVMessage implements IKVMessage {
         String[] arr = msg.split(DELIMITER, 3);
         if (arr.length == 2) {
             return new String[]{arr[0], arr[1], ""};
+        }
+        if (arr.length == 1) {
+            return new String[]{arr[0], "", ""};
         }
     	return arr;
     }
