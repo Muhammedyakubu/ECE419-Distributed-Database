@@ -53,6 +53,13 @@ public class KVClient implements IKVClient, ClientSocketListener {
         }
     }
 
+    public static int getRandomNumberUsingInts(int min, int max) {
+        Random random = new Random();
+        return random.ints(min, max)
+                .findFirst()
+                .getAsInt();
+    }
+
     /**
      * Parses user input and takes appropriate actions.
      * @param cmdLine the String command entered by user.
@@ -67,6 +74,32 @@ public class KVClient implements IKVClient, ClientSocketListener {
             stop = true;
             disconnect();
             System.out.println(PROMPT + "Application exit!");
+
+        }
+        // TODO: remove this once testing is done
+        else if (tokens[0].equals("test")) {
+            // send n random put requests
+            int n = Integer.parseInt(tokens[1]);
+            for (int i = 0; i < n; i++) {
+                int randomNum = getRandomNumberUsingInts(0, 10000);
+                String key = "key" + randomNum;
+                String value = "value" + randomNum;
+                kvstore.put(key, value);
+            }
+        // TODO: also remove when done testing
+        } else if (tokens[0].equals("cl")) {
+            if(tokens.length == 2) {
+                try {
+                    serverAddress = "localhost";
+                    serverPort = Integer.parseInt(tokens[1]);
+                    newConnection(serverAddress, serverPort);
+                } catch (Exception e) {
+                    printError("Invalid command!");
+                    logger.warn("Invalid command!", e);
+                }
+            } else {
+                printError("Invalid number of parameters!");
+            }
 
         //GOOD
         } else if (tokens[0].equals("connect")){

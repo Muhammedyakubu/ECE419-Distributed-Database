@@ -170,6 +170,7 @@ public class ECSClient implements IECSClient {
                 }
             }
             kvNodes.put(node.getNodeName(), node);
+            logger.info("Added node " + node.getNodeName() + " to the cluster");
         } catch (IOException e) {
             e.printStackTrace();
         }

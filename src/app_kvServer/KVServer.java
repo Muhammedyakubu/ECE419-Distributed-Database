@@ -137,12 +137,6 @@ public class KVServer implements IKVServer {
 
 		this.db = new KVdatabase(this, dataPath);
 
-
-
-
-
-
-
 		Runtime current = Runtime.getRuntime();
 //		current.addShutdownHook(new ShutDownHook());
 
@@ -261,39 +255,41 @@ public class KVServer implements IKVServer {
 	public void setState(IKVMessage.ServerState state) {
 		this.currStatus = state;
 	}
-	public boolean rebalance(String port, String address, String range){
+	public int rebalance(String port, String address, String range){
 		this.currStatus = IKVMessage.ServerState.SERVER_WRITE_LOCK;
 
 		//Populate keys to send
 		buildKeysToSend(range);
 		Socket receiver;
+		int numKeysSent = keysToSend.size();
 		//send keys to new server
 		try {
 			receiver = new Socket(address, Integer.parseInt(port));
 		}
 		catch(IOException ioe){
 			logger.warn("Server-Server connection lost!", ioe);
-			return false;
+			return -1;
 		}
 		for (String key:keysToSend){
-			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, db.getValue(key));
+			String dbKey = key.replace(".txt", "");
+			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, dbKey, db.getValue(dbKey));
 			try {
 				CommModule.sendMessage(msg, receiver);
 			}
 			catch(IOException ioe){
 				logger.warn("Server-Server connection lost!", ioe);
-				return false;
+				return -1;
 			}
 			KVMessage response;
 			try {
 				response = CommModule.receiveMessage(receiver);
 			} catch (IOException ioe) {
 				logger.warn("Server-Server connection lost!", ioe);
-				return false;
+				return -1;
 			}
 			if (response.getStatus() != IKVMessage.StatusType.PUT_SUCCESS){
 				logger.warn("Failure in rebalancing keys!");
-				return false;
+				return -1;
 			}
 		}
 		//delete keys
@@ -302,10 +298,10 @@ public class KVServer implements IKVServer {
 				db.deletePair(key);
 			} catch (IOException ioe) {
 				logger.warn("Failure in deleting rebalanced keys");
-				return false;
+				return -1;
 			}
 		}
-		return true;
+		return numKeysSent;
 	}
 
 	public void buildKeysToSend(String range){

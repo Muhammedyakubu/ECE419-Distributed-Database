@@ -90,8 +90,9 @@ public class ECSConnection implements Runnable{
                 String stripSemiColon = msg.getValue().split(";")[0];
                 String[] values = stripSemiColon.split(",");
                 String[] address = values[2].split(":");
-                boolean success = kvServer.rebalance(address[1],address[0], values[0] + "," + values[1]);
-                if (success)
+                int numKeysSent = kvServer.rebalance(address[1],address[0], values[0] + "," + values[1]);
+                msg.setKey(Integer.toString(numKeysSent));
+                if (numKeysSent >= 0)
                     msg.setStatus(IKVMessage.StatusType.REBALANCE_SUCCESS);
                 else
                     msg.setStatus(IKVMessage.StatusType.REBALANCE_ERROR);
