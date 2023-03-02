@@ -13,14 +13,13 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
 
-public class ECSNode implements IECSNode, Runnable{
+public class ECSNode implements IECSNode{
     private static final Logger logger = Logger.getLogger(ECSNode.class);
     private InetAddress address;
     private String hostAddress;
     private int port;
     private Range hashRange;
     private Socket socket;
-    private boolean running;
 
     public ECSNode(Socket socket, String hostAddress, int port, Range hashRange) throws IOException {
         this.socket = socket;
@@ -80,12 +79,11 @@ public class ECSNode implements IECSNode, Runnable{
         return this.hashRange;
     }
 
-    /**
-     *
-     */
-    @Override
-    public void run() {
-
+    public KVMessage handleRequest(KVMessage request) {
+        if (request == null) {
+            return null;
+        }
+        return null;
     }
 
     public void sendMetadata(KVMetadata metadata) {
