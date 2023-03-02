@@ -429,8 +429,6 @@ public class KVClient implements IKVClient, ClientSocketListener {
         String[] tokens = cmdLine.split("\\s+");
         metadata = null;
         try {
-            newConnection(serverAddress, serverPort);
-            handleCommand(cmdLine);
             IKVMessage response = kvstore.getKeyRange();
             metadata = new KVMetadata(response.getValue());
             String serverAddPort = metadata.findServer(tokens[1]);
@@ -438,6 +436,8 @@ public class KVClient implements IKVClient, ClientSocketListener {
             disconnect();
             serverAddress = IPPort[0];
             serverPort = Integer.parseInt(IPPort[1]);
+            newConnection(serverAddress, serverPort);
+            handleCommand(cmdLine);
         } catch(NumberFormatException nfe) {
             printError("No valid address. Port must be a number!");
             logger.info("Unable to parse argument <port>", nfe);

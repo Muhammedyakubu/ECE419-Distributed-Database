@@ -51,7 +51,7 @@ public class KVMetadataTest extends TestCase{
         md.removeServer("localhost",5000);
         assert(md.isEmpty());
     }
-
+    @Test
     public void testKVMetadataAddFirstServer(){
         md.removeServer("localhost",5000);
         md.addServer("localhost",5001);
@@ -61,7 +61,7 @@ public class KVMetadataTest extends TestCase{
         String actual = md.toString();
         assertEquals(expected, actual);
     }
-
+    @Test
     public void testKVMetadataAddServer(){
         md.removeServer("localhost",5000);
         md.addServer("localhost",5000);
@@ -73,7 +73,23 @@ public class KVMetadataTest extends TestCase{
         String expected = start_two.toString(16) + "," + hash_two.toString(16) + "," + "localhost:5200;"
                             + start_one.toString(16) + "," + hash_one.toString(16) + "," + "localhost:5000;";
         String actual = md.toString();
-        assertNotNull(test);
+        assertEquals(expected, actual);
         //assertEquals(expected, actual);
     }
+
+    //WHEN DELETING LAST, THE OTHER GETS DELETED
+    @Test
+    public void testKVMetadataRemoveServer(){
+        md.removeServer("localhost",5000);
+        md.addServer("localhost",5000);
+        md.addServer("localhost",5200);
+        Pair<String, Range> test = md.removeServer("localhost",5000);
+        BigInteger hash = getHash("localhost:5200");
+        BigInteger start = hash.add(BigInteger.ONE);
+        String expected = start.toString(16) + "," + hash.toString(16) + "," + "localhost:5200;";
+        String actual = md.toString();
+        assertEquals(expected, actual);
+        //assertEquals(expected, actual);
+    }
+
 }
