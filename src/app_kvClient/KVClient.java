@@ -207,7 +207,6 @@ public class KVClient implements IKVClient, ClientSocketListener {
             }
 
         } else if(tokens[0].equals("keyrange")) {
-            System.out.println("NEED TO IMPLEMENT THIS FUNCTIONALITY");
             //if there is a connected client
             if(kvstore != null){
 

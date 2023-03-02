@@ -384,6 +384,8 @@ public class KVServer implements IKVServer {
 				ecsSocket = new Socket(ecsAddress, ecsPort);
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
+			logger.info("Connected to ECS on port: "
+					+ ecsSocket.getLocalPort());
 
 			return true;
 

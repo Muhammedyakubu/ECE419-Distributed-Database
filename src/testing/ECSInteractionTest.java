@@ -33,29 +33,22 @@ public class ECSInteractionTest extends TestCase {
     //private ECSConnection ecsConnect;
 
     public void setUpECS() {
-
-        // check if testsuite server is already running
-        // skip logger setup if testsuite server is already running
-
-        System.out.println("Creating ECS...");
-        try {
-            ecsClient = new ECSClient("localhost", 10000);
-            ecsClient.initialize();
-        }
-        catch(UnknownHostException e){
-            System.out.println("Unknown host!");
-        }
         ecsThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                System.out.println("Creating ECS...");
                 try {
-                    ecsClient.run();
-                } catch (Exception e) {
+                    ecsClient = new ECSClient("localhost", 10000);
+                } catch (UnknownHostException e) {
+                    System.out.println("Unknown host!");
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         });
     }
+
+
 
     public static boolean available(int port) {
         if (port < 1024 || port > 65535) {
@@ -94,7 +87,7 @@ public class ECSInteractionTest extends TestCase {
 
         // check if testsuite server is already running
         // skip logger setup if testsuite server is already running
-        boolean testsuiteServerRunning = !available(50000);
+        boolean testsuiteServerRunning = !available(50004);
         if (testsuiteServerRunning) {
             System.out.println("Testsuite server is already running, skipping logger setup");
         } else {
@@ -107,7 +100,12 @@ public class ECSInteractionTest extends TestCase {
         }
 
         System.out.println("Creating server...");
-        //kvServer = new KVServer(50000, 10, "FIFO", InetAddress.getByName("localhost"), "KVStorage/testing" , InetAddress.getByName("localhost"), 10000);
+        try{
+           InetAddress addr = InetAddress.getByName("localhost");
+            kvServer = new KVServer(50004, 10, "FIFO", addr, "src/KVStorage/testing" , addr, 10000);
+        } catch(Exception e){
+           System.out.println("Ugh");
+        }
         if (testsuiteServerRunning) {
             System.out.println("Testsuite server is already running, skipping server start");
             return;
@@ -127,6 +125,7 @@ public class ECSInteractionTest extends TestCase {
 
     @Before
     public void setUp() {
+        setUpECS();
         setUpServer();
         kvClient = new KVStore("localhost", 50000);
         try {
@@ -141,20 +140,20 @@ public class ECSInteractionTest extends TestCase {
         kvClient.disconnect();
         kvServer.clearStorage();
     }
-//    @Test
-//    public void testKeyrangeRequest() {
-//
-//        String command = "keyrange";
-//        String response = null;
-//        Exception ex = null;
-//        client_app = new KVClient();
-//        //NEED TO FIX SERVER_STOPPED STATUS
-//        try {
-//            client_app.kvstore = this.kvClient;
-//            response = client_app.handleCommand(command);
-//        } catch (Exception e) {
-//            ex = e;
-//        }
-//        Assert.assertTrue(ex == null && response.equals(IKVMessage.StatusType.GET_SUCCESS.toString() + " a,b,default:default;"));
-//    }
+    @Test
+    public void testKeyrangeRequest() {
+
+        String command = "keyrange";
+        String response = null;
+        Exception ex = null;
+        client_app = new KVClient();
+        //NEED TO FIX SERVER_STOPPED STATUS
+        try {
+            client_app.kvstore = this.kvClient;
+            response = client_app.handleCommand(command);
+        } catch (Exception e) {
+            ex = e;
+        }
+        Assert.assertTrue(ex == null && response.equals(IKVMessage.StatusType.KEYRANGE_SUCCESS.toString()));
+    }
 }
