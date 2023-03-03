@@ -102,7 +102,7 @@ public class ECSInteractionTest extends TestCase {
         System.out.println("Creating server...");
         try{
            InetAddress addr = InetAddress.getByName("localhost");
-            kvServer = new KVServer(50004, 10, "FIFO", addr, "src/KVStorage/testing" , addr, 10000);
+            kvServer = new KVServer(50004, 10, "FIFO", "localhost", "src/KVStorage/testing" , addr, 10000);
         } catch(Exception e){
            System.out.println("Ugh");
         }
