@@ -171,7 +171,7 @@ public class ECSInteractionTest extends TestCase {
 
     @Test
     public void testPut() {
-        String key = "foo2";
+        String key = "testPut";
         String value = "bar2";
         String response = null;
         Exception ex = null;
