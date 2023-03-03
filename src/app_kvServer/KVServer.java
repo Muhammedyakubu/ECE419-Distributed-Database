@@ -33,7 +33,7 @@ public class KVServer implements IKVServer {
 	
 	public static Logger logger = Logger.getLogger(KVServer.class);
 	private int port;
-	private InetAddress bind_address;
+	private String bindAddress;
 	private InetAddress ecsAddress;
 	private int ecsPort;
 	private int cacheSize;
@@ -106,18 +106,18 @@ public class KVServer implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy, boolean run) {
 		this(port, cacheSize, strategy, null, null, null, -1, run);
 	}
-	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, boolean run) {
+	public KVServer(int port, int cacheSize, String strategy, String bind_address, boolean run) {
 		this(port, cacheSize, strategy, bind_address, null, null, -1, run);
 	}
 
-	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath, InetAddress ecsAddr, int ecs_port) {
+	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, InetAddress ecsAddr, int ecs_port) {
 		this(port, cacheSize, strategy, bind_address, dataPath, ecsAddr, ecs_port, true);
 	}
-	public KVServer(int port, int cacheSize, String strategy, InetAddress bind_address, String dataPath, InetAddress ecsAddr, int ecs_port, boolean run) {
+	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, InetAddress ecsAddr, int ecs_port, boolean run) {
 		this.port = port;
 		this.cacheSize = cacheSize;
 		this.dataPath = dataPath;
-		this.bind_address = bind_address;
+		this.bindAddress = bind_address;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.kvMetadata = new KVMetadata();
 		this.ecsAddress = ecsAddr;
@@ -161,23 +161,17 @@ public class KVServer implements IKVServer {
 	}
 
 	public String getHostAddress(){
-		return bind_address.getHostAddress();
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
     public String getHostname(){
-		InetAddress ip;
-		String hostname;
-		try {
-			ip = InetAddress.getLocalHost();
-			hostname = ip.getHostName();
-			System.out.println("Your current IP address : " + ip);
-			System.out.println("Your current Hostname : " + hostname);
-			return hostname;
-		} catch (UnknownHostException e) {
-				e.printStackTrace();
-		}
-		return null;
+		return bindAddress;
 	}
 
 	@Override
@@ -264,7 +258,7 @@ public class KVServer implements IKVServer {
 
 	public void updateMetadata(String metadata){
 		this.kvMetadata = new KVMetadata(metadata);
-		Range ownRange = this.kvMetadata.getRange(bind_address.getHostAddress() + ":" + Integer.toString(port));
+		Range ownRange = this.kvMetadata.getRange(getHostname() + ":" + Integer.toString(port));
 		this.keyRange.updateRange(ownRange.start, ownRange.end);
 
 	}
@@ -389,10 +383,11 @@ public class KVServer implements IKVServer {
 	private boolean initializeServer() {
 		logger.info("Initialize server ...");
 		try {
-			if(this.bind_address == null){
+			if(this.bindAddress == null){
 				serverSocket = new ServerSocket(this.port);
 			} else {
-				serverSocket = new ServerSocket(this.port, 50, this.bind_address);
+				InetAddress inetAddress = InetAddress.getByName(this.bindAddress);
+				serverSocket = new ServerSocket(this.port, 50, inetAddress);
 			}
 			if (ecsPort != -1)
 				ecsSocket = new Socket(ecsAddress, ecsPort);
@@ -568,10 +563,9 @@ public class KVServer implements IKVServer {
 			}*/
 
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
-			InetAddress bind_address = InetAddress.getByName(address);
 			InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
 			if (!ecs_present) ecs_bind = null;
-			dataPath = "./src/KVStorage/" + bind_address.getHostAddress()+":"+port_num;
+			dataPath = "./src/KVStorage/" + address +"-"+port_num;
 			Level level = Level.ALL;
 
 			if(!logLevel.equals(" ")){
@@ -586,7 +580,7 @@ public class KVServer implements IKVServer {
 			//WILL THROW I/O EXCEPTION IF PATH IS INVALID
 			if(run_server) {
 				new LogSetup(logPath, level);
-				KVServer server = new KVServer(port_num, 10, "FIFO", bind_address, dataPath, ecs_bind, ecs_port);
+				KVServer server = new KVServer(port_num, 10, "FIFO", address, dataPath, ecs_bind, ecs_port);
 			}
 
 			String returned = "Port: " + port_num + " Address: " + address + " Datapath: " + dataPath +

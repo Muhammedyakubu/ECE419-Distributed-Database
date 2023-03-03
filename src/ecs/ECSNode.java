@@ -51,7 +51,7 @@ public class ECSNode implements IECSNode{
      */
     @Override
     public String getNodeName() {
-        return this.address.getHostAddress() + ":" + this.port;
+        return this.hostAddress + ":" + this.port;
     }
 
     /**

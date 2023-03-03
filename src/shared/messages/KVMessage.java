@@ -108,7 +108,7 @@ public class KVMessage implements IKVMessage {
      */
     @Override
     public String toString() {
-        return status.toString() + " " + key + " " + value;
+            return status.toString() + " " + key + " " + value;
     }
 
     @Override
