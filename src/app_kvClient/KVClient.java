@@ -410,7 +410,11 @@ public class KVClient implements IKVClient, ClientSocketListener {
     @Override
     public void handleNewMessage(KVMessage msg) {
         if(!stop) {
-            System.out.println(msg.toString());
+            if (msg.getStatus() == IKVMessage.StatusType.KEYRANGE_SUCCESS) {
+                System.out.println("keyrange " + msg.getValue() + "\r\n");
+            } else {
+                System.out.println(msg.toString());
+            }
         }
     }
 
