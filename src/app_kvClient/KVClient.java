@@ -224,8 +224,11 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 try {
                     KVMessage response = (KVMessage) kvstore.getKeyRange(); //NEED TO IMPLEMENT THIS
                     handleNewMessage(response);
+                    //System.out.println(response.getStatus().toString());
                     metadata = null;
-                    metadata = new KVMetadata(response.getValue());
+                    metadata = new KVMetadata(response.getKey());
+                    //String test = response.getStatus().toString();
+                    //System.out.println(response.getStatus().toString());
                     return response.getStatus().toString();
                 } catch(IOException e){
                     logger.info("Connection to server was lost.");
