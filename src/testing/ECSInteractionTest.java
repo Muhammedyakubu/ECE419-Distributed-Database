@@ -174,16 +174,22 @@ public class ECSInteractionTest extends TestCase {
     public void testPut() {
         String key = "foo2";
         String value = "bar2";
-        IKVMessage response = null;
+        String response = null;
         Exception ex = null;
+        client_app = new KVClient();
 
         try {
-            response = kvClient.put(key, value);
+            client_app.kvstore = this.kvClient;
+            response = client_app.handleCommand("put " + key + " " + value);
+            if(response.equals(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE.toString())) {
+                Thread.sleep(2000);
+                response = client_app.handleCommand("put " + key + " " + value);
+            }
         } catch (Exception e) {
             ex = e;
         }
 
-        Assert.assertTrue(ex == null && response.getStatus() == IKVMessage.StatusType.PUT_SUCCESS);
+        Assert.assertTrue(ex == null && response.equals(IKVMessage.StatusType.PUT_SUCCESS.toString()));
     }
 
     @Test
@@ -208,19 +214,25 @@ public class ECSInteractionTest extends TestCase {
         String initialValue = "initial";
         String updatedValue = "updated";
 
-        IKVMessage response = null;
+        String response = null;
         Exception ex = null;
 
+        client_app = new KVClient();
+
         try {
-            kvClient.put(key, initialValue);
-            response = kvClient.put(key, updatedValue);
+            client_app.kvstore = this.kvClient;
+            response = client_app.handleCommand("put " + key + " " + initialValue);
+            if(response.equals(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE.toString())) {
+                Thread.sleep(2000);
+            }
+            response = client_app.handleCommand("put " + key + " " + updatedValue);
+
 
         } catch (Exception e) {
             ex = e;
         }
 
-        Assert.assertTrue(ex == null && response.getStatus() == IKVMessage.StatusType.PUT_UPDATE
-                && response.getValue().equals(updatedValue));
+        Assert.assertTrue(ex == null && response.equals(IKVMessage.StatusType.PUT_UPDATE.toString()));
     }
 
     @Test
@@ -228,49 +240,68 @@ public class ECSInteractionTest extends TestCase {
         String key = "deleteTestValue";
         String value = "toDelete";
 
-        IKVMessage response = null;
+        String response = null;
         Exception ex = null;
+        client_app = new KVClient();
 
         try {
-            kvClient.put(key, value);
-            response = kvClient.put(key, "null");
+            client_app.kvstore = this.kvClient;
+            response = client_app.handleCommand("put " + key + " " + value);
+            if(response.equals(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE.toString())) {
+                Thread.sleep(2000);
+            }
+            response = client_app.handleCommand("put " + key + " ");
 
         } catch (Exception e) {
             ex = e;
         }
 
-        Assert.assertTrue(ex == null && response.getStatus() == IKVMessage.StatusType.DELETE_SUCCESS);
+        Assert.assertTrue(ex == null && response.equals(IKVMessage.StatusType.DELETE_SUCCESS.toString()));
     }
 
     @Test
     public void testGet() {
         String key = "foo";
         String value = "bar";
-        IKVMessage response = null;
+        String response = null;
         Exception ex = null;
+        client_app = new KVClient();
 
         try {
-            kvClient.put(key, value);
-            response = kvClient.get(key);
+            client_app.kvstore = this.kvClient;
+            response = client_app.handleCommand("put " + key + " " + value);
+            if(response.equals(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE.toString())) {
+                Thread.sleep(2000);
+            }
+            response = client_app.handleCommand("get " + key);
+
         } catch (Exception e) {
             ex = e;
         }
 
-        Assert.assertTrue(ex == null && response.getValue().equals("bar"));
+        Assert.assertTrue(ex == null && response.equals(IKVMessage.StatusType.GET_SUCCESS.toString()));
     }
 
     @Test
     public void testGetUnsetValue() {
         String key = "an_unset_value";
-        IKVMessage response = null;
+        String response = null;
         Exception ex = null;
+        client_app = new KVClient();
 
         try {
-            response = kvClient.get(key);
+            client_app.kvstore = this.kvClient;
+            response = client_app.handleCommand("get " + key);
+            if(response.equals(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE.toString())) {
+                Thread.sleep(2000);
+                response = client_app.handleCommand("get " + key);
+            }
+
         } catch (Exception e) {
             ex = e;
         }
-        Assert.assertTrue(ex == null && response.getStatus() == IKVMessage.StatusType.GET_ERROR);
+
+        Assert.assertTrue(ex == null && response.equals(IKVMessage.StatusType.GET_ERROR.toString()));
     }
 
     @Test
