@@ -487,6 +487,7 @@ public class KVServer implements IKVServer {
 			String address = "localhost";
 			String ecsAddress = "localhost";
 			String dataPath = ""; //DEFAULT HANDLED IN KVDATABASE
+			boolean dataPath_present = false;
 			String logPath = "logs/server.log";
 			String logLevel = " "; //DEFAULT IS SET TO ALL LATER
 
@@ -527,6 +528,7 @@ public class KVServer implements IKVServer {
 				//DATAPATH CHECK
 				if(args[i].equals("-d")) {
 					dataPath = args[i+1];
+					dataPath_present = true;
 				}
 
 				//LOGPATH CHECK
@@ -543,7 +545,6 @@ public class KVServer implements IKVServer {
 				if(args[i].equals("-t")) {
 					// TODO: remove randomize port for testing
 					port_num = getRandomNumberUsingInts(50000, 60000);
-					//dataPath = "./src/KVStorage/" + port_num;
 				}
 
 			}
@@ -564,8 +565,10 @@ public class KVServer implements IKVServer {
 
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
 			InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
-			if (!ecs_present) ecs_bind = null;
-			dataPath = "./src/KVStorage/" + address +"-"+port_num;
+			if (!dataPath_present)
+				dataPath = "./src/KVStorage/" + address +"-"+port_num;
+			if (!ecs_present)
+				ecs_bind = null;
 			Level level = Level.ALL;
 
 			if(!logLevel.equals(" ")){
