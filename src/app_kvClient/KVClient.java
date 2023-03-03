@@ -439,7 +439,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
         metadata = null;
         try {
             IKVMessage response = kvstore.getKeyRange();
-            metadata = new KVMetadata(response.getValue());
+            metadata = new KVMetadata(response.getKey());
             String serverAddPort = metadata.findServer(tokens[1]);
             String[] IPPort = serverAddPort.split(":");
             disconnect();

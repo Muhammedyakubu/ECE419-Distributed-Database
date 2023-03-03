@@ -177,7 +177,7 @@ public class ClientConnection implements Runnable {
 				break;
 			case KEYRANGE:
 				msg.setStatus(IKVMessage.StatusType.KEYRANGE_SUCCESS);
-				msg.setValue(kvServer.getMetadata().toString());
+				msg.setKey(kvServer.getMetadata().toString());
 				break;
 			default:
 				logger.error("Error! Invalid message type: " + msg.getStatus());
