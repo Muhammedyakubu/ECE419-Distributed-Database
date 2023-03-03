@@ -58,7 +58,7 @@ public class ECSConnection implements Runnable{
                 } catch (IOException ioe) {
                     logger.info("Error! Connection to ECS lost!");
                     isOpen.set(false);
-                    System.exit(1);
+                    return;
                 }
             }
         }

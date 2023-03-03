@@ -38,6 +38,7 @@ public class ECSInteractionTest extends TestCase {
         setup = true;
         //System.out.println("Creating ECS...");
         try {
+
             new LogSetup("logs/testing/test.log", Level.ALL);
         } catch (IOException e) {
             e.printStackTrace();
@@ -50,8 +51,6 @@ public class ECSInteractionTest extends TestCase {
                     ecsClient = new ECSClient("localhost", 10011);
                 } catch (UnknownHostException e) {
                     System.out.println("Unknown host!");
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         });

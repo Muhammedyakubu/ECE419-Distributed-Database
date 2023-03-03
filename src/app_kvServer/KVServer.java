@@ -315,9 +315,9 @@ public class KVServer implements IKVServer {
 //				db.deletePair(key);
 			} catch (Exception ioe) {
 				logger.warn("Failure in deleting rebalanced keys");
-				return -1;
 			}
 		}
+		keysToSend.clear();
 		return numKeysSent;
 	}
 
