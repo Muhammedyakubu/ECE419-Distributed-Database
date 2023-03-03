@@ -225,7 +225,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     KVMessage response = (KVMessage) kvstore.getKeyRange(); //NEED TO IMPLEMENT THIS
                     handleNewMessage(response);
                     metadata = null;
-                    metadata = new KVMetadata(response.getValue());
+                    metadata = new KVMetadata(response.getKey());
                     return response.getStatus().toString();
                 } catch(IOException e){
                     logger.info("Connection to server was lost.");
@@ -336,38 +336,40 @@ public class KVClient implements IKVClient, ClientSocketListener {
         }
     }
 
+    private static Level StringToLevel(String levelString) {
+
+        if(levelString.equals(Level.ALL.toString())) {
+            return Level.ALL;
+        } else if(levelString.equals(Level.DEBUG.toString())) {
+            return Level.DEBUG;
+        } else if(levelString.equals(Level.INFO.toString())) {
+            return Level.INFO;
+        } else if(levelString.equals(Level.WARN.toString())) {
+            return Level.WARN;
+        } else if(levelString.equals(Level.ERROR.toString())) {
+            return Level.ERROR;
+        } else if(levelString.equals(Level.FATAL.toString())) {
+            return Level.FATAL;
+        } else if(levelString.equals(Level.OFF.toString())) {
+            return Level.OFF;
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Sets the level of the client logger.
      * @param levelString the desired log level.
      * @return String
      */
     private String setLevel(String levelString) {
-
-        if(levelString.equals(Level.ALL.toString())) {
-            logger.setLevel(Level.ALL);
-            return Level.ALL.toString();
-        } else if(levelString.equals(Level.DEBUG.toString())) {
-            logger.setLevel(Level.DEBUG);
-            return Level.DEBUG.toString();
-        } else if(levelString.equals(Level.INFO.toString())) {
-            logger.setLevel(Level.INFO);
-            return Level.INFO.toString();
-        } else if(levelString.equals(Level.WARN.toString())) {
-            logger.setLevel(Level.WARN);
-            return Level.WARN.toString();
-        } else if(levelString.equals(Level.ERROR.toString())) {
-            logger.setLevel(Level.ERROR);
-            return Level.ERROR.toString();
-        } else if(levelString.equals(Level.FATAL.toString())) {
-            logger.setLevel(Level.FATAL);
-            return Level.FATAL.toString();
-        } else if(levelString.equals(Level.OFF.toString())) {
-            logger.setLevel(Level.OFF);
-            return Level.OFF.toString();
-        } else {
-            String response = "Invalid";
-            return response;
+        Level level = StringToLevel(levelString);
+        if(level == null) {
+            return "Invalid";
         }
+
+        Logger.getRootLogger().setLevel(level);
+        return level.toString();
     }
 
     /**

@@ -101,7 +101,7 @@ public class ECSInteractionTest extends TestCase {
         setup_server = true;
         // check if testsuite server is already running
         // skip logger setup if testsuite server is already running
-//        boolean testsuiteServerRunning = !available(50004);
+//        boolean testsuiteServerRunning = !available(50000);
 //        if (testsuiteServerRunning) {
 //            System.out.println("Testsuite server is already running, skipping logger setup");
 //        } else {
@@ -117,7 +117,7 @@ public class ECSInteractionTest extends TestCase {
         try{
            InetAddress addr = InetAddress.getByName("localhost");
             kvServer = new KVServer(49995, 10, "FIFO", "localhost",
-                    "src/KVStorage/testing" , addr, 10004);
+                    "src/KVStorage" , addr, 10004);
             //kvServer.run();
         } catch(Exception e){
            System.out.println("Ugh");

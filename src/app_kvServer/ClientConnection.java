@@ -55,15 +55,13 @@ public class ClientConnection implements Runnable {
 			
 			while(isOpen) {
 				try {
-					/*KVMessage response = handleClientMessage(receiveMessage());
-					sendMessage(response);*/
 					KVMessage response = handleClientMessage(CommModule.receiveMessage(clientSocket));
 					CommModule.sendMessage(response, clientSocket);
 					
 				/* connection either terminated by the client or lost due to 
 				 * network problems */
 				} catch (IOException ioe) {
-					logger.info("Error! Connection lost!");
+					logger.info("Error! Connection to client or server terminated!");
 					isOpen = false;
 				}				
 			}

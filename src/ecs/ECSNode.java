@@ -78,6 +78,13 @@ public class ECSNode implements IECSNode{
         return this.hashRange;
     }
 
+    public void updateNodeHashRange(KVMetadata metadata) {
+        Range hr = metadata.getRange(this.getNodeName());
+        if (hr != null && !hr.equals(this.hashRange)) {
+            this.hashRange = hr;
+        }
+    }
+
     public int getAvailableSocketBytes() {
         try {
             return socket.getInputStream().available();
@@ -92,6 +99,9 @@ public class ECSNode implements IECSNode{
 
     public void sendMetadata(KVMetadata metadata) {
         sendMessage(new KVMessage(KVMessage.StatusType.UPDATE_METADATA, null, metadata.toString()));
+
+        // update local metadata
+        this.updateNodeHashRange(metadata);
 
         // await response
         KVMessage response = receiveMessage();

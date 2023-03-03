@@ -40,6 +40,11 @@ public class Range {
         end = second;
     };
 
+    public boolean equals(Range other){
+        if (this.start.equals(other.start) && this.end.equals(other.end)) return true;
+        else return false;
+    }
+
     public void updateStart(BigInteger first){
         start = first;
     };
