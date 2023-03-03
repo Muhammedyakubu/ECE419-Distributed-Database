@@ -116,7 +116,7 @@ public class KVServer implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, InetAddress ecsAddr, int ecs_port, boolean run) {
 		this.port = port;
 		this.cacheSize = cacheSize;
-		this.dataPath = dataPath;
+		this.dataPath = dataPath + "/" + bind_address + "-" + port;
 		this.bindAddress = bind_address;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.kvMetadata = new KVMetadata();
@@ -566,7 +566,7 @@ public class KVServer implements IKVServer {
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
 			InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
 			if (!dataPath_present)
-				dataPath = "./src/KVStorage/" + address +"-"+port_num;
+				dataPath = "./src/KVStorage/";
 			if (!ecs_present)
 				ecs_bind = null;
 			Level level = Level.ALL;
