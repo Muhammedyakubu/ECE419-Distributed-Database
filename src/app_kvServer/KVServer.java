@@ -50,6 +50,7 @@ public class KVServer implements IKVServer {
 	public KVMessage.ServerState currStatus;
 	ECSConnection ecsConnection;
 	Thread ecsThread;
+	private final int SHUTDOWN_TIMEOUT = 5000;
 
 	/**
 	 * Shutdown hook for when the server shutsdown
@@ -76,7 +77,7 @@ public class KVServer implements IKVServer {
 				// we need to set isOpen to false so it will stop listening after
 				ecsConnection.isOpen.set(false);
 				logger.debug("Waiting for ECSConnection thread to finish...");
-				ecsThread.join();
+				ecsThread.join(SHUTDOWN_TIMEOUT);
 				logger.debug("ECSConnection thread finished");
 				// assume server has most updated metadata
 			} catch (IOException e) {
@@ -116,7 +117,7 @@ public class KVServer implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, InetAddress ecsAddr, int ecs_port, boolean run) {
 		this.port = port;
 		this.cacheSize = cacheSize;
-		this.dataPath = dataPath;
+		this.dataPath = dataPath + "/" + bind_address + "-" + port;
 		this.bindAddress = bind_address;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.kvMetadata = new KVMetadata();
@@ -147,7 +148,7 @@ public class KVServer implements IKVServer {
 				break;
 		}
 
-		this.db = new KVdatabase(this, dataPath);
+		this.db = new KVdatabase(this, this.dataPath);
 
 		Runtime current = Runtime.getRuntime();
 		current.addShutdownHook(new ShutDownHook());
@@ -486,7 +487,8 @@ public class KVServer implements IKVServer {
 			boolean ecs_present = false;
 			String address = "localhost";
 			String ecsAddress = "localhost";
-			String dataPath = ""; //DEFAULT HANDLED IN KVDATABASE
+			String dataPath = "./src/KVStorage"; //DEFAULT HANDLED IN KVDATABASE
+			boolean dataPath_present = false;
 			String logPath = "logs/server.log";
 			String logLevel = " "; //DEFAULT IS SET TO ALL LATER
 
@@ -527,6 +529,7 @@ public class KVServer implements IKVServer {
 				//DATAPATH CHECK
 				if(args[i].equals("-d")) {
 					dataPath = args[i+1];
+					dataPath_present = true;
 				}
 
 				//LOGPATH CHECK
@@ -543,7 +546,6 @@ public class KVServer implements IKVServer {
 				if(args[i].equals("-t")) {
 					// TODO: remove randomize port for testing
 					port_num = getRandomNumberUsingInts(50000, 60000);
-					//dataPath = "./src/KVStorage/" + port_num;
 				}
 
 			}
@@ -564,8 +566,10 @@ public class KVServer implements IKVServer {
 
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
 			InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
-			if (!ecs_present) ecs_bind = null;
-			dataPath = "./src/KVStorage/" + address +"-"+port_num;
+			if (!dataPath_present)
+				dataPath = "./src/KVStorage";
+			if (!ecs_present)
+				ecs_bind = null;
 			Level level = Level.ALL;
 
 			if(!logLevel.equals(" ")){

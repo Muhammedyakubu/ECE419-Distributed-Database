@@ -104,19 +104,16 @@ public class ClientConnection implements Runnable {
 	public KVMessage handleClientMessage(KVMessage msg) {
 
 		if (msg.getStatus() != IKVMessage.StatusType.KEYRANGE && !kvServer.isResponsible(msg.getKey())) {
-			msg.setStatus(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
-			return msg;
+			return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
 		}
 
 		switch (msg.getStatus()) {
 			case GET:
 				if (checkStopped()){
-					msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
-					return msg;
+					return new KVMessage(IKVMessage.StatusType.SERVER_STOPPED, "", "");
 				}
 				if (!kvServer.isResponsible(msg.getKey())){
-					msg.setStatus(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
-					return msg;
+					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
 				}
 				try {
 					String value = kvServer.getKV(msg.getKey());
@@ -134,12 +131,10 @@ public class ClientConnection implements Runnable {
 				// we want this to do the same thing as a regular put
 			case PUT:
 				if (checkStopped() && msg.getStatus() != IKVMessage.StatusType.SERVER_PUT){
-					msg.setStatus(IKVMessage.StatusType.SERVER_STOPPED);
-					return msg;
+					return new KVMessage(IKVMessage.StatusType.SERVER_STOPPED, "", "");
 				}
 				if (!kvServer.isResponsible(msg.getKey())){
-					msg.setStatus(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
-					return msg;
+					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
 				}
 				if (kvServer.currStatus == KVMessage.ServerState.SERVER_WRITE_LOCK){
 					msg.setStatus(IKVMessage.StatusType.SERVER_WRITE_LOCK);
