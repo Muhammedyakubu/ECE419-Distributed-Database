@@ -49,7 +49,6 @@ public class ECSClient implements IECSClient {
 
     @Override
     public boolean start() {
-
         return false;
     }
 
@@ -154,10 +153,10 @@ public class ECSClient implements IECSClient {
         if (successor != null) {
             String successorName = successor.getFirst();
             ECSNode successorNode = kvNodes.get(successorName);
+            kvNodes.remove(node.getNodeName());
             rebalance(node, successorNode, true);
         }
         // remove node from kvNodes
-        kvNodes.remove(node.getNodeName());
 
         logger.info("Node " + node.getNodeName() + " removed from cluster");
         // if this is the last node, do nothing special?
@@ -176,8 +175,8 @@ public class ECSClient implements IECSClient {
             // recalculate metadata
             Pair<String, Range> succAndRange = metadata.addServer(serverAddress, serverPort);
             String successor = succAndRange.getFirst();
-            Range hashRange = succAndRange.getSecond();
-            ECSNode node = new ECSNode(socket, serverAddress, serverPort, hashRange);
+            Range newNodehashRange = succAndRange.getSecond();
+            ECSNode node = new ECSNode(socket, serverAddress, serverPort, newNodehashRange);
 
             // two checks to see if this is the first node
             // if it is, send the metadata to the node
@@ -185,7 +184,7 @@ public class ECSClient implements IECSClient {
                 node.sendMetadata(metadata);
             } else {
                 // if it's not the first node, rebalance the metadata
-                boolean success = rebalance(kvNodes.get(successor), node);
+                boolean success = rebalance(kvNodes.get(successor), node, false);
                 if (!success) {
                     logger.error("Error! Rebalance from " + successor + " to " + node.getNodeName() + " failed");
                 }
@@ -197,9 +196,6 @@ public class ECSClient implements IECSClient {
             e.printStackTrace();
         }
     }
-    public boolean rebalance(ECSNode sender, ECSNode receiver) {
-        return rebalance(sender, receiver, false);
-    }
 
     public boolean rebalance(ECSNode sender, ECSNode receiver, boolean isShutdown) {
         if (sender == null || receiver == null) {
@@ -210,7 +206,7 @@ public class ECSClient implements IECSClient {
         receiver.sendMetadata(metadata);
         /**
          * Initiate a rebalance by sending a KVMessage containing with the receiver's name and range
-         * in the value field. It has the format "Address:Port;Range"
+         * in the value field. It has the format "Range,Address:Port;"
          */
         String payload = receiver.getMetadataFormat();
         sender.sendMessage(new KVMessage(KVMessage.StatusType.REBALANCE, null, payload));
@@ -230,15 +226,13 @@ public class ECSClient implements IECSClient {
             return false;
         }
 
-        if (isShutdown) return true;
-
-        // update metadata for all servers
+        // update metadata for all (other) servers
         for (ECSNode node : kvNodes.values()) {
             node.sendMetadata(metadata);
         }
 
-        // release write lock
-        sender.setState(ServerState.ACTIVE);
+        // release write lock if this is not a shutdown (=> server still be active)
+        if (!isShutdown) sender.setState(ServerState.ACTIVE);
 
         return true;
     }
@@ -381,9 +375,6 @@ public class ECSClient implements IECSClient {
                 return("No port, invalid");
                 //System.exit(0);
             }
-
-            //WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
-            InetAddress bind_address = InetAddress.getByName(address);
 
             Level level = Level.ALL;
 

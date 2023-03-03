@@ -38,6 +38,7 @@ public class ECSInteractionTest extends TestCase {
         setup = true;
         //System.out.println("Creating ECS...");
         try {
+
             new LogSetup("logs/testing/test.log", Level.ALL);
         } catch (IOException e) {
             e.printStackTrace();
@@ -50,8 +51,6 @@ public class ECSInteractionTest extends TestCase {
                     ecsClient = new ECSClient("localhost", 10011);
                 } catch (UnknownHostException e) {
                     System.out.println("Unknown host!");
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         });
@@ -101,7 +100,7 @@ public class ECSInteractionTest extends TestCase {
         setup_server = true;
         // check if testsuite server is already running
         // skip logger setup if testsuite server is already running
-//        boolean testsuiteServerRunning = !available(50004);
+//        boolean testsuiteServerRunning = !available(50000);
 //        if (testsuiteServerRunning) {
 //            System.out.println("Testsuite server is already running, skipping logger setup");
 //        } else {
@@ -117,7 +116,7 @@ public class ECSInteractionTest extends TestCase {
         try{
            InetAddress addr = InetAddress.getByName("localhost");
             kvServer = new KVServer(port, 10, "FIFO", "localhost",
-                    "src/KVStorage/testing" , addr, 10011, false);
+                    "src/KVStorage" , addr, 10011, false);
             //kvServer.run();
         } catch(Exception e){
            System.out.println("Ugh");

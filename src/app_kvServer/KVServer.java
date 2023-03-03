@@ -66,18 +66,21 @@ public class KVServer implements IKVServer {
 				CommModule.sendMessage(msg,ecsSocket);
 				if (getMetadata().metadata.size() == 1) {
 					logger.debug("Last node in cluster, no need to rebalance");
-					System.exit(0);
+					return;
 				}
-				if (!ecsConnection.isOpen.get()) {
+				// if shutting down because ECS connection lost, skip rebalance
+				if (!ecsConnection.isOpen()) {
 					logger.debug("ECSConnection thread already closed");
-					System.exit(0);
+					return;
 				}
 
 				// allow the ECSConnection thread handle the rebalance, but
-				// we need to set isOpen to false so it will stop listening after
+				// we need to set isOpen to false, so it will stop listening after
 				ecsConnection.isOpen.set(false);
 				logger.debug("Waiting for ECSConnection thread to finish...");
 				ecsThread.join(SHUTDOWN_TIMEOUT);
+				// if ECSConnection thread is still running, interrupt it
+				if (ecsThread.isAlive()) ecsConnection.close();
 				logger.debug("ECSConnection thread finished");
 				// assume server has most updated metadata
 			} catch (IOException e) {
@@ -297,10 +300,12 @@ public class KVServer implements IKVServer {
 				logger.warn("Server-Server connection lost!", ioe);
 				return -1;
 			}
+			// TODO: check this. Removing this because sometimes the this server sends
+			//		a key that is not in the receiver's range.
 			if (response.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
 					response.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
-				logger.warn("Failure in rebalancing keys!");
-				return -1;
+				logger.warn(address + ":" + port + " failed to receive key " + key);
+				logger.debug("Keyrange of receiver: " + range);
 			}
 		}
 		//delete keys
@@ -310,9 +315,9 @@ public class KVServer implements IKVServer {
 //				db.deletePair(key);
 			} catch (Exception ioe) {
 				logger.warn("Failure in deleting rebalanced keys");
-				return -1;
 			}
 		}
+		keysToSend.clear();
 		return numKeysSent;
 	}
 
@@ -358,6 +363,15 @@ public class KVServer implements IKVServer {
 	@Override
     public void kill(){
 		running = false;
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			logger.error("Error! " +
+					"Unable to close socket on port: " + port, e);
+		} catch (NullPointerException npe) {
+			logger.error("Error! " +
+					"ServerSocket already closed, unable to close socket on port: " + port);
+		}
 	}
 
 	@Override
@@ -375,7 +389,6 @@ public class KVServer implements IKVServer {
 
 		// clear cache
 		if (this.cache != null) clearCache();
-		kill();
 	}
 
 

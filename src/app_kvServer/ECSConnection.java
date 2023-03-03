@@ -32,6 +32,14 @@ public class ECSConnection implements Runnable{
         this.isOpen.set(true);
     }
 
+    public boolean isOpen() {
+        return isOpen.get() && ecs_socket != null && !ecs_socket.isClosed();
+    }
+
+    public void setIsOpen(boolean isOpen) {
+        this.isOpen.set(isOpen);
+    }
+
     public void run() {
         try {
             output = ecs_socket.getOutputStream();
@@ -50,7 +58,7 @@ public class ECSConnection implements Runnable{
                 } catch (IOException ioe) {
                     logger.info("Error! Connection to ECS lost!");
                     isOpen.set(false);
-                    System.exit(1);
+                    return;
                 }
             }
         }
@@ -58,17 +66,7 @@ public class ECSConnection implements Runnable{
             logger.error("Error! Server Connection with ECS could not be established", ioe);
         }
         finally {
-
-            try {
-                if (ecs_socket != null) {
-                    logger.info("Closing ECS-Server connection!");
-                    input.close();
-                    output.close();
-                    ecs_socket.close();
-                }
-            } catch (IOException ioe) {
-                logger.error("Error! Unable to tear down ECS-Server connection!", ioe);
-            }
+            this.close();
         }
     }
 
@@ -112,6 +110,20 @@ public class ECSConnection implements Runnable{
         return msg;
     }
 
+    public void close() {
+        isOpen.set(false);
+        try {
+            if (ecs_socket != null) {
+                logger.info("Closing ECS-Server connection...");
+                input.close();
+                output.close();
+                ecs_socket.close();
+                ecs_socket = null;
+            }
+        } catch (IOException ioe) {
+            logger.error("Error! Unable to tear down ECS-Server connection!", ioe);
+        }
+    }
 
 
 }

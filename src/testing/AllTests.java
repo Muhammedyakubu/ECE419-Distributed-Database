@@ -34,7 +34,7 @@ public class AllTests {
 	public static Test suite() {
 		TestSuite clientSuite = new TestSuite("Basic Storage ServerTest-Suite");
 		clientSuite.addTestSuite(ConnectionTest.class);
-		//clientSuite.addTestSuite(InteractionTest.class);
+		clientSuite.addTestSuite(InteractionTest.class);
 		clientSuite.addTestSuite(KVMessageTest.class);
 		clientSuite.addTestSuite(KVServerTest.class);
 		clientSuite.addTestSuite(KVDatabaseTest.class);
