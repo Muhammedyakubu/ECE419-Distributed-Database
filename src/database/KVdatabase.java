@@ -53,6 +53,8 @@ public class KVdatabase implements IKVDatabase{
         else
             this.keyPath = dir;
 
+        logger.debug("Initializing database with path: " + this.keyPath);
+
         //create datapath directory if it doesn't exist
         if (!Files.isDirectory(Paths.get(this.keyPath))){
             try {
