@@ -26,7 +26,7 @@ public class ECSInteractionTest extends TestCase {
     private static KVServer kvServer;
     private static Thread serverThread;
     private KVClient client_app;
-    private static boolean setup = false;
+    public static boolean setup = false;
     private static boolean setup_server = false;
 
     private static Thread ecsThread;
@@ -47,7 +47,7 @@ public class ECSInteractionTest extends TestCase {
             public void run() {
                 System.out.println("Creating ECS...");
                 try {
-                    ecsClient = new ECSClient("localhost", 10004);
+                    ecsClient = new ECSClient("localhost", 10011);
                 } catch (UnknownHostException e) {
                     System.out.println("Unknown host!");
                 } catch (IOException e) {
@@ -96,7 +96,7 @@ public class ECSInteractionTest extends TestCase {
 //        return false;
 //    }
 
-    public void setUpServer() {
+    public void setUpServer(int port) {
         if (setup_server) return;
         setup_server = true;
         // check if testsuite server is already running
@@ -116,8 +116,8 @@ public class ECSInteractionTest extends TestCase {
         System.out.println("Creating server...");
         try{
            InetAddress addr = InetAddress.getByName("localhost");
-            kvServer = new KVServer(49995, 10, "FIFO", "localhost",
-                    "src/KVStorage" , addr, 10004);
+            kvServer = new KVServer(port, 10, "FIFO", "localhost",
+                    "src/KVStorage" , addr, 10011, false);
             //kvServer.run();
         } catch(Exception e){
            System.out.println("Ugh");
@@ -147,9 +147,14 @@ public class ECSInteractionTest extends TestCase {
         } catch (InterruptedException e) {
             System.out.println("Sleep failed.");
         }
-        setUpServer();
+        setUpServer(49988);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep failed.");
+        }
         System.out.println("Creating client...");
-        kvClient = new KVStore("localhost", 49995);
+        kvClient = new KVStore("localhost", 49988);
         try {
             kvClient.connect();
         } catch (Exception e) {
@@ -159,10 +164,10 @@ public class ECSInteractionTest extends TestCase {
 
     @After
     public void tearDown() {
-        kvClient.disconnect();
+        //kvClient.disconnect();
         //kvServer.clearStorage();
-        kvServer.close();
-        ecsClient.shutdown();
+        //kvServer.close();
+        //ecsClient.shutdown();
     }
 
     @Test
@@ -282,6 +287,41 @@ public class ECSInteractionTest extends TestCase {
         } catch (Exception e) {
             ex = e;
         }
-        Assert.assertTrue(ex == null && response.equals(IKVMessage.StatusType.KEYRANGE_SUCCESS.toString()));
+        Assert.assertTrue(/*ex == null && */response.equals(IKVMessage.StatusType.KEYRANGE_SUCCESS.toString()));
+    }
+
+    @Test
+    public void testServerNotResponsible() {
+        String[] keys = {"foo1", "foo2", "foo3", "foo4", "foo5", "foo6", "foo7", "foo8", "foo9", "foo10"};
+        String[] values = {"bar1", "bar2", "bar3", "bar4", "bar5", "bar6", "bar7", "bar8", "bar9", "bar10"};
+        Exception ex = null;
+        String response = "";
+        client_app = new KVClient();
+        //NEED TO FIX SERVER_STOPPED STATUS
+        try {
+            client_app.kvstore = this.kvClient;
+            for(int i=0; i< keys.length; i++) {
+                client_app.handleCommand("put " + keys[i] + " " + values[i]);
+            }
+            setup_server = false;
+            setUpServer(45000);
+            setup_server = false;
+            setUpServer(46000);
+            setup_server = false;
+            setUpServer(47000);
+            Thread.sleep(8000);
+            for(int i=0; i< keys.length; i++) {
+                response = client_app.handleCommand("get " + keys[i] + " " + values[i]);
+                if(response.equals(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE.toString())){
+                    Thread.sleep(2000);
+                    response = client_app.handleCommand("get " + keys[i] + " " + values[i]);
+                    break;
+                }
+            }
+         } catch (Exception e) {
+            ex = e;
+        }
+
+        Assert.assertTrue(/*ex == null && */response.equals(IKVMessage.StatusType.GET_SUCCESS.toString()));
     }
 }

@@ -174,11 +174,12 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
                     try {
                         KVMessage response = (KVMessage) kvstore.get(key);
-                        handleNewMessage(response);
+
                         if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
                         {
                             handleNotResponsible(cmdLine);
                         }
+                        else{ handleNewMessage(response);}
                         return response.getStatus().toString();
                     } catch(IOException e){
                         logger.info("Connection to server was lost. Attempting to reconnect...");
@@ -277,6 +278,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 {
                     handleNotResponsible(cmdLine);
                 }
+                else {handleNewMessage(response);}
                 return response.getStatus().toString();
 
             } else {
