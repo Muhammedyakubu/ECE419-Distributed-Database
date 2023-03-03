@@ -129,7 +129,7 @@ public class KVMessage implements IKVMessage {
      */
     public String encode() {
         if (status == StatusType.KEYRANGE_SUCCESS)
-            return status + DELIMITER + value + "\r\n";
+            return status + DELIMITER + value;
         else
     	return status.toString() + DELIMITER + key + DELIMITER + value;
     }
