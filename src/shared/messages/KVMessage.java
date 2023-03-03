@@ -108,10 +108,10 @@ public class KVMessage implements IKVMessage {
      */
     @Override
     public String toString() {
-        if (status != StatusType.KEYRANGE_SUCCESS)
+//        if (status != StatusType.KEYRANGE_SUCCESS)
             return status.toString() + " " + key + " " + value;
-        else
-            return status + " " + value + "\r\n";
+//        else
+//            return status + " " + value + "\r\n";
     }
 
     @Override
@@ -128,6 +128,9 @@ public class KVMessage implements IKVMessage {
      * @return String of the form "statusDELIMITERkeyDELIMITERvalue"
      */
     public String encode() {
+        if (status == StatusType.KEYRANGE_SUCCESS)
+            return status + DELIMITER + value + "\r\n";
+        else
     	return status.toString() + DELIMITER + key + DELIMITER + value;
     }
 
