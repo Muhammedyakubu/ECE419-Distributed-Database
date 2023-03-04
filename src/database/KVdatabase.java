@@ -57,6 +57,14 @@ public class KVdatabase implements IKVDatabase{
 
         //create datapath directory if it doesn't exist
         if (!Files.isDirectory(Paths.get(this.keyPath))){
+            if (!Files.isDirectory(Paths.get(this.defaultPath))){
+                try {
+                    Files.createDirectory(Paths.get(this.defaultPath));
+                }
+                catch(Exception e){
+                    logger.warn("Error while initializing database: ", e);
+                }
+            }
             try {
                 Files.createDirectory(Paths.get(this.keyPath));
             }
@@ -194,7 +202,8 @@ public class KVdatabase implements IKVDatabase{
                     return false;
                 }
             }
-            Files.delete(rootPath);
+            if (!rootPath.toString().equals(defaultPath))
+                Files.delete(rootPath);
 
         }
         catch (Exception e){
