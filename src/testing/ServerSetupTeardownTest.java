@@ -72,7 +72,59 @@ public class ServerSetupTeardownTest extends TestCase {
         //return kvServer[index];
     }
 
-    public void testSetupTeardown(){
+    public void testSetupTeardown10(){
+        setUpECS();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep failed.");
+        }
+        final long startTime = System.nanoTime();
+
+        for(int i = 0; i< 10; i++){
+            setup_server = false;
+            setUpServer(40000+i,i);
+            try {
+                Thread.sleep(12);
+            } catch (InterruptedException e) {
+                System.out.println("Sleep failed.");
+            }
+            //System.out.println("DONE");
+        }
+        for(int i = 0; i< 10; i++){
+            while(kvServer[i].currStatus != IKVMessage.ServerState.ACTIVE){
+                //SPIN
+            }
+        }
+        final long endTime = System.nanoTime();
+        float difference = (endTime - startTime) / 1000000;
+        System.out.println(difference);
+
+        final long startTeardown = System.nanoTime();
+
+        for(int i = 0; i< 10; i++){
+            kvServer[i].close();
+            try {
+                Thread.sleep(11);
+            } catch (InterruptedException e) {
+                System.out.println("Sleep failed.");
+            }
+            System.out.println("DONE");
+        }
+
+//        try {
+//                Thread.sleep(1500);
+//            } catch (InterruptedException e) {
+//                System.out.println("Sleep failed.");
+//            }
+
+        final long endTeardown = System.nanoTime();
+        float difference2 = (endTeardown - startTeardown) / 1000000;
+        System.out.println(difference2);
+
+    }
+
+    public void testSetupTeardown100(){
         setUpECS();
         try {
             Thread.sleep(2000);
@@ -99,6 +151,81 @@ public class ServerSetupTeardownTest extends TestCase {
         final long endTime = System.nanoTime();
         float difference = (endTime - startTime) / 1000000;
         System.out.println(difference);
+
+        final long startTeardown = System.nanoTime();
+
+        for(int i = 0; i< 100; i++){
+            kvServer[i].close();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                System.out.println("Sleep failed.");
+            }
+            System.out.println("DONE");
+        }
+
+//        try {
+//                Thread.sleep(1500);
+//            } catch (InterruptedException e) {
+//                System.out.println("Sleep failed.");
+//            }
+
+        final long endTeardown = System.nanoTime();
+        float difference2 = (endTeardown - startTeardown) / 1000000;
+        System.out.println(difference2);
+
+    }
+
+    public void testSetupTeardown1(){
+        setUpECS();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep failed.");
+        }
+        final long startTime = System.nanoTime();
+
+        for(int i = 0; i< 1; i++){
+            setup_server = false;
+            setUpServer(40000+i,i);
+            //System.out.println("DONE");
+        }
+
+        try {
+            Thread.sleep(35);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep failed.");
+        }
+        for(int i = 0; i< 1; i++){
+            while(kvServer[i].currStatus != IKVMessage.ServerState.ACTIVE){
+                //SPIN
+            }
+        }
+        final long endTime = System.nanoTime();
+        float difference = (endTime - startTime) / 1000000;
+        System.out.println(difference);
+
+        final long startTeardown = System.nanoTime();
+
+        for(int i = 0; i< 1; i++){
+            kvServer[i].close();
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                System.out.println("Sleep failed.");
+//            }
+            System.out.println("DONE");
+        }
+
+//        try {
+//                Thread.sleep(1500);
+//            } catch (InterruptedException e) {
+//                System.out.println("Sleep failed.");
+//            }
+
+        final long endTeardown = System.nanoTime();
+        float difference2 = (endTeardown - startTeardown) / 1000000;
+        System.out.println(difference2);
 
     }
 
