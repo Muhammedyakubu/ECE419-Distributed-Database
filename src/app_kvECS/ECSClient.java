@@ -1,21 +1,17 @@
 package app_kvECS;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Collection;
 
-import app_kvServer.KVServer;
 import ecs.ECSNode;
 import ecs.IECSNode;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import shared.MD5;
 import shared.Range;
-import shared.messages.IKVMessage;
 import shared.messages.IKVMessage.ServerState;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
@@ -26,7 +22,7 @@ public class ECSClient implements IECSClient {
     public static Logger logger = Logger.getLogger(ECSClient.class);
     private int port;
     private InetAddress address;
-    private boolean running;
+    public boolean running;
     private ServerSocket ecsSocket;
     private KVMetadata metadata;
     private Map<String, ECSNode> kvNodes;
@@ -39,12 +35,15 @@ public class ECSClient implements IECSClient {
      * @throws UnknownHostException
      */
     public ECSClient(String address, int port) throws UnknownHostException {
+        this(address, port, true);
+    }
+    public ECSClient(String address, int port, boolean run) throws UnknownHostException {
         this.address = (address == null) ? null : InetAddress.getByName(address);
         this.port = port;
         this.running = false;
         this.metadata = new KVMetadata();
         this.kvNodes = new java.util.HashMap<>();
-        run();
+        if (run) run();
     }
 
     @Override
@@ -280,15 +279,15 @@ public class ECSClient implements IECSClient {
     }
 
     @Override
-    public Map<String, IECSNode> getNodes() {
+    public Map<String, ECSNode> getNodes() {
         // TODO
-        return null;
+        return kvNodes;
     }
 
     @Override
     public IECSNode getNodeByKey(String Key) {
         // TODO
-        return null;
+        return kvNodes.get(Key);
     }
 
     private static Level StringToLevel(String levelString) {
