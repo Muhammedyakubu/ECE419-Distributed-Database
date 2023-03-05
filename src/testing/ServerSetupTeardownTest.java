@@ -99,6 +99,7 @@ public class ServerSetupTeardownTest extends TestCase {
         final long endTime = System.nanoTime();
         float difference = (endTime - startTime) / 1000000;
         System.out.println(difference);
+
     }
 
 }

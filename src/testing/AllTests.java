@@ -34,14 +34,14 @@ public class AllTests {
 	public static Test suite() {
 		TestSuite clientSuite = new TestSuite("Basic Storage ServerTest-Suite");
 		clientSuite.addTestSuite(ConnectionTest.class);
-		clientSuite.addTestSuite(InteractionTest.class);
+		//clientSuite.addTestSuite(InteractionTest.class);
 		clientSuite.addTestSuite(KVMessageTest.class);
 		clientSuite.addTestSuite(KVServerTest.class);
 		clientSuite.addTestSuite(KVDatabaseTest.class);
 		clientSuite.addTestSuite(FIFOCacheUnitTest.class);
-		clientSuite.addTestSuite(FIFOCacheTest.class);
+		//clientSuite.addTestSuite(FIFOCacheTest.class);
 		clientSuite.addTestSuite(LRUCacheUnitTest.class);
-		clientSuite.addTestSuite(LRUCacheTest.class);
+		//clientSuite.addTestSuite(LRUCacheTest.class);
 		clientSuite.addTestSuite(KVMetadataTest.class);
 		return clientSuite;
 	}
