@@ -1,44 +1,46 @@
-# ECE419-Distributed-Database-M1
+**# ECE419-Distributed-Database-M2
 
-## Overview
+## KVClient/KVStore Updates
 
-This project aims to create an interactive client-server system capable of storing and retrieving key-value pairs. To achieve this, Team 50 split the system into various modules, including the client-side application (KVClient), the functional client (KVStore), the client-server connection and communication module (ClientConnection and KVMessage together), the functional server (KVServer), the persistent database (KVDatabase), and the cache (FIFOCache and LRUCache).
+In order to extend the client to be compatible with the M2 functionality, Team 50 added components to handle keyrange requests and SERVER_NOT_RESPONSIBLE messages. The keyrange requests to the connected server are issued similarly to put/get requests (using KVMessage and KVStore), but instead with status KEYRANGE. The server populates the value field of KVMessage with its metadata and sends it back to client with status KEYRANGE_SUCCESS, where it gets saved to the client’s metadata variable. The client searches this metadata to identify the correct server for each put/get request. If it needs to change servers, it will disconnect from the current server and reconnect to the new one. Upon the receival of a SERVER_NOT_RESPONSIBLE message, the client issues a keyrange request to the server to receive updated metadata, connects to the correct server, and reissues the request.
 
-## Client-side Application (CLI)
+## KVServer Updates (Jas)
+// pls introduce what a keyrange is
 
-The CLI, as implemented with KVClient, is responsible for taking and parsing input from the user, as well as providing the response from the server. It instantiates the functional client module, KVStore, upon a new connection being made, and calls KVStore functions to handle various commands, like connect, disconnect, put, and get. All of its interactions with the server are done through KVStore. It is also responsible for instantiating and logging in the client logger.
+## Metadata
 
-## Messaging Protocol (KVMessage)
+To keep track of the metadata, Team 50 implemented three classes: Pair (given that the Pair class in Java is not available before Java 8), Range, and Metadata. The metadata is stored in a vector of Pairs consisting of a String and a Range. Range holds the start and endpoint of the keyrange (in the form of BigInteger). Within the metadata class, FUNCTIONS
 
-The messaging protocol, KVMessage, is responsible for handling the serialization and deserialization of get and put requests on both the client and server sides. KVMessage converts a request into a message string and encodes it into a byte array which is sent over a TCP connection. The end of a message is marked with the carriage return character followed by the newline character '\r\n'. Messages are of the form STATUS KEY VALUE, where STATUS is a string representing what type of request/response is being sent (e.g. GET, PUT, GET_ERROR, PUT_SUCCESS, etc.), and KEY and VALUE are strings representing the key and value of the request/response.
+-mention range
 
-## Functional Client (KVStore Library
+## KVMessage Updates (Muhammed)
 
-KVStore provides an API for the client-side application to interact with the KVServer. It implements methods responsible for sending get/put requests to the server, as well as receiving the associated response from the server. To do this, it also implements communication methods sendMessage and receiveMessage which send/read bytes from the client-server connection. These message bytes are then serialized/deserialized by KVMessage.
 
-## Server Communication (ClientConnection)
+## ECSNode (Muhammed)
 
-ClientConnection is responsible for handling separate client connections to the server and is instantiated in a new Thread by the server after accepting a new client connection. It implements a method to resolve the client's requests by routing them to the appropriate KVServer methods, constructing a response message, and sending it back to the client. It also has methods responsible for reading and writing bytes from the client-server connection, and for closing the connection when the client disconnects. Due to their many similarities, the send and receive methods could have been implemented in a common communication module, but the client and server have different logging requirements, so it was decided to keep them separate.
+The ECSNode is used by the ECS to store information about each KVServer in the storage service. It contains the hostname, port number, and keyrange of the KVServer. It also contains a reference to the socket the ECS uses to communicate with the KVServer socket. The ECSNode class also impplements methods to simplify communication with the KVServer. It implements methods to UPDATE_METADATA, initiate REBALANCEs, SET_STATEs and handle their corresponding acknowledgements messages.
 
-## KVServer
+## ECS Client (Muhammed)
+The External Configuration Service (ECS) is the only completely new component of the project. It enables dynamic scaling of the storage system by maintaining a consistent hash-ring (KVMetadata) of the KVServers. The ECS client is responsible for adding and removing KVServers from the storage service. It is also responsible for initiating the transfer of data between KVServers when a KVServer is added or removed.
+Here is the protocol for adding a KVServer to the storage service:
+1. On initialization, KVServers are expected to send to ECS a CONNECT_ECS message containing their hostname and port number. The ECS will then add the KVServer to the KVMetadata.
+2. If this is not the only KVServer in the storage service, the ECS will begin the rebalance procedure with the new KVServer as the "receiver" and it's successor in the hash-ring as the "sender".
 
-The KVServer functions as the top level module to process client requests. The user instantiates the server with a port number, as well as additional optional parameters, including bind address, storage path and log information. The server instantiates a local KVDatabase and cache mechanism for it to manage. The module listens on the defined port for incoming client connections and generates a new ClientConnection thread to handle the request. KVServer also receives put and get requests and performs the appropriate calls to cache or KVDatabase to retrieve and send back values.
+The rebalance procedure is as follows:
+1. It begins with the ECS sending the receiver (new KVServer) an UPDATE_METADATA message with the most recent metadata. 
+2. The ECS will then send the sender (new KVServer's successor) a REBALANCE message containing the receiver's hostname, port number and keyrange. This message also activate a SERVER_WRITE_LOCK on the sender.
+3. The sender will then initiate a connection with the receiver and transfer all the affected tuples. To do this, it sends a SERVER_PUT message to the receiver for each tuple in its keyrange. The receiver will then send the ECS a REBALANCE_SUCCESS message when it has finished transferring all the tuples.
+4. On receiving the REBALANCE_SUCCESS message, the ECS then sends UPDATE_METADATA to all existing KVServers in the storage service after which it releases the write-lock on the sender by sending a SET_STATE message with the state "ACTIVE".
+5. The ECS then adds this new KVServer's corresponding ECSNode to its Map of connected KVServers, kvNodes.
 
-## KVDatabase
+While idling, the ECS will listen for new KVServer connections and shutdown notifications from existing KVServers on a single Thread. This is achieved by setting a very short timeout on the ServerSocket, which enables the accept() method to be functionally non-blocking. We then endlessly poll the ECS's ServerSocket as well as all connected KVServer sockets. We chose a single-threaded approach for two major reasons: 
+1. We wanted to ensure that multiple KVservers are never added or removed simultaneously, to prevent data loss,
+2. Once a KVServer is connected, we only expect a SHUTTING_DOWN message from it. Dedicating a thread to each KVServer would be overkill.
 
-The system’s persistent storage architecture was implemented to enable concurrent reading and writing of key-value pairs to improve performance. Each pair is assigned a file in a user-defined or default path on the user’s machine. Files are written to and read from using Java FileChannels, which enable concurrent threads to perform non-modifying operations, such as reads, simultaneously, but block when a thread is altering a file. Open FileChannels are maintained in a Java ConcurrentHashMap, which enables each thread to check the same FileChannel before performing any operations. This architecture allows multiple threads with “GET” requests to retrieve values quicker than a single, locked system, yet also ensures that writes are mutually exclusive.
+When the ECS receives a SHUTTING_DOWN message from a KVServer, it removes it from the metadata and extends the keyrange of its predecessor to include the removed KVServer's keyrange. It then initiates the rebalance procedure with the removed KVServer as the sender and the node's predecessor as the receiver.
+sends an UPDATE_METADATA message to all running KVServers in the storage service. The ECS also removes the KVServer's corresponding ECSNode from kvNodes.  
 
-## Caching
 
-Team 50 implemented two types of caches that differ by eviction strategy: First In First Out (FIFO), and Least Recently Used (LRU). The cache is instantiated with KVServer and interacts solely with this module. Both these caches were implemented using Synchronized LinkedHashMap and Java’s predefined cache structure, which supports both FIFO and LRU eviction.
 
-## Testing
 
-JUnit testing was used to ensure the validity of the design, with over 39 additional tests being added to the provided test suite, which has a total of 48 tests. These include both interaction tests and tests for each of our modules individually. The following functionality is tested (excluding that from the provided tests): client command line response, server command line response, gets/puts through KVClient after server shutdown and reconnection, message encoding and decoding, get/put/delete/clear/update commands in the database, gets/puts in each cache, interaction between client requests and cache, and interaction of multiple clients with the server and database. The system successfully passed all tests.
 
-## Performance
-
-To evaluate the latency and throughput of the system, different ratios of get and put calls were applied on a single client thread on the Linux machines, with one hundred total calls per execution and a fixed cache size of 40 entries. The average performance results over ten trials are presented in Figure 1, which demonstrate a decrease in latency as the number of read calls increase, as well as a decrease with different caching implemented. This difference becomes more significant as the put:get ratio is decreased, since a majority of gets are served by the cache.
-
-![img.png](img.png)
-Figure 1: Average Latency and Throughput of storage system with different cache strategies

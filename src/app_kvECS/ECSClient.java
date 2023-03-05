@@ -1,21 +1,17 @@
 package app_kvECS;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Collection;
 
-import app_kvServer.KVServer;
 import ecs.ECSNode;
 import ecs.IECSNode;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import shared.MD5;
 import shared.Range;
-import shared.messages.IKVMessage;
 import shared.messages.IKVMessage.ServerState;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
@@ -280,15 +276,15 @@ public class ECSClient implements IECSClient {
     }
 
     @Override
-    public Map<String, IECSNode> getNodes() {
+    public Map<String, ECSNode> getNodes() {
         // TODO
-        return null;
+        return kvNodes;
     }
 
     @Override
     public IECSNode getNodeByKey(String Key) {
         // TODO
-        return null;
+        return kvNodes.get(Key);
     }
 
     private static Level StringToLevel(String levelString) {
