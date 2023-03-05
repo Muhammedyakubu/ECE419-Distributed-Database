@@ -377,6 +377,7 @@ public class KVServer implements IKVServer {
 	@Override
     public void close(){
 		running = false;
+		new ShutDownHook().run();
 		try {
 			serverSocket.close();
 		} catch (IOException e) {

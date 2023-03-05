@@ -18,8 +18,6 @@ public class ECSConnection implements Runnable{
 
     private Socket ecs_socket;
     private KVServer kvServer;
-    private InputStream input;
-    private OutputStream output;
 
     /**
      * Instantiates a connection end point with the ECS
@@ -41,33 +39,24 @@ public class ECSConnection implements Runnable{
     }
 
     public void run() {
-        try {
-            output = ecs_socket.getOutputStream();
-            input = ecs_socket.getInputStream();
 
-            configureECS();
+        configureECS();
 
-            // Continously
-            while(isOpen.get()) {
-                try {
-                    KVMessage response = handleECSMessage(CommModule.receiveMessage(ecs_socket));
-                    CommModule.sendMessage(response, ecs_socket);
+        // Continously
+        while(isOpen.get()) {
+            try {
+                KVMessage response = handleECSMessage(CommModule.receiveMessage(ecs_socket));
+                CommModule.sendMessage(response, ecs_socket);
 
-                    /* connection either terminated or lost due to
-                     * network problems */
-                } catch (IOException ioe) {
-                    logger.info("Error! Connection to ECS lost!");
-                    isOpen.set(false);
-                    return;
-                }
+                /* connection either terminated or lost due to
+                 * network problems */
+            } catch (IOException ioe) {
+                logger.info("Error! Connection to ECS lost!");
+                isOpen.set(false);
+                return;
             }
         }
-        catch(IOException ioe){
-            logger.error("Error! Server Connection with ECS could not be established", ioe);
-        }
-        finally {
-            this.close();
-        }
+        this.close();
     }
 
     public void configureECS(){
@@ -115,8 +104,6 @@ public class ECSConnection implements Runnable{
         try {
             if (ecs_socket != null) {
                 logger.info("Closing ECS-Server connection...");
-                input.close();
-                output.close();
                 ecs_socket.close();
                 ecs_socket = null;
             }

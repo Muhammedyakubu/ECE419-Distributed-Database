@@ -48,7 +48,7 @@ public class ECSInteractionTest extends TestCase {
             public void run() {
                 System.out.println("Creating ECS...");
                 try {
-                    ecsClient = new ECSClient("localhost", 10011);
+                    ecsClient = new ECSClient("localhost", 10011, true);
                 } catch (UnknownHostException e) {
                     System.out.println("Unknown host!");
                 }

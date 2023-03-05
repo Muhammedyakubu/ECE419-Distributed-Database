@@ -33,7 +33,7 @@ public class ServerSetupTeardownTest extends TestCase {
             public void run() {
                 System.out.println("Creating ECS...");
                 try {
-                    ecsClient = new ECSClient("localhost", 10011);
+                    ecsClient = new ECSClient("localhost", 10011, true);
                 } catch (UnknownHostException e) {
                     System.out.println("Unknown host!");
                 } catch (IOException e) {
@@ -44,7 +44,7 @@ public class ServerSetupTeardownTest extends TestCase {
         ecsThread.start();
     }
 
-    public void setUpServer(int port, int index) {
+    public void setUpServer(int port, final int index) {
         if (setup_server) return;
         setup_server = true;
 

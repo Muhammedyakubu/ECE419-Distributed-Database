@@ -26,7 +26,7 @@ public class ECSClient implements IECSClient {
     public static Logger logger = Logger.getLogger(ECSClient.class);
     private int port;
     private InetAddress address;
-    private boolean running;
+    public boolean running;
     private ServerSocket ecsSocket;
     private KVMetadata metadata;
     private Map<String, ECSNode> kvNodes;
@@ -38,13 +38,14 @@ public class ECSClient implements IECSClient {
      * @param port the port where the ecs server will listen for server connections
      * @throws UnknownHostException
      */
-    public ECSClient(String address, int port) throws UnknownHostException {
+    public ECSClient(String address, int port, boolean run) throws UnknownHostException {
         this.address = (address == null) ? null : InetAddress.getByName(address);
         this.port = port;
         this.running = false;
         this.metadata = new KVMetadata();
         this.kvNodes = new java.util.HashMap<>();
-        run();
+        if (run)
+            run();
     }
 
     @Override
@@ -392,7 +393,7 @@ public class ECSClient implements IECSClient {
                 new LogSetup(logPath, level);
 
                 //LAUNCH ECS HERE WITH SPECIFIED PORT AND ADDRESS!
-                new ECSClient(address, port_num).start();
+                new ECSClient(address, port_num, true).start();
             }
 
             String returned = "Port: " + port_num + " Address: " + address +
