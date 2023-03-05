@@ -22,7 +22,7 @@ public class ECSClient implements IECSClient {
     public static Logger logger = Logger.getLogger(ECSClient.class);
     private int port;
     private InetAddress address;
-    private boolean running;
+    public boolean running;
     private ServerSocket ecsSocket;
     private KVMetadata metadata;
     private Map<String, ECSNode> kvNodes;
