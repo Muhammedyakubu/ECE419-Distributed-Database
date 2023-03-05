@@ -35,12 +35,15 @@ public class ECSClient implements IECSClient {
      * @throws UnknownHostException
      */
     public ECSClient(String address, int port) throws UnknownHostException {
+        this(address, port, true);
+    }
+    public ECSClient(String address, int port, boolean run) throws UnknownHostException {
         this.address = (address == null) ? null : InetAddress.getByName(address);
         this.port = port;
         this.running = false;
         this.metadata = new KVMetadata();
         this.kvNodes = new java.util.HashMap<>();
-        run();
+        if (run) run();
     }
 
     @Override
