@@ -194,7 +194,8 @@ public class KVdatabase implements IKVDatabase{
                     return false;
                 }
             }
-            Files.delete(rootPath);
+            if (!rootPath.toString().equals(defaultPath))
+                Files.delete(rootPath);
 
         }
         catch (Exception e){
