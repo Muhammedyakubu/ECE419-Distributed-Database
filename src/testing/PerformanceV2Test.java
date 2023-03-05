@@ -11,15 +11,16 @@ import org.apache.log4j.Level;
 import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PerformanceV2Test extends TestCase {
 
@@ -37,6 +38,8 @@ public class PerformanceV2Test extends TestCase {
     static final int NUM_GET = 50;
     ExecutorService taskExecutor;
     long difference = 0;
+    private final String ENRON_SET = "/Users/jasnoorguliani/maildir";
+    private File[] dirList;
 
 
     public void setUpECS(final int port) {
@@ -72,14 +75,22 @@ public class PerformanceV2Test extends TestCase {
         private int id;
         private String address;
         private int port;
+        LinkedList<AtomicInteger> putCounts = new LinkedList<AtomicInteger>();
+        LinkedList<AtomicInteger> getCounts = new LinkedList<AtomicInteger>();
 
         clientProcess(int id, String address, int port){
             this.id = id;
             this.address = address;
             this.port = port;
+            for (int i = 0; i <100; i++){
+                this.putCounts.add(new AtomicInteger(0));
+                this.getCounts.add(new AtomicInteger(0));
+            }
         }
         public void run() {
             clients.put(id, new KVClient());
+            File directory = dirList[id];
+
             try {
                 String connectCommand = "connect " + address +" "+port;
                 clients.get(id).handleCommand(connectCommand);
@@ -88,6 +99,12 @@ public class PerformanceV2Test extends TestCase {
             }
 
             //put some values
+            putValues(clients.get(id), id, directory, NUM_PUT);
+            getValues(clients.get(id), id, directory, NUM_GET);
+            //getValues(clients.get(id), id, directory);
+
+
+            /*
             for (int i = 0; i < NUM_PUT; i++) {
                 try {
                     String putCommand = "put client_" + id + "_key_" + i + " client_" + id + "_value_" + i;
@@ -107,9 +124,61 @@ public class PerformanceV2Test extends TestCase {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }
+            }*/
 
         }
+        private void putValues(KVClient client, int id, File dir, int maxCount){
+            if (dir.isDirectory()) {
+                for (File temp : dir.listFiles()) {
+                    if (this.putCounts.get(id).get() == maxCount){
+                        return;
+                    }
+                    if (temp.isDirectory()) {
+                        putValues(client, id, temp, maxCount);
+                    } else {
+                        try {
+                            String value = new String(Files.readAllBytes(temp.toPath()));
+                            String key = temp.getPath();
+                            key = key.substring(dirList[id].toString().length());
+                            key = key.replace("/", "");
+                            String command = "put "+key + " "+value;
+                            client.handleCommand(command);
+                            this.putCounts.get(id).incrementAndGet();
+                        } catch (Exception e) {
+                            System.out.println("Puts failed");
+                        }
+                    }
+                }
+            }
+        }
+
+
+        private void getValues(KVClient client, int id, File dir, int maxCount){
+            if (dir.isDirectory()) {
+                for (File temp : dir.listFiles()) {
+                    if (this.getCounts.get(id).get() == maxCount){
+                        return;
+                    }
+                    if (temp.isDirectory()) {
+                        getValues(client, id, temp, maxCount);
+                    } else {
+                        try {
+                            String value = new String(Files.readAllBytes(temp.toPath()));
+                            String key = temp.getPath();
+                            key = key.substring(dirList[id].toString().length());
+                            key = key.replace("/", "");
+                            String command = "get "+key;
+                            client.handleCommand(command);
+                            this.getCounts.get(id).incrementAndGet();
+                        } catch (Exception e) {
+                            System.out.println("Gets failed");
+                        }
+                    }
+                }
+            }
+        }
+
+
     }
 
 
@@ -136,6 +205,7 @@ public class PerformanceV2Test extends TestCase {
             }
         }));
         serverThreads.get(index).start();
+        //wait for the server to activate before continuing
         while (servers.get(index).currStatus != IKVMessage.ServerState.ACTIVE){
             try {
                 Thread.sleep(0);
@@ -147,22 +217,28 @@ public class PerformanceV2Test extends TestCase {
     class ShutdownPrint extends Thread {
         public void run() {
             System.out.println("Total Runtime for "+numServers + " servers and "+numClients +
-                    " clients with "+NUM_PUT/NUM_GET+" put to get ratio (100 total per client): " + difference + " ms");
+                    " clients with "+(float)NUM_PUT/NUM_GET+" put to get ratio (100 total per client): " + difference + " ms");
 
         }
     }
+
+    private void loadEnron(int size){
+        File file = new File(ENRON_SET);
+        dirList = file.listFiles();
+        dirList = Arrays.copyOfRange(dirList, 0 , size);
+
+    }
+
 
     public void testPerformance() {
         BasicConfigurator.configure();
         taskExecutor = Executors.newFixedThreadPool(numClients);
         Runtime current = Runtime.getRuntime();
         current.addShutdownHook(new ShutdownPrint());
-        /*for (int i = 0; i <100; i++){
-            clients.add(i, null);
-            servers.add(i, null);
-        }*/
+        loadEnron(numClients);
+
         setUpECS(ecsPort);
-        //setup each server and wait for activation: WORKS
+        //setup each server and wait for activation
         for (int server = 0; server < numServers; server++) {
             setUpServer(serverStartPort + server, ecsPort, server);
         }
@@ -183,11 +259,6 @@ public class PerformanceV2Test extends TestCase {
 
         for (int server = 0; server < numServers; server++) {
             servers.get(server).close();
-            try {
-                serverThreads.get(server).join();
-            } catch (InterruptedException e) {
-                System.out.println("Failure");
-            }
         }
 
 
