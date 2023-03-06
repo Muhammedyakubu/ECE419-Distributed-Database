@@ -75,7 +75,7 @@ public class M2DemoTests extends TestCase {
     /**
      * Start a new KVServer on a new thread.
      */
-    public KVServer setupServer(String address, int port) {
+    public KVServer setupServer(final String address, final int port) {
         final KVServer[] server = {null};
         new Thread(new Runnable() {
             @Override

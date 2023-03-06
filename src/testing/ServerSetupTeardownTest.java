@@ -44,7 +44,7 @@ public class ServerSetupTeardownTest extends TestCase {
         ecsThread.start();
     }
 
-    public void setUpServer(int port, int index) {
+    public void setUpServer(int port, final int index) {
         if (setup_server) return;
         setup_server = true;
 
