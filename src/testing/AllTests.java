@@ -43,6 +43,7 @@ public class AllTests {
 		clientSuite.addTestSuite(LRUCacheUnitTest.class);
 		//clientSuite.addTestSuite(LRUCacheTest.class);
 		clientSuite.addTestSuite(KVMetadataTest.class);
+		clientSuite.addTestSuite(RangeTest.class);
 		return clientSuite;
 	}
 	
