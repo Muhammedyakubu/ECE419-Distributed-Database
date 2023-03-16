@@ -287,6 +287,7 @@ public class KVServer implements IKVServer {
 			}
 		}
 		//delete keys
+		// TODO: move this do a delete function which is triggered by the ECS after the rebalance is complete.
 		for (String key: keysToSend){
 			try {
 				this.putKV(key, null);

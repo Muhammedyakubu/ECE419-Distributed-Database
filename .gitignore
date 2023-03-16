@@ -5,10 +5,10 @@
 *.iws
 *.class
 *.zip
-*.tar.gz
 *.DS_Store
 *.MF
 *.jar
+*.tar.gz
 logs
 logs/*
 logs/
