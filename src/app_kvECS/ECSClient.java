@@ -218,15 +218,14 @@ public class ECSClient implements IECSClient {
             transferData(predecessor, node, predecessor.getNodeHashRange());
             transferData(successor, node, successor.getNodeHashRange());
         } else {
-            // transfer all data (core and replicated) from successor to new node
-            // that includes all data from the successor to the 3rd successor
+            // transfer node's core and all replicated data from successor to new node
+            // that includes all data from the 2nd predecessor to the current node
             ECSNode successor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 1).getFirst());
-            ECSNode thirdSuccessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 3).getFirst());
-            Range allData = new Range(successor.getNodeHashRange().start, thirdSuccessor.getNodeHashRange().end);
+            Pair<String, Range> secondPredecessor = metadata.getNthSuccessor(node.getNodeName(), -2);
+            Range allData = new Range(secondPredecessor.getSecond().start, node.getNodeHashRange().end);
             transferData(successor, node, allData);
 
             // successor deletes its 3rd predecessor's data
-            Pair<String, Range> secondPredecessor = metadata.getNthSuccessor(node.getNodeName(), -2);
             successor.deleteKeyrange(secondPredecessor.getSecond());
 
             // 2nd successor deletes its 3rd predecessor's data
@@ -235,6 +234,7 @@ public class ECSClient implements IECSClient {
             secondSuccessor.deleteKeyrange(predecessor.getSecond());
 
             // 3rd successor deletes its 3rd predecessor's data (this is the node that was just added)
+            ECSNode thirdSuccessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 3).getFirst());
             thirdSuccessor.deleteKeyrange(node.getNodeHashRange());
         }
 
