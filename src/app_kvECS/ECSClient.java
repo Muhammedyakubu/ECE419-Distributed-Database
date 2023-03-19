@@ -196,6 +196,92 @@ public class ECSClient implements IECSClient {
         }
     }
 
+    public void initializeECSNodeWithReplica(Socket socket) {
+
+    }
+
+    public boolean addServer(ECSNode node) {
+        // if there are < 3 nodes, have all the nodes replicate to the new node
+        metadata.addServer(node.getNodeHost(), node.getNodePort());
+        kvNodes.put(node.getNodeName(), node);
+        node.sendMetadata(metadata);
+
+        if (metadata.size() == 1) { // first node, we're done
+            return true;
+        } else if (metadata.size() == 2) { // second node, we need to replicate from the first node
+            ECSNode firstNode = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -1).getFirst());
+            transferData(firstNode, node, firstNode.getNodeHashRange());
+        } else if (metadata.size() == 3) {
+            ECSNode predecessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -1).getFirst());
+            ECSNode successor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 1).getFirst());
+
+            transferData(predecessor, node, predecessor.getNodeHashRange());
+            transferData(successor, node, successor.getNodeHashRange());
+        } else {
+            // transfer all data (core and replicated) from successor to new node
+            // that includes all data from the successor to the 3rd successor
+            ECSNode successor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 1).getFirst());
+            ECSNode thirdSuccessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 3).getFirst());
+            Range allData = new Range(successor.getNodeHashRange().start, thirdSuccessor.getNodeHashRange().end);
+            transferData(successor, node, allData);
+
+            // successor deletes its 3rd predecessor's data
+            Pair<String, Range> secondPredecessor = metadata.getNthSuccessor(node.getNodeName(), -2);
+            successor.deleteKeyrange(secondPredecessor.getSecond());
+
+            // 2nd successor deletes its 3rd predecessor's data
+            ECSNode secondSuccessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 2).getFirst());
+            Pair<String, Range> predecessor = metadata.getNthSuccessor(node.getNodeName(), -1);
+            secondSuccessor.deleteKeyrange(predecessor.getSecond());
+
+            // 3rd successor deletes its 3rd predecessor's data (this is the node that was just added)
+            thirdSuccessor.deleteKeyrange(node.getNodeHashRange());
+        }
+
+        // update metadata for all other nodes
+        for (ECSNode kvNode: kvNodes.values()) {
+            if (kvNode.getNodeName().equals(node.getNodeName())) continue;
+            kvNode.sendMetadata(metadata);
+        }
+
+        return true;
+    }
+    public boolean removeServer(ECSNode node, boolean isFailure) {
+        // if there are <= 3 nodes, we don't need to do anything
+        if (!isFailure) node.setState(ServerState.SERVER_WRITE_LOCK);
+        if (metadata.size() > 3) {
+            // transfer core data from node to its 3rd successor
+            // offload this responsibility to the node's successor so this function can be
+            // reused in the case of a failure
+            ECSNode successor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 1).getFirst());
+            ECSNode thirdSuccessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 3).getFirst());
+            transferData(successor, thirdSuccessor, node.getNodeHashRange());
+
+            // transfer predecessor's data to node's 2nd successor
+            ECSNode secondSuccessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 2).getFirst());
+            ECSNode predecessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -1).getFirst());
+            transferData(predecessor, secondSuccessor, predecessor.getNodeHashRange());
+
+            // transfer 2nd predecessor's data to node's successor
+            ECSNode secondPredecessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -2).getFirst());
+            transferData(secondPredecessor, successor, secondPredecessor.getNodeHashRange());
+        }
+        // TODO: node should probably delete its own data
+        // remove node from metadata and kvNodes
+        metadata.removeServer(node.getNodeHost(), node.getNodePort());
+        kvNodes.remove(node.getNodeName());
+        node.deleteKeyrange(node.getNodeHashRange());
+
+        for (ECSNode kvNode: kvNodes.values()) {
+//            if (kvNode.getNodeName().equals(node.getNodeName())) continue;    // won't be in kvNodes anymore
+            kvNode.sendMetadata(metadata);
+        }
+
+        if (!isFailure) node.setState(ServerState.SERVER_STOPPED);
+
+        return true;
+    }
+
     public boolean rebalance(ECSNode sender, ECSNode receiver, boolean isShutdown) {
         if (sender == null || receiver == null) {
             logger.error("Error! Sender or receiver is null");
@@ -236,23 +322,26 @@ public class ECSClient implements IECSClient {
         return true;
     }
 
+    /**
+     * Transfer data from one node to another
+     * @param sender - the node to transfer data from
+     * @param receiver - the node to transfer data to
+     * @param range - the hash-range of data to transfer
+     * @return true if the transfer was successful, false otherwise
+     */
+
     boolean transferData(ECSNode sender, ECSNode receiver, Range range) {
         if (sender == null || receiver == null || range == null) {
             logger.error("One of the parameters is null");
             return false;
         }
-        // update the receiver's metadata
-        receiver.sendMetadata(metadata);
-
-        // set a write lock on the sender (may not be necessary if server maintains a write lock)
-        sender.setState(ServerState.SERVER_WRITE_LOCK);
 
         // send a transfer message to the sender
         sender.sendMessage(
                 new KVMessage(
                     KVMessage.StatusType.TRANSFER,
-                    receiver.getMetadataFormat(),
-                    range.toString()
+                    range.toString(),
+                    receiver.getMetadataFormat()
                 )
         );
 
@@ -270,15 +359,6 @@ public class ECSClient implements IECSClient {
                 logger.error("Error! Received unexpected message from KVServer");
                 return false;
         }
-
-        // update metadata for all (other) servers
-        for (ECSNode node : kvNodes.values()) {
-            node.sendMetadata(metadata);
-        }
-
-        // release write lock.
-        // TODO: should we check for shutdown case? will this function ever be called during shutdown?
-        sender.setState(ServerState.ACTIVE);
 
         return true;
     }

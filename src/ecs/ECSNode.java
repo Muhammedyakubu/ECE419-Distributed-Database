@@ -85,6 +85,16 @@ public class ECSNode implements IECSNode{
         }
     }
 
+    public boolean deleteKeyrange(Range range) {
+        sendMessage(new KVMessage(KVMessage.StatusType.DELETE_KEYRANGE, range.toString(), null));
+        KVMessage response = receiveMessage();
+        if (response.getStatus() != KVMessage.StatusType.DELETE_KEYRANGE_SUCCESS) {
+            logger.error("Data was not deleted from " + this.getNodeName());
+            return false;
+        }
+        return true;
+    }
+
     public int getAvailableSocketBytes() {
         try {
             return socket.getInputStream().available();
