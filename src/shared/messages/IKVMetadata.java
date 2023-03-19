@@ -59,6 +59,17 @@ public interface IKVMetadata {
 	 */
 	public String toString();
 
+	/**
+	 * Gets the nth successor of a server
+	 * @param name the unique identifier of the server <ip>:<port>
+	 * @param n the successor number. n can be any integer value
+	 *          n = 0 returns the server itself
+	 *          n = 1 returns the immediate successor
+	 *          n = -1 returns the immediate predecessor
+	 * @return a pair containing the successor's <addr>:<port> and the successor's keyrange
+	 */
+	public Pair<String, Range> getNthSuccessor(String name, int n);
+
 }
 
 

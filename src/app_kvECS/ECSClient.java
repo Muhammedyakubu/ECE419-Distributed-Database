@@ -236,6 +236,53 @@ public class ECSClient implements IECSClient {
         return true;
     }
 
+    boolean transferData(ECSNode sender, ECSNode receiver, Range range) {
+        if (sender == null || receiver == null || range == null) {
+            logger.error("One of the parameters is null");
+            return false;
+        }
+        // update the receiver's metadata
+        receiver.sendMetadata(metadata);
+
+        // set a write lock on the sender (may not be necessary if server maintains a write lock)
+        sender.setState(ServerState.SERVER_WRITE_LOCK);
+
+        // send a transfer message to the sender
+        sender.sendMessage(
+                new KVMessage(
+                    KVMessage.StatusType.TRANSFER,
+                    receiver.getMetadataFormat(),
+                    range.toString()
+                )
+        );
+
+        // wait for a transfer success message.
+        KVMessage transferAck = sender.receiveMessage();
+
+        switch (transferAck.getStatus()) {
+            case TRANSFER_ERROR:
+                logger.error("Transfer error from " + sender.getNodeName() + " to " + receiver.getNodeName());
+                return false;
+            case TRANSFER_SUCCESS:
+                logger.debug("Transfer from " + sender.getNodeName() + " to " + receiver.getNodeName() + " successful");
+                break;
+            default:
+                logger.error("Error! Received unexpected message from KVServer");
+                return false;
+        }
+
+        // update metadata for all (other) servers
+        for (ECSNode node : kvNodes.values()) {
+            node.sendMetadata(metadata);
+        }
+
+        // release write lock.
+        // TODO: should we check for shutdown case? will this function ever be called during shutdown?
+        sender.setState(ServerState.ACTIVE);
+
+        return true;
+    }
+
     @Override
     public boolean stop() {
         // TODO

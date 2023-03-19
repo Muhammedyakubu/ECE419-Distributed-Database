@@ -169,4 +169,9 @@ public class KVMetadata implements IKVMetadata{
         return returned_string;
     }
 
+    // TODO: @Hope implement this method
+    public Pair<String, Range> getNthSuccessor(String name, int n) {
+        return null;
+    }
+
 }

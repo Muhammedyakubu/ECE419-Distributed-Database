@@ -15,19 +15,27 @@ public interface IKVMessage {
 		FAILED,			/* message format unknown, message size exceeded, etc. */
 
 		//Client-Server Status
-		SERVER_NOT_RESPONSIBLE,	/* Put/Get - Key was not found in connected server*/
+		SERVER_NOT_RESPONSIBLE,	/* Put/Get - Key was not found in connected server */
 
-		SERVER_STOPPED,	/* Put/Get - Server not configured yet*/
+		SERVER_STOPPED,	/* Put/Get - Server not configured yet */
 		SERVER_WRITE_LOCK, /*Put - Server rebalancing keys, only gets can be made */
 
 		//ECS-Server Status Messages
-		CONNECT_ECS, 	/*Server sends to ECS to configure*/
-		UPDATE_METADATA, /*ECS sends to servers to update their stored metadata*/
-		SET_STATE, 		/*ECS sends to server to update its ServerState*/
-		REBALANCE, 		/*ECS sends to successor to initiate rebalance*/
-		REBALANCE_SUCCESS, /*Successor sends to ECS to confirm success*/
-		REBALANCE_ERROR, /*Rebalance not successful,*/
-		SHUTTING_DOWN, 	/*Server sends upon its own shutdown*/
+		CONNECT_ECS, 	/* Server sends to ECS to configure */
+		UPDATE_METADATA, /* ECS sends to servers to update their stored metadata */
+		SET_STATE, 		/* ECS sends to server to update its ServerState */
+		REBALANCE, 		/* ECS sends to successor to initiate rebalance */
+		REBALANCE_SUCCESS, /* Successor sends to ECS to confirm success */
+		REBALANCE_ERROR, /* Rebalance not successful */
+		SHUTTING_DOWN, 	/* Server sends upon its own shutdown */
+
+		TRANSFER, 		/* ECS sends to server to transfer keys within specified range to specified server */
+		TRANSFER_SUCCESS, /* Server sends to ECS to confirm success */
+		TRANSFER_ERROR, /* Server sends to ECS in case of failure */
+
+		DELETE_KEYRANGE, /* ECS sends to server to delete keys within specified range */
+		DELETE_KEYRANGE_SUCCESS, /* Server sends to ECS to confirm success */
+		DELETE_KEYRANGE_ERROR, /* Server sends to ECS in case of failure */
 
 		//Keyrange commands
 		KEYRANGE,		/* Request keyrange of server */
