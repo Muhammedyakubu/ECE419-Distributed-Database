@@ -416,15 +416,20 @@ public class KVServer implements IKVServer {
 			if(this.bindAddress == null){
 				serverSocket = new ServerSocket(this.port);
 			} else {
+				if (this.bindAddress == "localhost"){
+					this.bindAddress = InetAddress.getLocalHost().getHostAddress();
+				}
 				InetAddress inetAddress = InetAddress.getByName(this.bindAddress);
 				serverSocket = new ServerSocket(this.port, 50, inetAddress);
 			}
-			if (ecsPort != -1)
+			if (ecsPort != -1) {
 				ecsSocket = new Socket(ecsAddress, ecsPort);
+				logger.info("Connected to ECS on port: "
+						+ ecsSocket.getLocalPort());
+			}
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
-			logger.info("Connected to ECS on port: "
-					+ ecsSocket.getLocalPort());
+
 
 			return true;
 

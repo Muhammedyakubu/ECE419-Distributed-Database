@@ -12,6 +12,7 @@ import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -27,18 +28,20 @@ public class PerformanceV2Test extends TestCase {
     private List <Thread> serverThreads = new ArrayList<>(100);
     private HashMap<Integer, KVClient> clients = new HashMap<>();
     private HashMap<Integer, KVServer> servers = new HashMap<>();
+
     //private List<KVStore> clients = new ArrayList<>(100);
     //private List<KVServer> servers = new ArrayList<>(100);
     private ECSClient ecsClient;
-    static final int numServers = 2;
-    static final int numClients = 2;
+    static final int numServers = 10;
+    static final int numClients = 1;
     static final int serverStartPort = 16000;
     static final int ecsPort = 20000;
     static final int NUM_PUT = 50;
     static final int NUM_GET = 50;
+    static final String cacheStrategy = "None";
     ExecutorService taskExecutor;
     long difference = 0;
-    private final String ENRON_SET = "/Users/jasnoorguliani/maildir";
+    private final String ENRON_SET = "/tmp/maildir";
     private File[] dirList;
 
 
@@ -87,9 +90,11 @@ public class PerformanceV2Test extends TestCase {
                 this.getCounts.add(new AtomicInteger(0));
             }
         }
+
         public void run() {
             clients.put(id, new KVClient());
             File directory = dirList[id];
+            System.out.println("Pushing keys for user" + directory.toString().substring(ENRON_SET.length()));
 
             try {
                 String connectCommand = "connect " + address +" "+port;
@@ -187,7 +192,7 @@ public class PerformanceV2Test extends TestCase {
         System.out.println("Creating server...");
         try{
             InetAddress addr = InetAddress.getByName("localhost");
-            servers.put(index, new KVServer(port, 10, "FIFO", "localhost",
+            servers.put(index, new KVServer(port, 0, "None", "localhost",
                     "src/KVStorage", addr, ecs_port, false));
             //kvServer.run();
         } catch(Exception e) {
@@ -228,16 +233,26 @@ public class PerformanceV2Test extends TestCase {
         dirList = Arrays.copyOfRange(dirList, 0 , size);
 
     }
-
+    boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
 
     public void testPerformance() {
         BasicConfigurator.configure();
+        setUpECS(ecsPort);
+        loadEnron(numClients);
         taskExecutor = Executors.newFixedThreadPool(numClients);
         Runtime current = Runtime.getRuntime();
         current.addShutdownHook(new ShutdownPrint());
-        loadEnron(numClients);
 
-        setUpECS(ecsPort);
+
+
         //setup each server and wait for activation
         for (int server = 0; server < numServers; server++) {
             setUpServer(serverStartPort + server, ecsPort, server);
@@ -260,6 +275,8 @@ public class PerformanceV2Test extends TestCase {
         for (int server = 0; server < numServers; server++) {
             servers.get(server).close();
         }
+        deleteDirectory(new File("~/ece419/src/KVStorage"));
+
 
 
 

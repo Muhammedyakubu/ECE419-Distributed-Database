@@ -8,6 +8,7 @@ import shared.messages.KVMessage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,6 +52,7 @@ public class KVStore implements KVCommInterface {
 
 	@Override
 	public void connect() throws Exception {
+		InetAddress address = InetAddress.getByName(this.address);
 		clientSocket = new Socket(address, port);
 		input = clientSocket.getInputStream();
 		output = clientSocket.getOutputStream();
