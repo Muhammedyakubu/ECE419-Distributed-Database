@@ -247,6 +247,65 @@ public class KVServer implements IKVServer {
 	public void setState(IKVMessage.ServerState state) {
 		this.currStatus = state;
 	}
+
+	public int transfer (String port, String address, String range){
+		buildKeysToSend(range);
+
+		Socket receiver;
+		int numKeysSent = keysToSend.size();
+		//send keys to new server
+		try {
+			receiver = new Socket(address, Integer.parseInt(port));
+		}
+		catch(IOException ioe){
+			logger.warn("Server-Server connection lost!", ioe);
+			return -1;
+		}
+		for (String key:keysToSend){
+			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, db.getValue(key));
+			try {
+				CommModule.sendMessage(msg, receiver);
+			}
+			catch(IOException ioe){
+				logger.warn("Server-Server connection lost!", ioe);
+				return -1;
+			}
+			KVMessage response;
+			try {
+				response = CommModule.receiveMessage(receiver);
+			} catch (IOException ioe) {
+				logger.warn("Server-Server connection lost!", ioe);
+				return -1;
+			}
+			// TODO: check this. Removing this because sometimes the this server sends
+			//		a key that is not in the receiver's range.
+			if (response.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
+					response.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
+				logger.warn(address + ":" + port + " failed to receive key " + key);
+				logger.debug("Keyrange of receiver: " + range);
+			}
+		}
+		keysToSend.clear();
+		return numKeysSent;
+	}
+
+	public int deleteKeyrange(String range){
+		buildKeysToSend(range);
+		int numDeleted = keysToSend.size();
+		//delete keys
+		for (String key: keysToSend){
+			try {
+				this.putKV(key, null);
+			} catch (Exception ioe) {
+				logger.warn("Failure in deleting rebalanced keys");
+				return -1;
+			}
+		}
+		keysToSend.clear();
+		return numDeleted;
+
+
+	}
 	public int rebalance(String port, String address, String range){
 		this.currStatus = IKVMessage.ServerState.SERVER_WRITE_LOCK;
 
