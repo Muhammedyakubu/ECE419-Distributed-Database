@@ -101,10 +101,6 @@ public class ClientConnection implements Runnable {
 	 */
 	public KVMessage handleClientMessage(KVMessage msg) {
 
-		if (msg.getStatus() != IKVMessage.StatusType.KEYRANGE && !kvServer.isResponsible(msg.getKey())) {
-			return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
-		}
-
 		switch (msg.getStatus()) {
 			case GET:
 				if (checkStopped()){
@@ -134,6 +130,7 @@ public class ClientConnection implements Runnable {
 				if (!kvServer.isResponsible(msg.getKey())){
 					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
 				}
+			case REPLICATE:
 				if (kvServer.currStatus == KVMessage.ServerState.SERVER_WRITE_LOCK){
 					msg.setStatus(IKVMessage.StatusType.SERVER_WRITE_LOCK);
 					return msg;
@@ -150,6 +147,10 @@ public class ClientConnection implements Runnable {
 					// do the put
 					isUpdate = kvServer.putKV(msg.getKey(), msg.getValue());
 					boolean deleteSuccessful = isUpdate && (msg.getValue() == null);
+
+					if (msg.getStatus() == IKVMessage.StatusType.PUT){
+						kvServer.replicate(msg.getKey(), msg.getValue());
+					}
 
 					// set the status
 					if (deleteSuccessful) {

@@ -86,14 +86,40 @@ public class ECSConnection implements Runnable{
                 kvServer.updateMetadata(msg.getValue());
                 msg.setKey("True");
                 break;
+            case TRANSFER:
+                String stripColon = msg.getValue().split(";")[0];
+                String[] values = stripColon.split(",");
+                String[] address = values[2].split(":");
+                int numSent = kvServer.transfer(address[1], address[0], values[0] + "," + values[1]);
+                msg.setKey(Integer.toString(numSent));
+                if (numSent >= 0) {
+                    msg.setStatus(IKVMessage.StatusType.TRANSFER_SUCCESS);
+                    kvServer.clearCache();
+                }
+                else
+                    msg.setStatus(IKVMessage.StatusType.TRANSFER_ERROR);
+                break;
+            case DELETE_KEYRANGE:
+                int numDeleted = kvServer.deleteKeyrange(msg.getKey());
+                msg.setKey(Integer.toString(numDeleted));
+                if (numDeleted >= 0) {
+                    msg.setStatus(IKVMessage.StatusType.DELETE_KEYRANGE_SUCCESS);
+                    kvServer.clearCache();
+                }
+                else
+                    msg.setStatus(IKVMessage.StatusType.DELETE_KEYRANGE_ERROR);
+                break;
+
             case REBALANCE:
                 String stripSemiColon = msg.getValue().split(";")[0];
-                String[] values = stripSemiColon.split(",");
-                String[] address = values[2].split(":");
-                int numKeysSent = kvServer.rebalance(address[1],address[0], values[0] + "," + values[1]);
+                String[] value = stripSemiColon.split(",");
+                String[] addres = value[2].split(":");
+                int numKeysSent = kvServer.rebalance(addres[1],addres[0], value[0] + "," + value[1]);
                 msg.setKey(Integer.toString(numKeysSent));
-                if (numKeysSent >= 0)
+                if (numKeysSent >= 0) {
                     msg.setStatus(IKVMessage.StatusType.REBALANCE_SUCCESS);
+                    kvServer.clearCache();
+                }
                 else
                     msg.setStatus(IKVMessage.StatusType.REBALANCE_ERROR);
                 break;

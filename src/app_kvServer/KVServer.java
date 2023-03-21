@@ -14,6 +14,7 @@ import shared.comms.CommModule;
 import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
+import shared.messages.Pair;
 
 import java.io.IOException;
 import java.net.*;
@@ -32,26 +33,32 @@ import java.util.Random;
 public class KVServer implements IKVServer {
 	
 	public static Logger logger = Logger.getLogger(KVServer.class);
+
 	private int port;
 	private String bindAddress;
 	private InetAddress ecsAddress;
 	private int ecsPort;
+	private ServerSocket serverSocket;
+	private Socket ecsSocket;
+	ECSConnection ecsConnection;
+	Thread ecsThread;
+
+
 	private int cacheSize;
 	private CacheStrategy strategy;
 	public Cache cache;
 	private IKVDatabase db;
 	private String dataPath;
+
 	private boolean running;
-	private ServerSocket serverSocket;
-	private Socket ecsSocket;
+
 	public Range keyRange;
 	private KVMetadata kvMetadata;
 	private List<String> keysToSend = new ArrayList<>();
 	public KVMessage.ServerState currStatus;
-	ECSConnection ecsConnection;
-	Thread ecsThread;
 	private final int SHUTDOWN_TIMEOUT = 5000;
 	private boolean hasShutdown = false;
+	private List<String> successors = new ArrayList<String>(2);
 
 	/**
 	 * Shutdown hook for when the server shuts down
@@ -99,7 +106,15 @@ public class KVServer implements IKVServer {
 		this.port = port;
 		this.cacheSize = cacheSize;
 		this.dataPath = dataPath + "/" + bind_address + "-" + port;
-		this.bindAddress = bind_address;
+		if (bind_address == "localhost") {
+			try {
+				this.bindAddress = InetAddress.getLocalHost().getHostAddress();
+			} catch (Exception e) {
+				logger.warn("Error in hostname to IP translation", e);
+			}
+		}
+		else
+			this.bindAddress = bind_address;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.kvMetadata = new KVMetadata();
 		this.ecsAddress = ecsAddr;
@@ -203,7 +218,7 @@ public class KVServer implements IKVServer {
 	@Override
     public boolean putKV(String key, String value) throws Exception{
 		byte[] byteArr = key.getBytes("UTF-8");
-		if (key == "")  throw new Exception("Invalid key length, must be more than 0 bytes and less than 20");
+		if (key == "")  throw new Exception("Invalid key length, must be more than 0 bytes");
 		//|| byteArr.length > 20)
 
 		boolean keyInStorage = false;
@@ -211,13 +226,69 @@ public class KVServer implements IKVServer {
 			keyInStorage = db.deletePair(key);
 			if (cache != null)
 				cache.deleteKV(key);
+			replicate(key, value);
 		}
 		else {
 			keyInStorage = db.insertPair(key, value);
 			if (cache != null)
 				cache.putKV(key, value);
+
 		}
 		return keyInStorage;
+	}
+
+	/**
+	 * Replicate keys to the two successors
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	public boolean replicate(String key, String value){
+		Socket replicaOne;
+		Socket replicaTwo;
+		String[] splitOne = successors.get(0).split(":");
+		String[] splitTwo = successors.get(1).split(":");
+		String addressOne = splitOne[0];
+		String portOne = splitOne[1];
+		String addressTwo = splitTwo[0];
+		String portTwo = splitTwo[1];
+
+		try {
+			replicaOne = new Socket(addressOne, Integer.parseInt(portOne));
+			replicaTwo = new Socket(addressTwo, Integer.parseInt(portTwo));
+		}
+		catch(IOException ioe){
+			logger.warn("Server-Replica connection lost!", ioe);
+			return false;
+		}
+
+		KVMessage msg = new KVMessage(IKVMessage.StatusType.REPLICATE, key, value);
+		try {
+			CommModule.sendMessage(msg, replicaOne);
+			CommModule.sendMessage(msg, replicaTwo);
+		}
+		catch(IOException ioe){
+			logger.warn("Server-Server connection lost!", ioe);
+			return false;
+		}
+		KVMessage responseOne;
+		KVMessage responseTwo;
+		try {
+			responseOne = CommModule.receiveMessage(replicaOne);
+			responseTwo = CommModule.receiveMessage(replicaTwo);
+		} catch (IOException ioe) {
+			logger.warn("Server-Server connection lost!", ioe);
+			return false;
+		}
+		if (responseOne.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
+				responseOne.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
+			logger.warn(addressOne + ":" + portOne + " failed to receive key " + key);
+		}
+		if (responseTwo.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
+				responseTwo.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
+			logger.warn(addressTwo + ":" + portTwo + " failed to receive key " + key);
+		}
+		return true;
 	}
 
 	synchronized boolean isResponsible(String key) {
@@ -240,12 +311,81 @@ public class KVServer implements IKVServer {
 
 	public void updateMetadata(String metadata){
 		this.kvMetadata = new KVMetadata(metadata);
+		if (successors.size() == 0)
+			successors.add(this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
+		else
+			successors.set(0, this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
+		if (successors.size() == 1)
+			successors.add(this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
+		else
+			successors.set(1, this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
 		Range ownRange = this.kvMetadata.getRange(getHostname() + ":" + Integer.toString(port));
 		this.keyRange.updateRange(ownRange.start, ownRange.end);
 
 	}
 	public void setState(IKVMessage.ServerState state) {
 		this.currStatus = state;
+	}
+
+
+
+	public int transfer (String port, String address, String range){
+		buildKeysToSend(range);
+
+		Socket receiver;
+		int numKeysSent = keysToSend.size();
+		//send keys to new server
+		try {
+			receiver = new Socket(address, Integer.parseInt(port));
+		}
+		catch(IOException ioe){
+			logger.warn("Server-Server connection lost!", ioe);
+			return -1;
+		}
+		for (String key:keysToSend){
+			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, db.getValue(key));
+			try {
+				CommModule.sendMessage(msg, receiver);
+			}
+			catch(IOException ioe){
+				logger.warn("Server-Server connection lost!", ioe);
+				return -1;
+			}
+			KVMessage response;
+			try {
+				response = CommModule.receiveMessage(receiver);
+			} catch (IOException ioe) {
+				logger.warn("Server-Server connection lost!", ioe);
+				return -1;
+			}
+			// TODO: check this. Removing this because sometimes the this server sends
+			//		a key that is not in the receiver's range.
+			if (response.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
+					response.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
+				logger.warn(address + ":" + port + " failed to receive key " + key);
+				logger.debug("Keyrange of receiver: " + range);
+			}
+		}
+		keysToSend.clear();
+		return numKeysSent;
+	}
+
+	public int deleteKeyrange(String range){
+		buildKeysToSend(range);
+		int numDeleted = keysToSend.size();
+		//delete keys
+		for (String key: keysToSend){
+			try {
+				this.putKV(key, null);
+			} catch (Exception ioe) {
+				logger.warn("Failure in deleting rebalanced keys");
+				return -1;
+			}
+		}
+		keysToSend.clear();
+		return numDeleted;
+
+
 	}
 	public int rebalance(String port, String address, String range){
 		this.currStatus = IKVMessage.ServerState.SERVER_WRITE_LOCK;

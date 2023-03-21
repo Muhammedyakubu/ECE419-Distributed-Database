@@ -45,6 +45,7 @@ public class PerformanceV2Test extends TestCase {
     private File[] dirList;
 
 
+
     public void setUpECS(final int port) {
         //System.out.println("Creating ECS...");
         /*try {
@@ -187,12 +188,13 @@ public class PerformanceV2Test extends TestCase {
     }
 
 
+
     public void setUpServer(int port, int ecs_port, final int index) {
 
         System.out.println("Creating server...");
         try{
             InetAddress addr = InetAddress.getByName("localhost");
-            servers.put(index, new KVServer(port, 0, "None", "localhost",
+            servers.put(index, new KVServer(port, 50, cacheStrategy, "localhost",
                     "src/KVStorage", addr, ecs_port, false));
             //kvServer.run();
         } catch(Exception e) {
@@ -270,13 +272,12 @@ public class PerformanceV2Test extends TestCase {
         }
         final long endTime = System.nanoTime();
 
-        difference = (endTime - startTime) / 1000000;
+        difference = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
 
         for (int server = 0; server < numServers; server++) {
             servers.get(server).close();
         }
         deleteDirectory(new File("~/ece419/src/KVStorage"));
-
 
 
 
