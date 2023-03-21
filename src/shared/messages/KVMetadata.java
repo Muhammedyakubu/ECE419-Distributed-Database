@@ -175,7 +175,48 @@ public class KVMetadata implements IKVMetadata{
 
     // TODO: @Hope implement this method
     public Pair<String, Range> getNthSuccessor(String name, int n) {
-        return null;
+        Pair returnPair = new Pair();
+        Range returnRange = new Range();
+
+        //N=0, RETURN SELF
+        if(n==0){
+            returnRange = getRange(name);
+            returnPair.setValue(name, returnRange);
+            return returnPair;
+        }
+
+        //IF THERE'S ONLY ONE NODE, RETURN SELF
+        if(metadata.size() == 1 && metadata.get(0).p1.compareTo(name) == 0){
+            returnRange = getRange(name);
+            returnPair.setValue(name, returnRange);
+            return returnPair;
+        }
+
+        int server_index = -1;
+
+        for(int i=0; i<metadata.size(); i++){
+            if(metadata.get(i).p1.compareTo(name) == 0){
+                server_index = i;
+                break;
+            }
+        }
+
+        if (server_index == -1)
+            return null;
+
+        int increment = n % metadata.size();
+
+        int successor_index = server_index + n;
+
+        if(successor_index < 0){
+            successor_index = metadata.size() + successor_index;
+        }
+
+        if(successor_index >= metadata.size()){
+            successor_index = successor_index - metadata.size();
+        }
+
+        return metadata.get(successor_index);
     }
 
 }
