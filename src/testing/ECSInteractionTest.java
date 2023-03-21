@@ -321,6 +321,23 @@ public class ECSInteractionTest extends TestCase {
     }
 
     @Test
+    public void testKeyrangeReadRequest() {
+
+        String command = "keyrange_read";
+        String response = null;
+        Exception ex = null;
+        client_app = new KVClient();
+        //NEED TO FIX SERVER_STOPPED STATUS
+        try {
+            client_app.kvstore = this.kvClient;
+            response = client_app.handleCommand(command);
+        } catch (Exception e) {
+            ex = e;
+        }
+        Assert.assertTrue(/*ex == null && */response.equals(IKVMessage.StatusType.KEYRANGE_READ_SUCCESS.toString()));
+    }
+
+    @Test
     public void testServerNotResponsible() {
         String[] keys = {"foo1", "foo2", "foo3", "foo4", "foo5", "foo6", "foo7", "foo8", "foo9", "foo10"};
         String[] values = {"bar1", "bar2", "bar3", "bar4", "bar5", "bar6", "bar7", "bar8", "bar9", "bar10"};

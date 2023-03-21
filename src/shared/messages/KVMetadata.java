@@ -204,9 +204,10 @@ public class KVMetadata implements IKVMetadata{
         if (server_index == -1)
             return null;
 
+       // int successor_index = (server_index + n) % metadata.size();
         int increment = n % metadata.size();
 
-        int successor_index = server_index + n;
+        int successor_index = server_index + increment;
 
         if(successor_index < 0){
             successor_index = metadata.size() + successor_index;
@@ -217,6 +218,16 @@ public class KVMetadata implements IKVMetadata{
         }
 
         return metadata.get(successor_index);
+    }
+
+    public String toKeyRangeReadString(){
+        String returned_string = "";
+        for (int i = 0; i < metadata.size(); i++)
+        {
+            returned_string = returned_string + metadata.get(i).p2.start.toString(16) + "," + getNthSuccessor(metadata.get(i).p1, 2).p2.end.toString(16) + "," + metadata.get(i).p1 + ";";
+        }
+
+        return returned_string;
     }
 
 }

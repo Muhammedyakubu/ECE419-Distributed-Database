@@ -92,4 +92,86 @@ public class KVMetadataTest extends TestCase{
         //assertEquals(expected, actual);
     }
 
+    @Test
+    public void testKVMetadataGetNthSuccessorOneServer(){
+        md.removeServer("localhost",5000);
+        md.addServer("localhost",5000);
+
+        //5100, 5500
+        System.out.println(md.toString());
+        assertEquals("localhost:5000",md.getNthSuccessor("localhost:5000", 3).getFirst());
+    }
+
+    @Test
+    public void testKVMetadataGetNthSuccessor(){
+        md.removeServer("localhost",5000);
+        md.addServer("localhost",5000);
+        md.addServer("localhost",5100);
+        md.addServer("localhost",5200);
+        md.addServer("localhost",5300);
+        md.addServer("localhost",5400);
+        md.addServer("localhost",5500);
+
+        //5100, 5500
+        System.out.println(md.toString());
+        assertEquals("localhost:5500",md.getNthSuccessor("localhost:5100", 3).getFirst());
+    }
+
+    @Test
+    public void testKVMetadataGetNthPredecessor(){
+        md.removeServer("localhost",5000);
+        md.addServer("localhost",5000);
+        md.addServer("localhost",5100);
+        md.addServer("localhost",5200);
+        md.addServer("localhost",5300);
+        md.addServer("localhost",5400);
+        md.addServer("localhost",5500);
+
+        //5100, 5500
+        System.out.println(md.toString());
+        assertEquals("localhost:5400",md.getNthSuccessor("localhost:5300", -3).getFirst());
+    }
+
+    public void testKVMetadataGet6thPredecessor(){
+        md.removeServer("localhost",5000);
+        md.addServer("localhost",5000);
+        md.addServer("localhost",5100);
+        md.addServer("localhost",5200);
+
+        //5100, 5500
+        System.out.println(md.toString());
+        assertEquals("localhost:5100",md.getNthSuccessor("localhost:5100", -6).getFirst());
+    }
+
+    public void testKVMetadataGet7thSuccessor(){
+        md.removeServer("localhost",5000);
+        md.addServer("localhost",5000);
+        md.addServer("localhost",5100);
+        md.addServer("localhost",5200);
+
+        //5100, 5500
+        System.out.println(md.toString());
+        assertEquals("localhost:5000",md.getNthSuccessor("localhost:5100", 7).getFirst());
+    }
+
+    @Test
+    public void testKVMetadataGetKeyRangeRead(){
+
+        md.removeServer("localhost",5000);
+        md.addServer("localhost",5000);
+        md.addServer("localhost",5100);
+        md.addServer("localhost",5200);
+        md.addServer("localhost",5300);
+        md.addServer("localhost",5400);
+
+        System.out.println(md.toString());
+        System.out.println(md.toKeyRangeReadString());
+        assertEquals("b18c9873dcbbe400e116c6e3d9644376,341e97d7bf9a69b130a0db09a8c87cfd,localhost:5300;" +
+                "cc9b4f9d4d774ddcec786208bfa0aefe,ab2bd578b78979e9d15ce0bfade24987,localhost:5200;" +
+                "ecadfd0ee12447ea5a63a5705822355b,b18c9873dcbbe400e116c6e3d9644375,localhost:5400;" +
+                "341e97d7bf9a69b130a0db09a8c87cfe,cc9b4f9d4d774ddcec786208bfa0aefd,localhost:5100;" +
+                "ab2bd578b78979e9d15ce0bfade24988,ecadfd0ee12447ea5a63a5705822355a,localhost:5000;",md.toKeyRangeReadString());
+
+    }
+
 }

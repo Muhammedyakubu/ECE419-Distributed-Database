@@ -41,6 +41,9 @@ public interface IKVMessage {
 		KEYRANGE,		/* Request keyrange of server */
 		KEYRANGE_SUCCESS, /* Successful keyrange return */
 
+		KEYRANGE_READ,		/* Request keyrange_read of server */
+		KEYRANGE_READ_SUCCESS, /* Successful keyrange_read return */
+
 		// Server-Server Status Messages
 		SERVER_PUT,		/* Server put command when rebalancing */
 

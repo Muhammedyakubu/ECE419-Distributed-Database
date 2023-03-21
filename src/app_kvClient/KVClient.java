@@ -158,12 +158,18 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
                     String currServerAddPort = serverAddress + ":" + serverPort;
                     String newServerAddPort;
+                    String succ1 = currServerAddPort;
+                    String succ2 = currServerAddPort;
                     if (metadata != null) {
                         newServerAddPort = metadata.findServer(key);
+                        succ1 = metadata.getNthSuccessor(newServerAddPort, 1).getFirst();
+                        succ2 = metadata.getNthSuccessor(newServerAddPort, 2).getFirst();
                     }
                     else newServerAddPort = currServerAddPort;
 
-                    if(currServerAddPort.compareTo(newServerAddPort) != 0)
+                    //IF THE CURRENTLY CONNECTED SERVER IS NOT THE CORRECT SERVER OR A REPLICA
+                    if(currServerAddPort.compareTo(newServerAddPort) != 0 && currServerAddPort.compareTo(succ1) != 0
+                            && currServerAddPort.compareTo(succ2) != 0)
                     {
                         disconnect();
                         String[] IPPort = newServerAddPort.split(":");
@@ -227,6 +233,25 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     handleNewMessage(response);
                     metadata = null;
                     metadata = new KVMetadata(response.getKey());
+                    return response.getStatus().toString();
+                } catch(IOException e){
+                    logger.info("Connection to server was lost.");
+                }
+
+            } else {
+                printError("Not connected!");
+            }
+        } else if(tokens[0].equals("keyrange_read")) {
+            //if there is a connected client
+            if(kvstore != null){
+
+                try {
+                    KVMessage response = (KVMessage) kvstore.getKeyRange(); //NEED TO IMPLEMENT THIS
+                    response.setStatus(IKVMessage.StatusType.KEYRANGE_READ_SUCCESS);
+                    metadata = null;
+                    metadata = new KVMetadata(response.getKey());
+                    response.setKey(metadata.toKeyRangeReadString());
+                    handleNewMessage(response);
                     return response.getStatus().toString();
                 } catch(IOException e){
                     logger.info("Connection to server was lost.");
