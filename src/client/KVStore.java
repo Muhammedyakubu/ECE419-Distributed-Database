@@ -45,7 +45,16 @@ public class KVStore implements KVCommInterface {
 	 * @param port the port of the KVServer
 	 */
 	public KVStore(String address, int port) {
-		this.address = address;
+		if (address == "localhost"){
+			try {
+				this.address = InetAddress.getLocalHost().getHostAddress();
+			}
+			catch(Exception e){
+				logger.warn("Could not translate localhost to IP", e);
+			}
+		}
+		else
+			this.address = address;
 		this.port = port;
 		listeners = new HashSet<ClientSocketListener>();
 	}
