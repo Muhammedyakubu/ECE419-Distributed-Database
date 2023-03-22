@@ -27,6 +27,7 @@ public class ECSClient implements IECSClient {
     private KVMetadata metadata;
     private Map<String, ECSNode> kvNodes;
     private final int SOCKET_TIMEOUT = 100;
+    private final int BACKLOG = 50;
 
     /**
      * Initialize the ECSClient with a given address and port
@@ -61,7 +62,7 @@ public class ECSClient implements IECSClient {
             if (this.address.equals(null))
                 this.ecsSocket = new ServerSocket(port);
             else
-                this.ecsSocket = new ServerSocket(port, 10, address);
+                this.ecsSocket = new ServerSocket(port, BACKLOG, address);
             ecsSocket.setSoTimeout(SOCKET_TIMEOUT);
             logger.info("ECS listening on port: " + port);
             return true;
@@ -87,7 +88,8 @@ public class ECSClient implements IECSClient {
             while (running) {
                 try {
                     Socket kvSeverSocket = ecsSocket.accept();
-                    initializeECSNode(kvSeverSocket);
+                    initializeECSNodeWithReplica(kvSeverSocket);
+//                    initializeECSNode(kvSeverSocket);
                 } catch (SocketTimeoutException e) {
                     // do nothing
                 } catch (IOException e) {
@@ -197,14 +199,28 @@ public class ECSClient implements IECSClient {
     }
 
     public void initializeECSNodeWithReplica(Socket socket) {
+        try {
+            KVMessage addressMessage = CommModule.receiveMessage(socket);
+            if (addressMessage.getStatus() != KVMessage.StatusType.CONNECT_ECS) {
+                logger.error("Error! Received unexpected message from KVServer");
+                return;
+            }
+            int serverPort = Integer.parseInt(addressMessage.getKey());
+            String serverAddress = addressMessage.getValue();
 
+            ECSNode node = new ECSNode(socket, serverAddress, serverPort, null); // hash range will be set later
+            addServer(node);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    // We assume this runs with no server failures
     public boolean addServer(ECSNode node) {
         // if there are < 3 nodes, have all the nodes replicate to the new node
-        metadata.addServer(node.getNodeHost(), node.getNodePort());
+        metadata.addServer(node.getNodeHost(), node.getNodePort()).getSecond();
         kvNodes.put(node.getNodeName(), node);
-        node.sendMetadata(metadata);
+        node.sendMetadata(metadata);    // this updates the ECSNode's hash range as well
 
         if (metadata.size() == 1) { // first node, we're done
             return true;
@@ -246,6 +262,8 @@ public class ECSClient implements IECSClient {
 
         return true;
     }
+
+    // We assume this runs with no server failures
     public boolean removeServer(ECSNode node, boolean isFailure) {
         // if there are <= 3 nodes, we don't need to do anything
         if (!isFailure) node.setState(ServerState.SERVER_WRITE_LOCK);
