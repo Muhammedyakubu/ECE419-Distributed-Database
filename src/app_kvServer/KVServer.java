@@ -105,16 +105,16 @@ public class KVServer implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, InetAddress ecsAddr, int ecs_port, boolean run) {
 		this.port = port;
 		this.cacheSize = cacheSize;
-		this.dataPath = dataPath + "/" + bind_address + "-" + port;
 		if (bind_address == "localhost") {
 			try {
-				this.bindAddress = InetAddress.getLocalHost().getHostAddress();
+				this.bindAddress = getHostAddress();
 			} catch (Exception e) {
 				logger.warn("Error in hostname to IP translation", e);
 			}
 		}
 		else
 			this.bindAddress = bind_address;
+		this.dataPath = dataPath + "/" + this.bindAddress + "-" + port;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.kvMetadata = new KVMetadata();
 		this.ecsAddress = ecsAddr;
@@ -157,7 +157,7 @@ public class KVServer implements IKVServer {
 		return port;
 	}
 
-	public String getHostAddress(){
+	public static String getHostAddress(){
 		try {
 			return InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
@@ -226,7 +226,6 @@ public class KVServer implements IKVServer {
 			keyInStorage = db.deletePair(key);
 			if (cache != null)
 				cache.deleteKV(key);
-			replicate(key, value);
 		}
 		else {
 			keyInStorage = db.insertPair(key, value);
@@ -262,7 +261,7 @@ public class KVServer implements IKVServer {
 			return false;
 		}
 
-		KVMessage msg = new KVMessage(IKVMessage.StatusType.REPLICATE, key, value);
+		KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, value);
 		try {
 			CommModule.sendMessage(msg, replicaOne);
 			CommModule.sendMessage(msg, replicaTwo);
@@ -316,9 +315,9 @@ public class KVServer implements IKVServer {
 		else
 			successors.set(0, this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
 		if (successors.size() == 1)
-			successors.add(this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
+			successors.add(this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 2).getFirst());
 		else
-			successors.set(1, this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
+			successors.set(1, this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 2).getFirst());
 		Range ownRange = this.kvMetadata.getRange(getHostname() + ":" + Integer.toString(port));
 		this.keyRange.updateRange(ownRange.start, ownRange.end);
 
@@ -557,7 +556,7 @@ public class KVServer implements IKVServer {
 				serverSocket = new ServerSocket(this.port);
 			} else {
 				if (this.bindAddress == "localhost"){
-					this.bindAddress = InetAddress.getLocalHost().getHostAddress();
+					this.bindAddress = getHostAddress();
 				}
 				InetAddress inetAddress = InetAddress.getByName(this.bindAddress);
 				serverSocket = new ServerSocket(this.port, 50, inetAddress);
@@ -660,7 +659,7 @@ public class KVServer implements IKVServer {
 			boolean port_present = false;
 			boolean ecs_present = false;
 			String address = "localhost";
-			String ecsAddress = "localhost";
+			String ecsAddress = getHostAddress();
 			String dataPath = "./src/KVStorage"; //DEFAULT HANDLED IN KVDATABASE
 			boolean dataPath_present = false;
 			String logPath = "logs/server.log";
@@ -685,6 +684,9 @@ public class KVServer implements IKVServer {
 						ecs_port = Integer.parseInt(ecsSplit[0]);
 					else {
 						ecsAddress = ecsSplit[0];
+						if (ecsAddress.equals("localhost")){
+							ecsAddress = getHostAddress();
+						}
 						ecs_port = Integer.parseInt(ecsSplit[1]);
 					}
 					if(ecs_port < 0 || ecs_port > 65535){

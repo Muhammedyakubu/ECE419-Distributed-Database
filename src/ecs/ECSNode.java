@@ -80,7 +80,7 @@ public class ECSNode implements IECSNode{
 
     public void updateNodeHashRange(KVMetadata metadata) {
         Range hr = metadata.getRange(this.getNodeName());
-        if (hr != null && !hr.equals(this.hashRange)) {
+        if (this.hashRange == null || (hr != null && !hr.equals(this.hashRange))) {
             this.hashRange = hr;
         }
     }

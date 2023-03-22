@@ -45,7 +45,7 @@ public class KVStore implements KVCommInterface {
 	 * @param port the port of the KVServer
 	 */
 	public KVStore(String address, int port) {
-		if (address == "localhost"){
+		if (address.equals("localhost")){
 			try {
 				this.address = InetAddress.getLocalHost().getHostAddress();
 			}

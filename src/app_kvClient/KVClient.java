@@ -11,6 +11,7 @@ import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
 
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.util.*;
 import java.lang.*;
 import java.io.*;
@@ -101,7 +102,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
         } else if (tokens[0].equals("cl")) {
             if(tokens.length == 2) {
                 try {
-                    serverAddress = "localhost";
+                    serverAddress = InetAddress.getLocalHost().getHostAddress();
                     serverPort = Integer.parseInt(tokens[1]);
                     newConnection(serverAddress, serverPort);
                 } catch (Exception e) {
