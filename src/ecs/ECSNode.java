@@ -43,7 +43,7 @@ public class ECSNode implements IECSNode{
         try {
             return CommModule.receiveMessage(this.socket);
         } catch (IOException e) {
-            logger.debug("Error receiving message from " + this.getNodeName(), e);
+            logger.debug("Error receiving message from " + this.getNodeName());
             failed = true;
             return null;
         }

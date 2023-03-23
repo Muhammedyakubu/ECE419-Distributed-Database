@@ -61,7 +61,7 @@ public class ClientConnection implements Runnable {
 				/* connection either terminated by the client or lost due to 
 				 * network problems */
 				} catch (IOException ioe) {
-					logger.info("Error! Connection to client or server terminated!");
+					logger.info("Connection to client or server terminated");
 					isOpen = false;
 				}				
 			}

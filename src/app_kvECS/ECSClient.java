@@ -1,6 +1,7 @@
 package app_kvECS;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Map;
@@ -28,6 +29,8 @@ public class ECSClient implements IECSClient {
     private Map<String, ECSNode> kvNodes;
     private final int SOCKET_TIMEOUT = 100;
     private final int BACKLOG = 50;
+    BigInteger HASH_MAX = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
+    private final Range FULL_RANGE = new Range(BigInteger.ZERO, HASH_MAX);
 
     /**
      * Initialize the ECSClient with a given address and port
@@ -78,6 +81,10 @@ public class ECSClient implements IECSClient {
         }
     }
 
+    public void printHashRing() {
+
+    }
+
     /**
      * Start the ECSClient's server socket and listen for incoming connections
      */
@@ -102,44 +109,17 @@ public class ECSClient implements IECSClient {
     }
 
     public void pollNodes() {
-        //ArrayList<ECSNode> lostNodes = new ArrayList<>();
-        ArrayList<ECSNode> dyingNodes = new ArrayList<>();
         for (ECSNode node: kvNodes.values()) {
 
             KVMessage heartbeat = new KVMessage(KVMessage.StatusType.WAGWAN,"", "");
             node.sendMessage(heartbeat);
-
-            if (!node.failed()) {
-                node.receiveMessage();
-            }
-//            if (node.getAvailableSocketBytes() <= 2) continue;
-//
-//            KVMessage request = node.receiveMessage();
-//            if (request == null) {
-//                lostNodes.add(node);
-//                continue;
-//            }
-//
-//            // should only receive a shutdown message
-//            if (request.getStatus() == KVMessage.StatusType.SHUTTING_DOWN) {
-//                dyingNodes.add(node);
-//                logger.debug("Received shutdown message from " + node.getNodeName()
-//                                + " adding to dying nodes");
-//            } else {
-//                logger.error("Error! Received unexpected message from KVServer");
-//                node.sendMessage(new KVMessage(
-//                        KVMessage.StatusType.FAILED,
-//                        null,
-//                        "Unexpected message received from KVServer"));
-//            }
-//        }
-//        for (ECSNode node: lostNodes) {
-//            removeLostNode(node);
-//        }
+            node.receiveMessage();
         }
-        for (ECSNode node: dyingNodes) {
-            if(node.failed())
+        for (ECSNode node: kvNodes.values()) {
+            if(node.failed()) {
+                logger.debug("Node " + node.getNodeName() + " failed, removing from cluster");
                 removeServer(node, true);
+            }
         }
     }
 
@@ -232,15 +212,10 @@ public class ECSClient implements IECSClient {
 
         if (metadata.size() == 1) { // first node, we're done
 
-        } else if (metadata.size() == 2) { // second node, we need to replicate from the first node
+        } else if (metadata.size() == 2 || metadata.size() == 3) { // second node, we need to replicate from the first node
+            // successor will have all data in the storage service, so we only need to transfer from it
             ECSNode firstNode = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -1).getFirst());
-            transferData(firstNode, node, firstNode.getNodeHashRange());
-        } else if (metadata.size() == 3) {
-            ECSNode predecessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -1).getFirst());
-            ECSNode successor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 1).getFirst());
-
-            transferData(predecessor, node, predecessor.getNodeHashRange());
-            transferData(successor, node, successor.getNodeHashRange());
+            transferData(firstNode, node, FULL_RANGE);
         } else if (metadata.size() > 3) {
             // transfer node's core and all replicated data from successor to new node
             // that includes all data from the 2nd predecessor to the current node

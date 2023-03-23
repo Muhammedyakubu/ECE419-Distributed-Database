@@ -327,7 +327,7 @@ public class KVServer implements IKVServer {
 
 
 
-	public int transfer (String port, String address, String range){
+	public int transfer (String address, String port, String range){
 		buildKeysToSend(range);
 
 		Socket receiver;
