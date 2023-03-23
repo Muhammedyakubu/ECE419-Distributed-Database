@@ -14,10 +14,12 @@ import shared.comms.CommModule;
 import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
+import shared.messages.Pair;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -57,7 +59,7 @@ public class KVServer implements IKVServer {
 	public KVMessage.ServerState currStatus;
 	private final int SHUTDOWN_TIMEOUT = 5000;
 	private boolean hasShutdown = false;
-	private List<String> successors = new ArrayList<String>(2);
+	private List<Socket> successors = Collections.synchronizedList(new ArrayList<Socket>(2));
 
 	/**
 	 * Shutdown hook for when the server shuts down
@@ -242,55 +244,40 @@ public class KVServer implements IKVServer {
 	 * @return
 	 */
 	public boolean replicate(String key, String value){
-		Socket replicaOne;
-		Socket replicaTwo;
-		String[] splitOne = successors.get(0).split(":");
-		String[] splitTwo = successors.get(1).split(":");
-		String addressOne = splitOne[0];
-		String portOne = splitOne[1];
-		String addressTwo = splitTwo[0];
-		String portTwo = splitTwo[1];
-
-		try {
-			replicaOne = new Socket(addressOne, Integer.parseInt(portOne));
-			replicaTwo = new Socket(addressTwo, Integer.parseInt(portTwo));
-		}
-		catch(IOException ioe){
-			logger.warn("Server-Replica connection lost!", ioe);
-			return false;
-		}
-
 		KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, value);
-		try {
-			CommModule.sendMessage(msg, replicaOne);
-			CommModule.sendMessage(msg, replicaTwo);
-		}
-		catch(IOException ioe){
-			logger.warn("Server-Server connection lost!", ioe);
-			return false;
-		}
-		KVMessage responseOne;
-		KVMessage responseTwo;
-		try {
-			responseOne = CommModule.receiveMessage(replicaOne);
-			responseTwo = CommModule.receiveMessage(replicaTwo);
-		} catch (IOException ioe) {
-			logger.warn("Server-Server connection lost!", ioe);
-			return false;
-		}
-		if (responseOne.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
-				responseOne.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
-			logger.warn(addressOne + ":" + portOne + " failed to receive key " + key);
-		}
-		if (responseTwo.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
-				responseTwo.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
-			logger.warn(addressTwo + ":" + portTwo + " failed to receive key " + key);
+		if (kvMetadata.size() == 1) return true;
+
+		for (Socket succ:successors){
+			try {
+				CommModule.sendMessage(msg, succ);
+			}
+			catch(IOException ioe){
+				logger.warn("Server-Server connection lost!", ioe);
+				return false;
+			}
+			KVMessage responseOne;
+			try {
+				responseOne = CommModule.receiveMessage(succ);
+			} catch (IOException ioe) {
+				logger.warn("Server-Server connection lost!", ioe);
+				return false;
+			}
+			if (responseOne.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
+					responseOne.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
+				logger.warn(succ.getInetAddress().getHostAddress() + ":" + Integer.toString(succ.getPort()) + " failed to receive key " + key);
+			}
 		}
 		return true;
 	}
 
 	synchronized boolean isResponsible(String key) {
 		return keyRange.inRange(MD5.getHash(key));
+	}
+
+	synchronized boolean isReplicaResponsible(String key){
+		Pair<String, Range> predecessor = kvMetadata.getNthSuccessor(bindAddress + ":" + Integer.toString(port), -1);
+		Pair<String, Range> predecessorTwo = kvMetadata.getNthSuccessor(bindAddress + ":" + Integer.toString(port), -2);
+		return (predecessor.getSecond().inRange(MD5.getHash(key)) || predecessorTwo.getSecond().inRange(MD5.getHash(key)));
 	}
 
 	public KVMetadata getMetadata(){
@@ -309,17 +296,35 @@ public class KVServer implements IKVServer {
 
 	public void updateMetadata(String metadata){
 		this.kvMetadata = new KVMetadata(metadata);
-		if (successors.size() == 0)
-			successors.add(this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
-		else
-			successors.set(0, this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
-		if (successors.size() == 1)
-			successors.add(this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 2).getFirst());
-		else
-			successors.set(1, this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 2).getFirst());
+
+		String[] firstSucc = this.kvMetadata.getNthSuccessor(this.bindAddress + ":" + Integer.toString(port), 1).getFirst().split(":");
+		String[] secondSucc = this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst().split(":");
+		//add sockets
+		if (successors.size() == 0) {
+			Socket replicaOne, replicaTwo;
+			try {
+				replicaOne = new Socket(firstSucc[0], Integer.parseInt(firstSucc[1]));
+				replicaTwo = new Socket(secondSucc[0], Integer.parseInt(secondSucc[1]));
+				successors.add(replicaOne);
+				successors.add(replicaTwo);
+			}
+			catch(IOException ioe){
+				logger.warn("Server-Replica connection lost!", ioe);
+			}
+
+		}
+		else if (!successors.get(0).getInetAddress().getHostAddress().equals(firstSucc[0])){
+			try {
+				successors.get(0).close();
+				successors.set(0, new Socket(firstSucc[0], Integer.parseInt(firstSucc[1])));
+				successors.get(1).close();
+				successors.set(0, new Socket(secondSucc[0], Integer.parseInt(secondSucc[1])));
+			} catch (IOException ioe) {
+				logger.warn("Server-Replica connection lost!", ioe);
+			}
+		}
 		Range ownRange = this.kvMetadata.getRange(getHostname() + ":" + Integer.toString(port));
 		this.keyRange.updateRange(ownRange.start, ownRange.end);
-
 	}
 	public void setState(IKVMessage.ServerState state) {
 		this.currStatus = state;
@@ -658,7 +663,7 @@ public class KVServer implements IKVServer {
 			int ecs_port = -1;
 			boolean port_present = false;
 			boolean ecs_present = false;
-			String address = "localhost";
+			String address = getHostAddress();
 			String ecsAddress = getHostAddress();
 			String dataPath = "./src/KVStorage"; //DEFAULT HANDLED IN KVDATABASE
 			boolean dataPath_present = false;
