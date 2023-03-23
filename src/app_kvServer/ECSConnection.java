@@ -127,6 +127,11 @@ public class ECSConnection implements Runnable{
                 kvServer.setState(IKVMessage.ServerState.valueOf(msg.getValue()));
                 msg.setKey("true");
                 break;
+
+            case WAGWAN:
+                msg.setKey("Alive!");
+                break;
+
             default:
                 logger.error("Error! Invalid ECS Message type: " + msg.getStatus());
                 msg.setStatus(KVMessage.StatusType.FAILED);

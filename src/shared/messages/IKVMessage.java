@@ -48,6 +48,8 @@ public interface IKVMessage {
 		// Server-Server Status Messages
 		SERVER_PUT,		/* Server put command when rebalancing */
 
+		WAGWAN, /*Heartbeat message*/
+
 	}
 	public enum ServerState {
 		SERVER_STOPPED,

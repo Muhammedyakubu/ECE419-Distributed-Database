@@ -102,36 +102,49 @@ public class ECSClient implements IECSClient {
     }
 
     public void pollNodes() {
-        ArrayList<ECSNode> lostNodes = new ArrayList<>();
+        //ArrayList<ECSNode> lostNodes = new ArrayList<>();
         ArrayList<ECSNode> dyingNodes = new ArrayList<>();
         for (ECSNode node: kvNodes.values()) {
 
-            if (node.getAvailableSocketBytes() <= 2) continue;
+            KVMessage heartbeat = new KVMessage(KVMessage.StatusType.WAGWAN, null, null);
+            node.sendMessage(heartbeat);
 
-            KVMessage request = node.receiveMessage();
-            if (request == null) {
-                lostNodes.add(node);
-                continue;
-            }
-
-            // should only receive a shutdown message
-            if (request.getStatus() == KVMessage.StatusType.SHUTTING_DOWN) {
+            if (node.failed()) {
                 dyingNodes.add(node);
-                logger.debug("Received shutdown message from " + node.getNodeName()
-                                + " adding to dying nodes");
-            } else {
-                logger.error("Error! Received unexpected message from KVServer");
-                node.sendMessage(new KVMessage(
-                        KVMessage.StatusType.FAILED,
-                        null,
-                        "Unexpected message received from KVServer"));
             }
-        }
-        for (ECSNode node: lostNodes) {
-            removeLostNode(node);
+
+            node.receiveMessage();
+
+            if (node.failed()) {
+                dyingNodes.add(node);
+            }
+//            if (node.getAvailableSocketBytes() <= 2) continue;
+//
+//            KVMessage request = node.receiveMessage();
+//            if (request == null) {
+//                lostNodes.add(node);
+//                continue;
+//            }
+//
+//            // should only receive a shutdown message
+//            if (request.getStatus() == KVMessage.StatusType.SHUTTING_DOWN) {
+//                dyingNodes.add(node);
+//                logger.debug("Received shutdown message from " + node.getNodeName()
+//                                + " adding to dying nodes");
+//            } else {
+//                logger.error("Error! Received unexpected message from KVServer");
+//                node.sendMessage(new KVMessage(
+//                        KVMessage.StatusType.FAILED,
+//                        null,
+//                        "Unexpected message received from KVServer"));
+//            }
+//        }
+//        for (ECSNode node: lostNodes) {
+//            removeLostNode(node);
+//        }
         }
         for (ECSNode node: dyingNodes) {
-            deleteNode(node);
+            removeServer(node, true);
         }
     }
 
