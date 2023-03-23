@@ -106,17 +106,11 @@ public class ECSClient implements IECSClient {
         ArrayList<ECSNode> dyingNodes = new ArrayList<>();
         for (ECSNode node: kvNodes.values()) {
 
-            KVMessage heartbeat = new KVMessage(KVMessage.StatusType.WAGWAN, null, null);
+            KVMessage heartbeat = new KVMessage(KVMessage.StatusType.WAGWAN,"", "");
             node.sendMessage(heartbeat);
 
-            if (node.failed()) {
-                dyingNodes.add(node);
-            }
-
-            node.receiveMessage();
-
-            if (node.failed()) {
-                dyingNodes.add(node);
+            if (!node.failed()) {
+                node.receiveMessage();
             }
 //            if (node.getAvailableSocketBytes() <= 2) continue;
 //
@@ -144,7 +138,8 @@ public class ECSClient implements IECSClient {
 //        }
         }
         for (ECSNode node: dyingNodes) {
-            removeServer(node, true);
+            if(node.failed())
+                removeServer(node, true);
         }
     }
 
