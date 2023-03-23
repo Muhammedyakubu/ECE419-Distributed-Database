@@ -87,10 +87,9 @@ public class ECSConnection implements Runnable{
                 msg.setKey("True");
                 break;
             case TRANSFER:
-                String stripColon = msg.getValue().split(";")[0];
-                String[] values = stripColon.split(",");
-                String[] address = values[2].split(":");
-                int numSent = kvServer.transfer(address[1], address[0], values[0] + "," + values[1]);
+                String address = msg.getValue().split(":")[0];
+                String port = msg.getValue().split(":")[1];
+                int numSent = kvServer.transfer(address, port, msg.getKey());
                 msg.setKey(Integer.toString(numSent));
                 if (numSent >= 0) {
                     msg.setStatus(IKVMessage.StatusType.TRANSFER_SUCCESS);
@@ -127,6 +126,11 @@ public class ECSConnection implements Runnable{
                 kvServer.setState(IKVMessage.ServerState.valueOf(msg.getValue()));
                 msg.setKey("true");
                 break;
+
+            case WAGWAN:
+                msg.setKey("Alive!");
+                break;
+
             default:
                 logger.error("Error! Invalid ECS Message type: " + msg.getStatus());
                 msg.setStatus(KVMessage.StatusType.FAILED);

@@ -1,6 +1,7 @@
 package shared.comms;
 
 import org.apache.log4j.Logger;
+import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 
 import java.io.IOException;
@@ -33,10 +34,12 @@ public final class CommModule {
         byte[] msgBytes = msg.toByteArray();
         output.write(msgBytes, 0, msgBytes.length);
         output.flush();
-        logger.debug("SEND \t<"
-                + socket.getInetAddress().getHostAddress() + ":"
-                + socket.getPort() + ">: '"
-                + msg +"'");
+        if(msg.getStatus() != IKVMessage.StatusType.WAGWAN) {
+            logger.debug("SEND \t<"
+                    + socket.getInetAddress().getHostAddress() + ":"
+                    + socket.getPort() + ">: '"
+                    + msg + "'");
+        }
     }
 
     /**
@@ -108,10 +111,12 @@ public final class CommModule {
 
         /* build final String */
         KVMessage msg = new KVMessage(msgBytes);
-        logger.debug("RECEIVE \t<"
-                + socket.getInetAddress().getHostAddress() + ":"
-                + socket.getPort() + ">: '"
-                + msg + "'");
+        if(msg.getStatus() != IKVMessage.StatusType.WAGWAN) {
+            logger.debug("RECEIVE \t<"
+                    + socket.getInetAddress().getHostAddress() + ":"
+                    + socket.getPort() + ">: '"
+                    + msg + "'");
+        }
         return msg;
     }
 
