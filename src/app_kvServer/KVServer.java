@@ -14,7 +14,6 @@ import shared.comms.CommModule;
 import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
-import shared.messages.Pair;
 
 import java.io.IOException;
 import java.net.*;
@@ -147,7 +146,7 @@ public class KVServer implements IKVServer {
 		this.db = new KVdatabase(this, this.dataPath);
 
 		Runtime current = Runtime.getRuntime();
-		current.addShutdownHook(new ShutDownHook());
+//		current.addShutdownHook(new ShutDownHook());
 
 		if (run) run();
 	}
@@ -417,8 +416,7 @@ public class KVServer implements IKVServer {
 				logger.warn("Server-Server connection lost!", ioe);
 				return -1;
 			}
-			// TODO: check this. Removing this because sometimes the this server sends
-			//		a key that is not in the receiver's range.
+
 			if (response.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
 					response.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
 				logger.warn(address + ":" + port + " failed to receive key " + key);
@@ -513,6 +511,8 @@ public class KVServer implements IKVServer {
 	}
 
 	public void shutdown() {
+		return;	// don't need this function anymore
+
 		if (hasShutdown) return;
 		hasShutdown = true;
 
