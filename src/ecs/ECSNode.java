@@ -20,6 +20,7 @@ public class ECSNode implements IECSNode{
     private int port;
     private Range hashRange;
     private Socket socket;
+    private boolean failed = false;
 
     public ECSNode(Socket socket, String hostAddress, int port, Range hashRange) throws IOException {
         this.socket = socket;
@@ -34,6 +35,7 @@ public class ECSNode implements IECSNode{
             CommModule.sendMessage(message, this.socket);
         } catch (IOException e) {
             logger.debug("Error sending message to " + this.getNodeName());
+            failed = true;
         }
     }
 
@@ -42,8 +44,13 @@ public class ECSNode implements IECSNode{
             return CommModule.receiveMessage(this.socket);
         } catch (IOException e) {
             logger.debug("Error receiving message from " + this.getNodeName(), e);
+            failed = true;
             return null;
         }
+    }
+
+    public boolean failed() {
+        return failed;
     }
 
     /**
