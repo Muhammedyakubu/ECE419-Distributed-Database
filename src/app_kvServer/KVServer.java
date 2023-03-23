@@ -462,7 +462,9 @@ public class KVServer implements IKVServer {
 					Socket clientSocket = serverSocket.accept();
 					ClientConnection connection =
 							new ClientConnection(clientSocket, this);
-					new Thread(connection).start();
+					Thread clientThread = new Thread(connection);
+					clientThread.setDaemon(true);	// make sure the thread dies once server stops
+					clientThread.start();
 
 					logger.info("Connected to " +
 							clientSocket.getInetAddress().getHostName() +
