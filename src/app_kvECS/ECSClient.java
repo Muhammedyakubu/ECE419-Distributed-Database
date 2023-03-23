@@ -3,7 +3,7 @@ package app_kvECS;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.*;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Collection;
 
@@ -110,15 +110,21 @@ public class ECSClient implements IECSClient {
 
     public void pollNodes() {
         for (ECSNode node: kvNodes.values()) {
-
             KVMessage heartbeat = new KVMessage(KVMessage.StatusType.WAGWAN,"", "");
             node.sendMessage(heartbeat);
             node.receiveMessage();
         }
-        for (ECSNode node: kvNodes.values()) {
-            if(node.failed()) {
+        // use iterator to remove nodes
+        Iterator<Map.Entry<String, ECSNode>> it = kvNodes.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, ECSNode> entry = it.next();
+            ECSNode node = entry.getValue();
+            if (node.failed()) {
                 logger.debug("Node " + node.getNodeName() + " failed, removing from cluster");
                 removeServer(node, true);
+                // remove node from metadata and kvNodes
+                metadata.removeServer(node.getNodeHost(), node.getNodePort());
+                it.remove();
             }
         }
     }
@@ -270,13 +276,10 @@ public class ECSClient implements IECSClient {
             transferData(secondPredecessor, successor, secondPredecessor.getNodeHashRange());
         }
         // TODO: node should probably delete its own data
-        // remove node from metadata and kvNodes
-        metadata.removeServer(node.getNodeHost(), node.getNodePort());
-        kvNodes.remove(node.getNodeName());
         if (!isFailure) node.deleteKeyrange(node.getNodeHashRange());
 
         for (ECSNode kvNode: kvNodes.values()) {
-//            if (kvNode.getNodeName().equals(node.getNodeName())) continue;    // won't be in kvNodes anymore
+            if (kvNode.getNodeName().equals(node.getNodeName())) continue;    // won't be in kvNodes anymore
             kvNode.sendMetadata(metadata);
         }
 
