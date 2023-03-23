@@ -154,6 +154,8 @@ public class ECSConnection implements Runnable{
         } catch (IOException ioe) {
             logger.error("Error! Unable to tear down ECS-Server connection!", ioe);
         }
+        // kill the server
+        kvServer.close();
     }
 
 

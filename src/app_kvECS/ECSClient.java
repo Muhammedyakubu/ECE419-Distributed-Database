@@ -236,7 +236,7 @@ public class ECSClient implements IECSClient {
         node.sendMetadata(metadata);    // this updates the ECSNode's hash range as well
 
         if (metadata.size() == 1) { // first node, we're done
-            return true;
+
         } else if (metadata.size() == 2) { // second node, we need to replicate from the first node
             ECSNode firstNode = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -1).getFirst());
             transferData(firstNode, node, firstNode.getNodeHashRange());
@@ -246,7 +246,7 @@ public class ECSClient implements IECSClient {
 
             transferData(predecessor, node, predecessor.getNodeHashRange());
             transferData(successor, node, successor.getNodeHashRange());
-        } else {
+        } else if (metadata.size() > 3) {
             // transfer node's core and all replicated data from successor to new node
             // that includes all data from the 2nd predecessor to the current node
             ECSNode successor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 1).getFirst());
@@ -374,7 +374,7 @@ public class ECSClient implements IECSClient {
                 new KVMessage(
                     KVMessage.StatusType.TRANSFER,
                     range.toString(),
-                    receiver.getMetadataFormat()
+                    receiver.getNodeName()
                 )
         );
 

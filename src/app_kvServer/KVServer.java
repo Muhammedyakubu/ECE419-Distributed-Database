@@ -14,7 +14,6 @@ import shared.comms.CommModule;
 import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
-import shared.messages.Pair;
 
 import java.io.IOException;
 import java.net.*;
@@ -147,7 +146,7 @@ public class KVServer implements IKVServer {
 		this.db = new KVdatabase(this, this.dataPath);
 
 		Runtime current = Runtime.getRuntime();
-		current.addShutdownHook(new ShutDownHook());
+//		current.addShutdownHook(new ShutDownHook());
 
 		if (run) run();
 	}
@@ -417,8 +416,7 @@ public class KVServer implements IKVServer {
 				logger.warn("Server-Server connection lost!", ioe);
 				return -1;
 			}
-			// TODO: check this. Removing this because sometimes the this server sends
-			//		a key that is not in the receiver's range.
+
 			if (response.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
 					response.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
 				logger.warn(address + ":" + port + " failed to receive key " + key);
@@ -513,37 +511,39 @@ public class KVServer implements IKVServer {
 	}
 
 	public void shutdown() {
-		if (hasShutdown) return;
-		hasShutdown = true;
+		return;	// don't need this function anymore
 
-		logger.info("Shutting down server...");
-		KVMessage msg = new KVMessage(IKVMessage.StatusType.SHUTTING_DOWN, "null", "null");
-		try {
-			CommModule.sendMessage(msg,ecsSocket);
-			if (getMetadata().metadata.size() == 1) {
-				logger.debug("Last node in cluster, no need to rebalance");
-				return;
-			}
-			// if shutting down because ECS connection lost, skip rebalance
-			if (!ecsConnection.isOpen()) {
-				logger.debug("ECSConnection thread already closed");
-				return;
-			}
-
-			// allow the ECSConnection thread handle the rebalance, but
-			// we need to set isOpen to false, so it will stop listening after
-			ecsConnection.isOpen.set(false);
-			logger.debug("Waiting for ECSConnection thread to finish...");
-			ecsThread.join(SHUTDOWN_TIMEOUT);
-			// if ECSConnection thread is still running, interrupt it
-			if (ecsThread.isAlive()) ecsConnection.close();
-			logger.debug("ECSConnection thread finished");
-			// assume server has most updated metadata
-		} catch (IOException e) {
-			logger.warn("Connection to ECS lost. Server Not closed properly", e);
-		} catch (InterruptedException e) {
-			logger.error("ECSConnection thread interrupted before rebalance completed", e);
-		}
+//		if (hasShutdown) return;
+//		hasShutdown = true;
+//
+//		logger.info("Shutting down server...");
+//		KVMessage msg = new KVMessage(IKVMessage.StatusType.SHUTTING_DOWN, "null", "null");
+//		try {
+//			CommModule.sendMessage(msg,ecsSocket);
+//			if (getMetadata().metadata.size() == 1) {
+//				logger.debug("Last node in cluster, no need to rebalance");
+//				return;
+//			}
+//			// if shutting down because ECS connection lost, skip rebalance
+//			if (!ecsConnection.isOpen()) {
+//				logger.debug("ECSConnection thread already closed");
+//				return;
+//			}
+//
+//			// allow the ECSConnection thread handle the rebalance, but
+//			// we need to set isOpen to false, so it will stop listening after
+//			ecsConnection.isOpen.set(false);
+//			logger.debug("Waiting for ECSConnection thread to finish...");
+//			ecsThread.join(SHUTDOWN_TIMEOUT);
+//			// if ECSConnection thread is still running, interrupt it
+//			if (ecsThread.isAlive()) ecsConnection.close();
+//			logger.debug("ECSConnection thread finished");
+//			// assume server has most updated metadata
+//		} catch (IOException e) {
+//			logger.warn("Connection to ECS lost. Server Not closed properly", e);
+//		} catch (InterruptedException e) {
+//			logger.error("ECSConnection thread interrupted before rebalance completed", e);
+//		}
 	}
 
 
