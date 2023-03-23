@@ -513,6 +513,9 @@ public class KVServer implements IKVServer {
 	}
 
 	public void shutdown() {
+		// delete all keys
+		logger.debug("Deleting all keys...");
+		db.clearStorage();
 		return;	// don't need this function anymore
 
 //		if (hasShutdown) return;

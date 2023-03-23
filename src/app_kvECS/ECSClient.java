@@ -290,7 +290,7 @@ public class ECSClient implements IECSClient {
         // remove node from metadata and kvNodes
         metadata.removeServer(node.getNodeHost(), node.getNodePort());
         kvNodes.remove(node.getNodeName());
-        node.deleteKeyrange(node.getNodeHashRange());
+        if (!isFailure) node.deleteKeyrange(node.getNodeHashRange());
 
         for (ECSNode kvNode: kvNodes.values()) {
 //            if (kvNode.getNodeName().equals(node.getNodeName())) continue;    // won't be in kvNodes anymore
