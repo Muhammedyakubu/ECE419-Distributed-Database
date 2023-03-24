@@ -122,18 +122,17 @@ public class ClientConnection implements Runnable {
 				}
 				break;
 			case PUT:
-				if (checkStopped() && msg.getStatus() != IKVMessage.StatusType.SERVER_PUT){
+				if (checkStopped()){
 					return new KVMessage(IKVMessage.StatusType.SERVER_STOPPED, "", "");
-				}
-				if (!kvServer.isResponsible(msg.getKey())){
-					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
 				}
 			case SERVER_PUT:
 				if (kvServer.currStatus == KVMessage.ServerState.SERVER_WRITE_LOCK){
 					msg.setStatus(IKVMessage.StatusType.SERVER_WRITE_LOCK);
 					return msg;
 				}
-
+				if (!kvServer.isResponsible(msg.getKey()) && !kvServer.isReplicaResponsible(msg.getKey())){
+					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
+				}
 				boolean isUpdate = false;
 				try {
 					// convert all forms of null to null

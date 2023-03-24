@@ -32,13 +32,14 @@ public class PerformanceV2Test extends TestCase {
     //private List<KVStore> clients = new ArrayList<>(100);
     //private List<KVServer> servers = new ArrayList<>(100);
     private ECSClient ecsClient;
-    static final int numServers = 10;
+    static final int numServers = 1;
     static final int numClients = 1;
     static final int serverStartPort = 16000;
     static final int ecsPort = 20000;
-    static final int NUM_PUT = 50;
-    static final int NUM_GET = 50;
-    static final String cacheStrategy = "None";
+    static final int NUM_PUT = 90;
+    static final int NUM_GET = 10;
+    static final String cacheStrategy = "FIFO";
+
     ExecutorService taskExecutor;
     long difference = 0;
     private final String ENRON_SET = "/tmp/maildir";
@@ -193,9 +194,8 @@ public class PerformanceV2Test extends TestCase {
 
         System.out.println("Creating server...");
         try{
-            InetAddress addr = InetAddress.getByName("localhost");
             servers.put(index, new KVServer(port, 50, cacheStrategy, "localhost",
-                    "src/KVStorage", addr, ecs_port, false));
+                    "src/KVStorage", "localhost", ecs_port, false));
             //kvServer.run();
         } catch(Exception e) {
             ;
@@ -278,7 +278,6 @@ public class PerformanceV2Test extends TestCase {
             servers.get(server).close();
         }
         deleteDirectory(new File("~/ece419/src/KVStorage"));
-
 
 
     }

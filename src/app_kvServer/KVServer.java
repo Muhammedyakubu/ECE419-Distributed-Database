@@ -14,10 +14,12 @@ import shared.comms.CommModule;
 import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
+import shared.messages.Pair;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -57,7 +59,7 @@ public class KVServer implements IKVServer {
 	public KVMessage.ServerState currStatus;
 	private final int SHUTDOWN_TIMEOUT = 5000;
 	private boolean hasShutdown = false;
-	private List<String> successors = new ArrayList<String>(2);
+	private List<Socket> successors = Collections.synchronizedList(new ArrayList<Socket>(2));
 
 	/**
 	 * Shutdown hook for when the server shuts down
@@ -98,15 +100,18 @@ public class KVServer implements IKVServer {
 		this(port, cacheSize, strategy, bind_address, null, null, -1, run);
 	}
 
-	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, InetAddress ecsAddr, int ecs_port) {
+	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, String ecsAddr, int ecs_port) {
 		this(port, cacheSize, strategy, bind_address, dataPath, ecsAddr, ecs_port, true);
 	}
-	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, InetAddress ecsAddr, int ecs_port, boolean run) {
+	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, String ecsAddr, int ecs_port, boolean run) {
 		this.port = port;
 		this.cacheSize = cacheSize;
 		if (bind_address == "localhost") {
 			try {
-				this.bindAddress = getHostAddress();
+				try(final DatagramSocket socket = new DatagramSocket()){
+					socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+					this.bindAddress = socket.getLocalAddress().getHostAddress();
+				}
 			} catch (Exception e) {
 				logger.warn("Error in hostname to IP translation", e);
 			}
@@ -116,7 +121,21 @@ public class KVServer implements IKVServer {
 		this.dataPath = dataPath + "/" + this.bindAddress + "-" + port;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.kvMetadata = new KVMetadata();
-		this.ecsAddress = ecsAddr;
+		if (ecsAddr == "localhost") {
+			try {
+				this.ecsAddress = InetAddress.getByName(this.bindAddress);
+			}
+			catch(IOException ioe){
+				logger.warn("Error in hostname to IP translation", ioe);
+			}
+		}
+		else {
+			try {
+				this.ecsAddress = InetAddress.getByName(ecsAddr);
+			} catch (IOException ioe) {
+				logger.warn("Error in hostname to IP translation", ioe);
+			}
+		}
 		this.ecsPort = ecs_port;
 		if (ecsAddr != null)
 			this.currStatus = IKVMessage.ServerState.SERVER_STOPPED;
@@ -242,55 +261,40 @@ public class KVServer implements IKVServer {
 	 * @return
 	 */
 	public boolean replicate(String key, String value){
-		Socket replicaOne;
-		Socket replicaTwo;
-		String[] splitOne = successors.get(0).split(":");
-		String[] splitTwo = successors.get(1).split(":");
-		String addressOne = splitOne[0];
-		String portOne = splitOne[1];
-		String addressTwo = splitTwo[0];
-		String portTwo = splitTwo[1];
-
-		try {
-			replicaOne = new Socket(addressOne, Integer.parseInt(portOne));
-			replicaTwo = new Socket(addressTwo, Integer.parseInt(portTwo));
-		}
-		catch(IOException ioe){
-			logger.warn("Server-Replica connection lost!", ioe);
-			return false;
-		}
-
 		KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, value);
-		try {
-			CommModule.sendMessage(msg, replicaOne);
-			CommModule.sendMessage(msg, replicaTwo);
-		}
-		catch(IOException ioe){
-			logger.warn("Server-Server connection lost!", ioe);
-			return false;
-		}
-		KVMessage responseOne;
-		KVMessage responseTwo;
-		try {
-			responseOne = CommModule.receiveMessage(replicaOne);
-			responseTwo = CommModule.receiveMessage(replicaTwo);
-		} catch (IOException ioe) {
-			logger.warn("Server-Server connection lost!", ioe);
-			return false;
-		}
-		if (responseOne.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
-				responseOne.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
-			logger.warn(addressOne + ":" + portOne + " failed to receive key " + key);
-		}
-		if (responseTwo.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
-				responseTwo.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
-			logger.warn(addressTwo + ":" + portTwo + " failed to receive key " + key);
+		if (kvMetadata.size() == 1) return true;
+
+		for (Socket succ:successors){
+			try {
+				CommModule.sendMessage(msg, succ);
+			}
+			catch(IOException ioe){
+				logger.warn("Server-Server connection lost!", ioe);
+				return false;
+			}
+			KVMessage responseOne;
+			try {
+				responseOne = CommModule.receiveMessage(succ);
+			} catch (IOException ioe) {
+				logger.warn("Server-Server connection lost!", ioe);
+				return false;
+			}
+			if (responseOne.getStatus() != IKVMessage.StatusType.PUT_SUCCESS &&
+					responseOne.getStatus() != IKVMessage.StatusType.PUT_UPDATE){
+				logger.warn(succ.getInetAddress().getHostAddress() + ":" + Integer.toString(succ.getPort()) + " failed to receive key " + key);
+			}
 		}
 		return true;
 	}
 
 	synchronized boolean isResponsible(String key) {
 		return keyRange.inRange(MD5.getHash(key));
+	}
+
+	synchronized boolean isReplicaResponsible(String key){
+		Pair<String, Range> predecessor = kvMetadata.getNthSuccessor(bindAddress + ":" + Integer.toString(port), -1);
+		Pair<String, Range> predecessorTwo = kvMetadata.getNthSuccessor(bindAddress + ":" + Integer.toString(port), -2);
+		return (predecessor.getSecond().inRange(MD5.getHash(key)) || predecessorTwo.getSecond().inRange(MD5.getHash(key)));
 	}
 
 	public KVMetadata getMetadata(){
@@ -309,17 +313,35 @@ public class KVServer implements IKVServer {
 
 	public void updateMetadata(String metadata){
 		this.kvMetadata = new KVMetadata(metadata);
-		if (successors.size() == 0)
-			successors.add(this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
-		else
-			successors.set(0, this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst());
-		if (successors.size() == 1)
-			successors.add(this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 2).getFirst());
-		else
-			successors.set(1, this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 2).getFirst());
+
+		String[] firstSucc = this.kvMetadata.getNthSuccessor(this.bindAddress + ":" + Integer.toString(port), 1).getFirst().split(":");
+		String[] secondSucc = this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst().split(":");
+		//add sockets
+		if (successors.size() == 0) {
+			Socket replicaOne, replicaTwo;
+			try {
+				replicaOne = new Socket(firstSucc[0], Integer.parseInt(firstSucc[1]));
+				replicaTwo = new Socket(secondSucc[0], Integer.parseInt(secondSucc[1]));
+				successors.add(replicaOne);
+				successors.add(replicaTwo);
+			}
+			catch(IOException ioe){
+				logger.warn("Server-Replica connection lost!", ioe);
+			}
+
+		}
+		else if (!successors.get(0).getInetAddress().getHostAddress().equals(firstSucc[0])){
+			try {
+				successors.get(0).close();
+				successors.set(0, new Socket(firstSucc[0], Integer.parseInt(firstSucc[1])));
+				successors.get(1).close();
+				successors.set(0, new Socket(secondSucc[0], Integer.parseInt(secondSucc[1])));
+			} catch (IOException ioe) {
+				logger.warn("Server-Replica connection lost!", ioe);
+			}
+		}
 		Range ownRange = this.kvMetadata.getRange(getHostname() + ":" + Integer.toString(port));
 		this.keyRange.updateRange(ownRange.start, ownRange.end);
-
 	}
 	public void setState(IKVMessage.ServerState state) {
 		this.currStatus = state;
@@ -563,9 +585,6 @@ public class KVServer implements IKVServer {
 			if(this.bindAddress == null){
 				serverSocket = new ServerSocket(this.port);
 			} else {
-				if (this.bindAddress == "localhost"){
-					this.bindAddress = getHostAddress();
-				}
 				InetAddress inetAddress = InetAddress.getByName(this.bindAddress);
 				serverSocket = new ServerSocket(this.port, 50, inetAddress);
 			}
@@ -667,7 +686,7 @@ public class KVServer implements IKVServer {
 			boolean port_present = false;
 			boolean ecs_present = false;
 			String address = "localhost";
-			String ecsAddress = getHostAddress();
+			String ecsAddress = "localhost";
 			String dataPath = "./src/KVStorage"; //DEFAULT HANDLED IN KVDATABASE
 			boolean dataPath_present = false;
 			String logPath = "logs/server.log";
@@ -749,11 +768,11 @@ public class KVServer implements IKVServer {
 			}*/
 
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
-			InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
+			//InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
 			if (!dataPath_present)
 				dataPath = "./src/KVStorage";
 			if (!ecs_present)
-				ecs_bind = null;
+				ecsAddress = "";
 			Level level = Level.ALL;
 
 			if(!logLevel.equals(" ")){
@@ -768,7 +787,7 @@ public class KVServer implements IKVServer {
 			//WILL THROW I/O EXCEPTION IF PATH IS INVALID
 			if(run_server) {
 				new LogSetup(logPath, level);
-				KVServer server = new KVServer(port_num, 10, "FIFO", address, dataPath, ecs_bind, ecs_port);
+				KVServer server = new KVServer(port_num, 10, "FIFO", address, dataPath, ecsAddress, ecs_port);
 			}
 
 			String returned = "Port: " + port_num + " Address: " + address + " Datapath: " + dataPath +

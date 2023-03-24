@@ -62,8 +62,18 @@ public class ECSClient implements IECSClient {
     public boolean initialize() {
         logger.info("Initializing ECS ...");
         try {
-            if (this.address.equals(null))
-                this.ecsSocket = new ServerSocket(port);
+            if (this.address.equals(null) || this.address.isLoopbackAddress()) {
+                try {
+                    String ip;
+                    final DatagramSocket socket = new DatagramSocket();
+                    socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+                    ip = socket.getLocalAddress().getHostAddress();
+                    this.address = InetAddress.getByName(ip);
+                } catch (Exception e) {
+                    logger.warn("Error in hostname to IP translation", e);
+                }
+                this.ecsSocket = new ServerSocket(port, BACKLOG, address);
+            }
             else
                 this.ecsSocket = new ServerSocket(port, BACKLOG, address);
             ecsSocket.setSoTimeout(SOCKET_TIMEOUT);
