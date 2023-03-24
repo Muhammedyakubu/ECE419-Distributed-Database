@@ -125,6 +125,9 @@ public class ClientConnection implements Runnable {
 				if (checkStopped()){
 					return new KVMessage(IKVMessage.StatusType.SERVER_STOPPED, "", "");
 				}
+				if (!kvServer.isResponsible(msg.getKey())){
+					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
+				}
 			case SERVER_PUT:
 				if (kvServer.currStatus == KVMessage.ServerState.SERVER_WRITE_LOCK){
 					msg.setStatus(IKVMessage.StatusType.SERVER_WRITE_LOCK);

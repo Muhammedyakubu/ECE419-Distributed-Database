@@ -265,27 +265,31 @@ public class ECSClient implements IECSClient {
 
     // We assume this runs with no server failures
     public boolean removeServer(ECSNode node, boolean isFailure) {
-        // if there are <= 3 nodes, we don't need to do anything
+        // make a copy of the metadata to get the relative positions of other nodes
+        KVMetadata oldMetadata = new KVMetadata(metadata.toString());
+        metadata.removeServer(node.getNodeHost(), node.getNodePort());  // update metadata
+
+
         if (!isFailure) node.setState(ServerState.SERVER_WRITE_LOCK);
-        if (metadata.size() > 3) {
+        // if there are <= 3 nodes, we don't need to do anything
+        if (metadata.size() >= 3) {
             // transfer core data from node to its 3rd successor
             // offload this responsibility to the node's successor so this function can be
             // reused in the case of a failure
-            ECSNode successor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 1).getFirst());
-            ECSNode thirdSuccessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 3).getFirst());
+            ECSNode successor = kvNodes.get(oldMetadata.getNthSuccessor(node.getNodeName(), 1).getFirst());
+            ECSNode thirdSuccessor = kvNodes.get(oldMetadata.getNthSuccessor(node.getNodeName(), 3).getFirst());
             transferData(successor, thirdSuccessor, node.getNodeHashRange());
 
             // transfer predecessor's data to node's 2nd successor
-            ECSNode secondSuccessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), 2).getFirst());
-            ECSNode predecessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -1).getFirst());
+            ECSNode secondSuccessor = kvNodes.get(oldMetadata.getNthSuccessor(node.getNodeName(), 2).getFirst());
+            ECSNode predecessor = kvNodes.get(oldMetadata.getNthSuccessor(node.getNodeName(), -1).getFirst());
             transferData(predecessor, secondSuccessor, predecessor.getNodeHashRange());
 
             // transfer 2nd predecessor's data to node's successor
-            ECSNode secondPredecessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -2).getFirst());
+            ECSNode secondPredecessor = kvNodes.get(oldMetadata.getNthSuccessor(node.getNodeName(), -2).getFirst());
             transferData(secondPredecessor, successor, secondPredecessor.getNodeHashRange());
         }
         if (!isFailure) node.deleteKeyrange(node.getNodeHashRange());   // delete all data in the node's range
-        metadata.removeServer(node.getNodeHost(), node.getNodePort());  // update metadata
 
         for (ECSNode kvNode: kvNodes.values()) {
             if (kvNode.getNodeName().equals(node.getNodeName())) continue;    // won't be in kvNodes anymore

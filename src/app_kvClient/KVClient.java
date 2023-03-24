@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import shared.messages.IKVMessage;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
+import shared.messages.Pair;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -87,8 +88,16 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 String value = "value" + randomNum;
                 kvstore.put(key, value);
             }// TODO: remove this once testing is done
-        }
-        else if (tokens[0].equals("testput")) {
+        } else if (tokens[0].equals("ps")) {
+          // for testing: get the most recent metadata and print the server list only
+            handleCommand("keyrange");
+            if (metadata != null) {
+                for (Pair entry: metadata.metadata) {
+                    System.out.println(entry.getFirst());
+                }
+            }
+
+        } else if (tokens[0].equals("testput")) {
             // send n random put requests
             int n = Integer.parseInt(tokens[1]);
             for (int i = 0; i < n; i++) {
