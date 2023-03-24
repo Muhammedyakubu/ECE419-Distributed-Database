@@ -37,6 +37,7 @@ public class ECSNode implements IECSNode{
             logger.debug("Error sending message to " + this.getNodeName());
             failed = true;
         }
+
     }
 
     public KVMessage receiveMessage() {

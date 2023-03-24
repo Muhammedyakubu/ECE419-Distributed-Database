@@ -100,15 +100,18 @@ public class KVServer implements IKVServer {
 		this(port, cacheSize, strategy, bind_address, null, null, -1, run);
 	}
 
-	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, InetAddress ecsAddr, int ecs_port) {
+	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, String ecsAddr, int ecs_port) {
 		this(port, cacheSize, strategy, bind_address, dataPath, ecsAddr, ecs_port, true);
 	}
-	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, InetAddress ecsAddr, int ecs_port, boolean run) {
+	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, String ecsAddr, int ecs_port, boolean run) {
 		this.port = port;
 		this.cacheSize = cacheSize;
 		if (bind_address == "localhost") {
 			try {
-				this.bindAddress = getHostAddress();
+				try(final DatagramSocket socket = new DatagramSocket()){
+					socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+					this.bindAddress = socket.getLocalAddress().getHostAddress();
+				}
 			} catch (Exception e) {
 				logger.warn("Error in hostname to IP translation", e);
 			}
@@ -118,7 +121,21 @@ public class KVServer implements IKVServer {
 		this.dataPath = dataPath + "/" + this.bindAddress + "-" + port;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.kvMetadata = new KVMetadata();
-		this.ecsAddress = ecsAddr;
+		if (ecsAddr == "localhost") {
+			try {
+				this.ecsAddress = InetAddress.getByName(this.bindAddress);
+			}
+			catch(IOException ioe){
+				logger.warn("Error in hostname to IP translation", ioe);
+			}
+		}
+		else {
+			try {
+				this.ecsAddress = InetAddress.getByName(ecsAddr);
+			} catch (IOException ioe) {
+				logger.warn("Error in hostname to IP translation", ioe);
+			}
+		}
 		this.ecsPort = ecs_port;
 		if (ecsAddr != null)
 			this.currStatus = IKVMessage.ServerState.SERVER_STOPPED;
@@ -560,9 +577,6 @@ public class KVServer implements IKVServer {
 			if(this.bindAddress == null){
 				serverSocket = new ServerSocket(this.port);
 			} else {
-				if (this.bindAddress == "localhost"){
-					this.bindAddress = getHostAddress();
-				}
 				InetAddress inetAddress = InetAddress.getByName(this.bindAddress);
 				serverSocket = new ServerSocket(this.port, 50, inetAddress);
 			}
@@ -663,8 +677,8 @@ public class KVServer implements IKVServer {
 			int ecs_port = -1;
 			boolean port_present = false;
 			boolean ecs_present = false;
-			String address = getHostAddress();
-			String ecsAddress = getHostAddress();
+			String address = "localhost";
+			String ecsAddress = "localhost";
 			String dataPath = "./src/KVStorage"; //DEFAULT HANDLED IN KVDATABASE
 			boolean dataPath_present = false;
 			String logPath = "logs/server.log";
@@ -746,11 +760,11 @@ public class KVServer implements IKVServer {
 			}*/
 
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
-			InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
+			//InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
 			if (!dataPath_present)
 				dataPath = "./src/KVStorage";
 			if (!ecs_present)
-				ecs_bind = null;
+				ecsAddress = "";
 			Level level = Level.ALL;
 
 			if(!logLevel.equals(" ")){
@@ -765,7 +779,7 @@ public class KVServer implements IKVServer {
 			//WILL THROW I/O EXCEPTION IF PATH IS INVALID
 			if(run_server) {
 				new LogSetup(logPath, level);
-				KVServer server = new KVServer(port_num, 10, "FIFO", address, dataPath, ecs_bind, ecs_port);
+				KVServer server = new KVServer(port_num, 10, "FIFO", address, dataPath, ecsAddress, ecs_port);
 			}
 
 			String returned = "Port: " + port_num + " Address: " + address + " Datapath: " + dataPath +

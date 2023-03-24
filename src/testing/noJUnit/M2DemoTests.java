@@ -81,9 +81,8 @@ public class M2DemoTests extends TestCase {
             @Override
             public void run() {
                 try {
-                    InetAddress ecs_inet = InetAddress.getByName(ECS_ADDRESS);
                     server[0] = new KVServer(port, 10, "FIFO", address,
-                            DATA_PATH , ecs_inet, ECS_PORT, false);
+                            DATA_PATH , ECS_ADDRESS, ECS_PORT, false);
                     server[0].run();
                 } catch (Exception e) {
                     e.printStackTrace();
