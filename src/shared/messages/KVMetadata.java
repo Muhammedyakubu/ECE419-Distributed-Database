@@ -224,7 +224,8 @@ public class KVMetadata implements IKVMetadata{
         String returned_string = "";
         for (int i = 0; i < metadata.size(); i++)
         {
-            returned_string = returned_string + metadata.get(i).p2.start.toString(16) + "," + getNthSuccessor(metadata.get(i).p1, 2).p2.end.toString(16) + "," + metadata.get(i).p1 + ";";
+//            returned_string = returned_string + metadata.get(i).p2.start.toString(16) + "," + getNthSuccessor(metadata.get(i).p1, 2).p2.end.toString(16) + "," + metadata.get(i).p1 + ";";
+            returned_string = returned_string + getNthSuccessor(metadata.get(i).p1, -2).p2.end.toString(16) + "," metadata.get(i).p2.start.toString(16) + "," + metadata.get(i).p1 + ";";
         }
 
         return returned_string;
