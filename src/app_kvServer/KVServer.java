@@ -330,12 +330,12 @@ public class KVServer implements IKVServer {
 			}
 
 		}
-		else if (!successors.get(0).getInetAddress().getHostAddress().equals(firstSucc[0])){
+		else {
 			try {
 				successors.get(0).close();
 				successors.set(0, new Socket(firstSucc[0], Integer.parseInt(firstSucc[1])));
 				successors.get(1).close();
-				successors.set(0, new Socket(secondSucc[0], Integer.parseInt(secondSucc[1])));
+				successors.set(1, new Socket(secondSucc[0], Integer.parseInt(secondSucc[1])));
 			} catch (IOException ioe) {
 				logger.warn("Server-Replica connection lost!", ioe);
 			}
