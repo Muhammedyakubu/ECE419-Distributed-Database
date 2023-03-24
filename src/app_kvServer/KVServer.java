@@ -30,7 +30,7 @@ import java.util.Random;
  * Should this have a main method???
  */
 public class KVServer implements IKVServer {
-	
+
 	public static Logger logger = Logger.getLogger(KVServer.class);
 
 	private int port;
@@ -513,16 +513,19 @@ public class KVServer implements IKVServer {
 	}
 
 	public void shutdown() {
-		// delete all keys
-		logger.debug("Deleting all keys...");
-		db.clearStorage();
-		return;	// don't need this function anymore
+		if (hasShutdown) return;
+		hasShutdown = true;
 
-//		if (hasShutdown) return;
-//		hasShutdown = true;
-//
-//		logger.info("Shutting down server...");
-//		KVMessage msg = new KVMessage(IKVMessage.StatusType.SHUTTING_DOWN, "null", "null");
+		logger.info("Shutting down server...");
+		if (getMetadata().size() == 1) {
+			logger.debug("Last node in cluster, no need to rebalance");
+		} else {
+			// delete all keys
+			int numKeys = db.getAllKeys().length;
+			logger.debug("Deleting all " + numKeys + " keys...");
+			db.clearStorage();
+		}
+//		KVMessage msg = new KVMessage(IKVMessage.StatusType.SHUTTING_DOWN, "", "]");
 //		try {
 //			CommModule.sendMessage(msg,ecsSocket);
 //			if (getMetadata().metadata.size() == 1) {
