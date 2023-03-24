@@ -165,7 +165,7 @@ public class KVServer implements IKVServer {
 		this.db = new KVdatabase(this, this.dataPath);
 
 		Runtime current = Runtime.getRuntime();
-//		current.addShutdownHook(new ShutDownHook());
+		current.addShutdownHook(new ShutDownHook());
 
 		if (run) run();
 	}

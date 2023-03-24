@@ -132,8 +132,7 @@ public class ECSClient implements IECSClient {
             if (node.failed()) {
                 logger.debug("Node " + node.getNodeName() + " failed, removing from cluster");
                 removeServer(node, true);
-                // remove node from metadata and kvNodes
-                metadata.removeServer(node.getNodeHost(), node.getNodePort());
+                // remove node from kvNodes
                 it.remove();
             }
         }
@@ -222,7 +221,7 @@ public class ECSClient implements IECSClient {
     // We assume this runs with no server failures
     public boolean addServer(ECSNode node) {
         // if there are < 3 nodes, have all the nodes replicate to the new node
-        metadata.addServer(node.getNodeHost(), node.getNodePort()).getSecond();
+        metadata.addServer(node.getNodeHost(), node.getNodePort());
         kvNodes.put(node.getNodeName(), node);
         node.sendMetadata(metadata);    // this updates the ECSNode's hash range as well
 
@@ -285,8 +284,8 @@ public class ECSClient implements IECSClient {
             ECSNode secondPredecessor = kvNodes.get(metadata.getNthSuccessor(node.getNodeName(), -2).getFirst());
             transferData(secondPredecessor, successor, secondPredecessor.getNodeHashRange());
         }
-        // TODO: node should probably delete its own data
-        if (!isFailure) node.deleteKeyrange(node.getNodeHashRange());
+        if (!isFailure) node.deleteKeyrange(node.getNodeHashRange());   // delete all data in the node's range
+        metadata.removeServer(node.getNodeHost(), node.getNodePort());  // update metadata
 
         for (ECSNode kvNode: kvNodes.values()) {
             if (kvNode.getNodeName().equals(node.getNodeName())) continue;    // won't be in kvNodes anymore
@@ -351,6 +350,8 @@ public class ECSClient implements IECSClient {
             logger.error("One of the parameters is null");
             return false;
         }
+
+        receiver.sendMetadata(metadata);    // update receiver's metadata so it knows what to expect
 
         // send a transfer message to the sender
         sender.sendMessage(
