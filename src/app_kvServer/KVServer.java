@@ -121,7 +121,7 @@ public class KVServer implements IKVServer {
 		this.dataPath = dataPath + "/" + this.bindAddress + "-" + port;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.kvMetadata = new KVMetadata();
-		if (ecsAddr == "localhost") {
+		if (ecsAddr.equals("localhost")) {
 			try {
 				this.ecsAddress = InetAddress.getByName(this.bindAddress);
 			}
@@ -315,7 +315,7 @@ public class KVServer implements IKVServer {
 		this.kvMetadata = new KVMetadata(metadata);
 
 		String[] firstSucc = this.kvMetadata.getNthSuccessor(this.bindAddress + ":" + Integer.toString(port), 1).getFirst().split(":");
-		String[] secondSucc = this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 1).getFirst().split(":");
+		String[] secondSucc = this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 2).getFirst().split(":");
 		//add sockets
 		if (successors.size() == 0) {
 			Socket replicaOne, replicaTwo;
@@ -711,9 +711,6 @@ public class KVServer implements IKVServer {
 						ecs_port = Integer.parseInt(ecsSplit[0]);
 					else {
 						ecsAddress = ecsSplit[0];
-						if (ecsAddress.equals("localhost")){
-							ecsAddress = getHostAddress();
-						}
 						ecs_port = Integer.parseInt(ecsSplit[1]);
 					}
 					if(ecs_port < 0 || ecs_port > 65535){
