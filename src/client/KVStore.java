@@ -8,6 +8,7 @@ import shared.messages.KVMessage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashSet;
@@ -47,7 +48,10 @@ public class KVStore implements KVCommInterface {
 	public KVStore(String address, int port) {
 		if (address.equals("localhost")){
 			try {
-				this.address = InetAddress.getLocalHost().getHostAddress();
+				String ip;
+				final DatagramSocket socket = new DatagramSocket();
+				socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+				this.address = socket.getLocalAddress().getHostAddress();
 			}
 			catch(Exception e){
 				logger.warn("Could not translate localhost to IP", e);
