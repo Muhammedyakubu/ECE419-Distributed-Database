@@ -34,9 +34,10 @@ import java.util.Random;
 public class KVServer implements IKVServer {
 
 	public static Logger logger = Logger.getLogger(KVServer.class);
+	public KVMetadata kvMetadata;
 
 	private int port;
-	private String bindAddress;
+	public String bindAddress;
 	private InetAddress ecsAddress;
 	private int ecsPort;
 	private ServerSocket serverSocket;
@@ -54,7 +55,6 @@ public class KVServer implements IKVServer {
 	private boolean running;
 
 	public Range keyRange;
-	private KVMetadata kvMetadata;
 	private List<String> keysToSend = new ArrayList<>();
 	public KVMessage.ServerState currStatus;
 	private final int SHUTDOWN_TIMEOUT = 5000;
@@ -106,7 +106,7 @@ public class KVServer implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy, String bind_address, String dataPath, String ecsAddr, int ecs_port, boolean run) {
 		this.port = port;
 		this.cacheSize = cacheSize;
-		if (bind_address == "localhost") {
+		if (bind_address == "localhost" || bind_address == null) {
 			try {
 				try(final DatagramSocket socket = new DatagramSocket()){
 					socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
@@ -118,10 +118,13 @@ public class KVServer implements IKVServer {
 		}
 		else
 			this.bindAddress = bind_address;
-		this.dataPath = dataPath + "/" + this.bindAddress + "-" + port;
+		if (dataPath != null)
+			this.dataPath = dataPath + "/" + this.bindAddress + "-" + port;
+		else
+			this.dataPath = "./src/KVStorage/" + this.bindAddress + "-" + port;
 		this.keyRange = new Range(); //initially unintialized -> keyRange will be set when ECS connects
 		this.kvMetadata = new KVMetadata();
-		if (ecsAddr.equals("localhost")) {
+		if (ecsAddr != null && ecsAddr.equals("localhost")) {
 			try {
 				this.ecsAddress = InetAddress.getByName(this.bindAddress);
 			}
