@@ -44,6 +44,7 @@ public class AllTests {
 		//clientSuite.addTestSuite(LRUCacheTest.class);
 		clientSuite.addTestSuite(KVMetadataTest.class);
 		clientSuite.addTestSuite(RangeTest.class);
+		clientSuite.addTestSuite(ResponsibleReplicaTest.class);
 		return clientSuite;
 	}
 	
