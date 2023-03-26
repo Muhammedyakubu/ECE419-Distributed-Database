@@ -34,6 +34,8 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private int serverPort;
     private KVMetadata metadata = null;
 
+    private boolean deadServer = false;
+
     /**
      * Runs the client application and takes input from user.
      */
@@ -152,7 +154,16 @@ public class KVClient implements IKVClient, ClientSocketListener {
             try {
                 return handlePut(tokens, cmdLine);
             } catch (IOException e){
-                logger.warn("Connection to server was lost. Attempting to reconnect...");
+                logger.warn("Connection to server was lost.");
+                disconnect();
+                metadata.removeServer(serverAddress, serverPort);
+                System.out.println("Connected server has crashed. Please try reconnecting one of the listed servers:");
+                if (metadata != null && !metadata.isEmpty()) {
+                    for (Pair entry: metadata.metadata) {
+                        System.out.println(entry.getFirst());
+                    }
+                }
+                deadServer = true;
             } catch (Exception e){
                 logger.warn("Exception occurred");
             }
@@ -170,12 +181,13 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     String newServerAddPort;
                     String succ1 = currServerAddPort;
                     String succ2 = currServerAddPort;
-                    if (metadata != null) {
+                    if (metadata != null && !deadServer) {
                         newServerAddPort = metadata.findServer(key);
                         succ1 = metadata.getNthSuccessor(newServerAddPort, 1).getFirst();
                         succ2 = metadata.getNthSuccessor(newServerAddPort, 2).getFirst();
                     }
                     else newServerAddPort = currServerAddPort;
+                    deadServer = false;
 
                     //IF THE CURRENTLY CONNECTED SERVER IS NOT THE CORRECT SERVER OR A REPLICA
                     if(currServerAddPort.compareTo(newServerAddPort) != 0 && currServerAddPort.compareTo(succ1) != 0
@@ -198,15 +210,24 @@ public class KVClient implements IKVClient, ClientSocketListener {
                         else{ handleNewMessage(response);}
                         return response.getStatus().toString();
                     } catch(IOException e){
-                        logger.info("Connection to server was lost. Attempting to reconnect...");
-                        kvstore.connect();
-                        KVMessage response = (KVMessage) kvstore.get(key);
-                        handleNewMessage(response);
-                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
-                        {
-                            handleNotResponsible(cmdLine);
+                        logger.info("Connection to server was lost.");
+                        disconnect();
+                        metadata.removeServer(serverAddress, serverPort);
+                        System.out.println("Connected server has crashed. Please try reconnecting one of the listed servers:");
+                        if (metadata != null && !metadata.isEmpty()) {
+                            for (Pair entry: metadata.metadata) {
+                                System.out.println(entry.getFirst());
+                            }
                         }
-                        return response.getStatus().toString();
+                        deadServer = true;
+
+//                        KVMessage response = (KVMessage) kvstore.get(key);
+//                        handleNewMessage(response);
+//                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+//                        {
+//                            handleNotResponsible(cmdLine);
+//                        }
+//                        return response.getStatus().toString();
                     }
 
                 } else {
@@ -293,11 +314,12 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 }
                 String currServerAddPort = serverAddress + ":" + serverPort;
                 String newServerAddPort;
-                if (metadata != null) {
+                if (metadata != null && !deadServer) {
                     newServerAddPort = metadata.findServer(key);
                 }
                 else newServerAddPort = currServerAddPort;
 
+                deadServer = false;
                 if(currServerAddPort.compareTo(newServerAddPort) != 0)
                 {
                     disconnect();
@@ -308,7 +330,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 }
 
                 KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
-                handleNewMessage(response);
+                //handleNewMessage(response);
                 if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
                 {
                     handleNotResponsible(cmdLine);

@@ -230,4 +230,8 @@ public class KVMetadata implements IKVMetadata{
         return returned_string;
     }
 
+    public String getFirstServer(){
+        return metadata.get(0).getFirst();
+    }
+
 }
