@@ -36,8 +36,6 @@ public class ServerSetupTeardownTest extends TestCase {
                     ecsClient = new ECSClient("localhost", 10011);
                 } catch (UnknownHostException e) {
                     System.out.println("Unknown host!");
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         });

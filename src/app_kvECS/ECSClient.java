@@ -91,9 +91,6 @@ public class ECSClient implements IECSClient {
         }
     }
 
-    public void printHashRing() {
-
-    }
 
     /**
      * Start the ECSClient's server socket and listen for incoming connections
@@ -121,8 +118,12 @@ public class ECSClient implements IECSClient {
     public void pollNodes() {
         for (ECSNode node: kvNodes.values()) {
             KVMessage heartbeat = new KVMessage(KVMessage.StatusType.WAGWAN,"", "");
-            node.sendMessage(heartbeat);
-            node.receiveMessage();
+            try {
+                node.sendMessage(heartbeat);
+                node.receiveMessage();
+            } catch (IOException e) {
+                logger.error("Error! Unable to send heartbeat to " + node.getNodeName());
+            }
         }
         // use iterator to remove nodes
         Iterator<Map.Entry<String, ECSNode>> it = kvNodes.entrySet().iterator();
@@ -131,7 +132,11 @@ public class ECSClient implements IECSClient {
             ECSNode node = entry.getValue();
             if (node.failed()) {
                 logger.debug("Node " + node.getNodeName() + " failed, removing from cluster");
-                removeServer(node, true);
+                try {
+                    removeServer(node, true);
+                } catch (Exception e) {
+                    logger.error("Error removing failed node: " + node.getNodeName());
+                }
                 // remove node from kvNodes
                 it.remove();
             }
@@ -140,86 +145,97 @@ public class ECSClient implements IECSClient {
 
     /**
      * Forcefully remove a node from the cluster when it is unresponsive
-     * @param node
+     * @param
      */
-    public void removeLostNode(ECSNode node) {
-        logger.info("Removing lost node " + node.getNodeName());
-        metadata.removeServer(node.getNodeHost(), node.getNodePort());
-        kvNodes.remove(node.getNodeName());
-    }
+//    public void removeLostNode(ECSNode node) {
+//        logger.info("Removing lost node " + node.getNodeName());
+//        metadata.removeServer(node.getNodeHost(), node.getNodePort());
+//        kvNodes.remove(node.getNodeName());
+//    }
 
-    synchronized public void deleteNode(ECSNode node) {
+//    synchronized public void deleteNode(ECSNode node) {
+//
+//        kvNodes.remove(node.getNodeName());
+//        Pair<String, Range> successor = metadata.removeServer(
+//                node.getNodeHost(),
+//                node.getNodePort());
+//        if (successor != null) {
+//            String successorName = successor.getFirst();
+//            ECSNode successorNode = kvNodes.get(successorName);
+//            kvNodes.remove(node.getNodeName());
+//            rebalance(node, successorNode, true);
+//        }
+//        // remove node from kvNodes
+//
+//        logger.info("Node " + node.getNodeName() + " removed from cluster");
+//        // if this is the last node, do nothing special?
+//    }
 
-        kvNodes.remove(node.getNodeName());
-        Pair<String, Range> successor = metadata.removeServer(
-                node.getNodeHost(),
-                node.getNodePort());
-        if (successor != null) {
-            String successorName = successor.getFirst();
-            ECSNode successorNode = kvNodes.get(successorName);
-            kvNodes.remove(node.getNodeName());
-            rebalance(node, successorNode, true);
-        }
-        // remove node from kvNodes
-
-        logger.info("Node " + node.getNodeName() + " removed from cluster");
-        // if this is the last node, do nothing special?
-    }
-
-    public void initializeECSNode(Socket socket) {
-        try {
-            KVMessage addressMessage = CommModule.receiveMessage(socket);
-            if (addressMessage.getStatus() != KVMessage.StatusType.CONNECT_ECS) {
-                logger.error("Error! Received unexpected message from KVServer");
-                return;
-            }
-            int serverPort = Integer.parseInt(addressMessage.getKey());
-            String serverAddress = addressMessage.getValue();
-
-            // recalculate metadata
-            Pair<String, Range> succAndRange = metadata.addServer(serverAddress, serverPort);
-            String successor = succAndRange.getFirst();
-            Range newNodehashRange = succAndRange.getSecond();
-            ECSNode node = new ECSNode(socket, serverAddress, serverPort, newNodehashRange);
-
-            // two checks to see if this is the first node
-            // if it is, send the metadata to the node
-            if (kvNodes.isEmpty() && successor == null) {
-                node.sendMetadata(metadata);
-            } else {
-                // if it's not the first node, rebalance the metadata
-                boolean success = rebalance(kvNodes.get(successor), node, false);
-                if (!success) {
-                    logger.error("Error! Rebalance from " + successor + " to " + node.getNodeName() + " failed");
-                }
-            }
-            node.setState(ServerState.ACTIVE);
-            kvNodes.put(node.getNodeName(), node);
-            logger.info("Added node " + node.getNodeName() + " to the cluster");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void initializeECSNode(Socket socket) {
+//        try {
+//            KVMessage addressMessage = CommModule.receiveMessage(socket);
+//            if (addressMessage.getStatus() != KVMessage.StatusType.CONNECT_ECS) {
+//                logger.error("Error! Received unexpected message from KVServer");
+//                return;
+//            }
+//            int serverPort = Integer.parseInt(addressMessage.getKey());
+//            String serverAddress = addressMessage.getValue();
+//
+//            // recalculate metadata
+//            Pair<String, Range> succAndRange = metadata.addServer(serverAddress, serverPort);
+//            String successor = succAndRange.getFirst();
+//            Range newNodehashRange = succAndRange.getSecond();
+//            ECSNode node = new ECSNode(socket, serverAddress, serverPort, newNodehashRange);
+//
+//            // two checks to see if this is the first node
+//            // if it is, send the metadata to the node
+//            if (kvNodes.isEmpty() && successor == null) {
+//                node.sendMetadata(metadata);
+//            } else {
+//                // if it's not the first node, rebalance the metadata
+//                boolean success = rebalance(kvNodes.get(successor), node, false);
+//                if (!success) {
+//                    logger.error("Error! Rebalance from " + successor + " to " + node.getNodeName() + " failed");
+//                }
+//            }
+//            node.setState(ServerState.ACTIVE);
+//            kvNodes.put(node.getNodeName(), node);
+//            logger.info("Added node " + node.getNodeName() + " to the cluster");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public void initializeECSNodeWithReplica(Socket socket) {
+        KVMessage addressMessage = null;
         try {
-            KVMessage addressMessage = CommModule.receiveMessage(socket);
-            if (addressMessage.getStatus() != KVMessage.StatusType.CONNECT_ECS) {
-                logger.error("Error! Received unexpected message from KVServer");
-                return;
-            }
-            int serverPort = Integer.parseInt(addressMessage.getKey());
-            String serverAddress = addressMessage.getValue();
+            addressMessage = CommModule.receiveMessage(socket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            ECSNode node = new ECSNode(socket, serverAddress, serverPort, null); // hash range will be set later
+        if (addressMessage.getStatus() != KVMessage.StatusType.CONNECT_ECS) {
+            logger.error("Error! Received unexpected message from KVServer");
+            return;
+        }
+        int serverPort = Integer.parseInt(addressMessage.getKey());
+        String serverAddress = addressMessage.getValue();
+
+        ECSNode node = null;
+        try {
+            node = new ECSNode(socket, serverAddress, serverPort, null); // hash range will be set later
             addServer(node);
         } catch (IOException e) {
+            String nodeName = node == null ? "null" : node.getNodeName();
+            logger.error("Error initializing ECSNode " + nodeName);
             e.printStackTrace();
         }
     }
 
-    // We assume this runs with no server failures
-    public boolean addServer(ECSNode node) {
+    /** We assume this runs with no server failures
+     * let it throw exceptions to terminate the operation in the case of failure
+     */
+    public boolean addServer(ECSNode node) throws IOException {
         // if there are < 3 nodes, have all the nodes replicate to the new node
         metadata.addServer(node.getNodeHost(), node.getNodePort());
         kvNodes.put(node.getNodeName(), node);
@@ -263,8 +279,10 @@ public class ECSClient implements IECSClient {
         return true;
     }
 
-    // We assume this runs with no server failures
-    public boolean removeServer(ECSNode node, boolean isFailure) {
+    /** We assume this runs with no server failures
+     * let it throw exceptions to terminate the operation in the case of failure
+     */
+    public boolean removeServer(ECSNode node, boolean isFailure) throws IOException {
         // make a copy of the metadata to get the relative positions of other nodes
         KVMetadata oldMetadata = new KVMetadata(metadata.toString());
         metadata.removeServer(node.getNodeHost(), node.getNodePort());  // update metadata
@@ -301,45 +319,45 @@ public class ECSClient implements IECSClient {
         return true;
     }
 
-    public boolean rebalance(ECSNode sender, ECSNode receiver, boolean isShutdown) {
-        if (sender == null || receiver == null) {
-            logger.error("Error! Sender or receiver is null");
-            return false;
-        }
-
-        receiver.sendMetadata(metadata);
-        /**
-         * Initiate a rebalance by sending a KVMessage containing with the receiver's name and range
-         * in the value field. It has the format "Range,Address:Port;"
-         */
-        String payload = receiver.getMetadataFormat();
-        sender.sendMessage(new KVMessage(KVMessage.StatusType.REBALANCE, null, payload));
-
-        // wait for a rebalance success message.
-        KVMessage rebalanceAck = sender.receiveMessage();
-
-        if (rebalanceAck.getStatus() == KVMessage.StatusType.REBALANCE_ERROR) {
-            logger.error("Error! Received REBALANCE_ERROR message from KVServer");
-            return false;
-        }
-        else if (rebalanceAck.getStatus() == KVMessage.StatusType.REBALANCE_SUCCESS) {
-            logger.debug("Rebalance from " + sender.getNodeName() + " to " + receiver.getNodeName() + " successful");
-        }
-        else {
-            logger.error("Error! Received unexpected message from KVServer");
-            return false;
-        }
-
-        // update metadata for all (other) servers
-        for (ECSNode node : kvNodes.values()) {
-            node.sendMetadata(metadata);
-        }
-
-        // release write lock if this is not a shutdown (=> server still be active)
-        if (!isShutdown) sender.setState(ServerState.ACTIVE);
-
-        return true;
-    }
+//    public boolean rebalance(ECSNode sender, ECSNode receiver, boolean isShutdown) {
+//        if (sender == null || receiver == null) {
+//            logger.error("Error! Sender or receiver is null");
+//            return false;
+//        }
+//
+//        receiver.sendMetadata(metadata);
+//        /**
+//         * Initiate a rebalance by sending a KVMessage containing with the receiver's name and range
+//         * in the value field. It has the format "Range,Address:Port;"
+//         */
+//        String payload = receiver.getMetadataFormat();
+//        sender.sendMessage(new KVMessage(KVMessage.StatusType.REBALANCE, null, payload));
+//
+//        // wait for a rebalance success message.
+//        KVMessage rebalanceAck = sender.receiveMessage();
+//
+//        if (rebalanceAck.getStatus() == KVMessage.StatusType.REBALANCE_ERROR) {
+//            logger.error("Error! Received REBALANCE_ERROR message from KVServer");
+//            return false;
+//        }
+//        else if (rebalanceAck.getStatus() == KVMessage.StatusType.REBALANCE_SUCCESS) {
+//            logger.debug("Rebalance from " + sender.getNodeName() + " to " + receiver.getNodeName() + " successful");
+//        }
+//        else {
+//            logger.error("Error! Received unexpected message from KVServer");
+//            return false;
+//        }
+//
+//        // update metadata for all (other) servers
+//        for (ECSNode node : kvNodes.values()) {
+//            node.sendMetadata(metadata);
+//        }
+//
+//        // release write lock if this is not a shutdown (=> server still be active)
+//        if (!isShutdown) sender.setState(ServerState.ACTIVE);
+//
+//        return true;
+//    }
 
     /**
      * Transfer data from one node to another
@@ -349,7 +367,7 @@ public class ECSClient implements IECSClient {
      * @return true if the transfer was successful, false otherwise
      */
 
-    boolean transferData(ECSNode sender, ECSNode receiver, Range range) {
+    boolean transferData(ECSNode sender, ECSNode receiver, Range range) throws IOException {
         if (sender == null || receiver == null || range == null) {
             logger.error("One of the parameters is null");
             return false;

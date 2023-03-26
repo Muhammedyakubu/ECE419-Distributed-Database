@@ -30,28 +30,34 @@ public class ECSNode implements IECSNode{
         this.hashRange = hashRange;
     }
 
-    public void sendMessage(KVMessage message) {
+    public void sendMessage(KVMessage message) throws IOException {
         try {
             CommModule.sendMessage(message, this.socket);
         } catch (IOException e) {
             logger.debug("Error sending message to " + this.getNodeName());
             failed = true;
+            throw e;
         }
 
     }
 
-    public KVMessage receiveMessage() {
+    public KVMessage receiveMessage() throws IOException {
         try {
             return CommModule.receiveMessage(this.socket);
         } catch (IOException e) {
             logger.debug("Error receiving message from " + this.getNodeName());
             failed = true;
-            return null;
+            throw e;
+//            return null;
         }
     }
 
     public boolean failed() {
         return failed;
+    }
+
+    public void setFailed(boolean failed) {
+        this.failed = failed;
     }
 
     /**
@@ -93,7 +99,7 @@ public class ECSNode implements IECSNode{
         }
     }
 
-    public boolean deleteKeyrange(Range range) {
+    public boolean deleteKeyrange(Range range) throws IOException {
         sendMessage(new KVMessage(KVMessage.StatusType.DELETE_KEYRANGE, range.toString(), null));
         KVMessage response = receiveMessage();
         if (response.getStatus() != KVMessage.StatusType.DELETE_KEYRANGE_SUCCESS) {
@@ -115,7 +121,7 @@ public class ECSNode implements IECSNode{
         return this.hashRange.toString() + "," + this.getNodeName() + ";";
     }
 
-    public void sendMetadata(KVMetadata metadata) {
+    public void sendMetadata(KVMetadata metadata) throws IOException {
         sendMessage(new KVMessage(KVMessage.StatusType.UPDATE_METADATA, null, metadata.toString()));
 
         // update local metadata
@@ -139,7 +145,7 @@ public class ECSNode implements IECSNode{
      * @param state
      * @return
      */
-    public boolean setState(ServerState state) {
+    public boolean setState(ServerState state) throws IOException {
         boolean success = false;
         while (!success) {
             sendMessage(new KVMessage(KVMessage.StatusType.SET_STATE, null, state.toString()));
