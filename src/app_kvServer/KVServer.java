@@ -477,9 +477,11 @@ public class KVServer implements IKVServer {
 
 		running = initializeServer();
 
-		ecsConnection = new ECSConnection(ecsSocket, this);
-		ecsThread = new Thread(ecsConnection);
-		ecsThread.start();
+		if (ecsPort != -1) {
+			ecsConnection = new ECSConnection(ecsSocket, this);
+			ecsThread = new Thread(ecsConnection);
+			ecsThread.start();
+		}
 		// handle client connections & stuff
 		if (serverSocket != null) {
 			while (running) {

@@ -93,7 +93,8 @@ public class ECSConnection implements Runnable{
                 msg.setKey(Integer.toString(numSent));
                 if (numSent >= 0) {
                     msg.setStatus(IKVMessage.StatusType.TRANSFER_SUCCESS);
-                    kvServer.clearCache();
+                    if (kvServer.cache != null)
+                        kvServer.clearCache();
                 }
                 else
                     msg.setStatus(IKVMessage.StatusType.TRANSFER_ERROR);
@@ -103,7 +104,8 @@ public class ECSConnection implements Runnable{
                 msg.setKey(Integer.toString(numDeleted));
                 if (numDeleted >= 0) {
                     msg.setStatus(IKVMessage.StatusType.DELETE_KEYRANGE_SUCCESS);
-                    kvServer.clearCache();
+                    if (kvServer.cache != null)
+                        kvServer.clearCache();
                 }
                 else
                     msg.setStatus(IKVMessage.StatusType.DELETE_KEYRANGE_ERROR);
@@ -117,7 +119,8 @@ public class ECSConnection implements Runnable{
                 msg.setKey(Integer.toString(numKeysSent));
                 if (numKeysSent >= 0) {
                     msg.setStatus(IKVMessage.StatusType.REBALANCE_SUCCESS);
-                    kvServer.clearCache();
+                    if (kvServer.cache != null)
+                        kvServer.clearCache();
                 }
                 else
                     msg.setStatus(IKVMessage.StatusType.REBALANCE_ERROR);
