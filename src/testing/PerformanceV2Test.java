@@ -32,8 +32,8 @@ public class PerformanceV2Test extends TestCase {
     //private List<KVStore> clients = new ArrayList<>(100);
     //private List<KVServer> servers = new ArrayList<>(100);
     private ECSClient ecsClient;
-    static final int numServers = 1;
-    static final int numClients = 1;
+    static final int numServers = 25;
+    static final int numClients = 25;
     static final int serverStartPort = 16000;
     static final int ecsPort = 20000;
     static final int NUM_PUT = 90;
@@ -42,7 +42,7 @@ public class PerformanceV2Test extends TestCase {
 
     ExecutorService taskExecutor;
     long difference = 0;
-    private final String ENRON_SET = "/tmp/maildir";
+    private final String ENRON_SET = "/Users/jasnoorguliani/maildir";
     private File[] dirList;
 
 
