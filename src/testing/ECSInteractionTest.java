@@ -370,4 +370,47 @@ public class ECSInteractionTest extends TestCase {
 
         Assert.assertTrue(/*ex == null && */response.equals(IKVMessage.StatusType.GET_SUCCESS.toString()));
     }
+
+    @Test
+    public void testServerFailure(){
+        String[] keys = {"foo1", "foo2", "foo3", "foo4", "foo5", "foo6", "foo7", "foo8", "foo9", "foo10"};
+        String[] values = {"bar1", "bar2", "bar3", "bar4", "bar5", "bar6", "bar7", "bar8", "bar9", "bar10"};
+        Exception ex = null;
+        String response = "";
+        String keyRangeBefore = "";
+        String keyRangeAfter = "";
+        client_app = new KVClient();
+
+        try {
+            client_app.kvstore = this.kvClient;
+            for(int i=0; i< keys.length; i++) {
+                client_app.handleCommand("put " + keys[i] + " " + values[i]);
+            }
+            setup_server = false;
+            setUpServer(45000);
+            setup_server = false;
+            setUpServer(46000);
+            setup_server = false;
+            setUpServer(47000);
+            Thread.sleep(8000);
+            //keyRangeBefore = client_app.handleCommand("keyrange");
+            serverThread.stop();
+            Thread.sleep(8000);
+            keyRangeAfter = kvClient.getKeyRange().getKey();
+            //System.out.println(keyRangeBefore);
+            System.out.println(keyRangeAfter);
+//            for(int i=0; i< keys.length; i++) {
+//                response = client_app.handleCommand("get " + keys[i] + " " + values[i]);
+//                if(response.equals(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE.toString())){
+//                    Thread.sleep(2000);
+//                    response = client_app.handleCommand("get " + keys[i] + " " + values[i]);
+//                    break;
+//                }
+//            }
+        } catch (Exception e) {
+            ex = e;
+        }
+
+        Assert.assertEquals("2b0dbbc3be8244f7ec794c92afb0becb,428ac38add006bf878cbdc8d5fadcc51,192.168.0.13:45000;428ac38add006bf878cbdc8d5fadcc52,98b5140588e1cf53350ee513faf6dfa5,192.168.0.13:47000;98b5140588e1cf53350ee513faf6dfa6,c47d295c85a741f71b328778f2342de6,192.168.0.13:46000;c47d295c85a741f71b328778f2342de7,2b0dbbc3be8244f7ec794c92afb0beca,192.168.0.13:49988;",keyRangeAfter);
+    }
 }

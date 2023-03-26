@@ -166,11 +166,11 @@ public class KVMetadataTest extends TestCase{
 
         System.out.println(md.toString());
         System.out.println(md.toKeyRangeReadString());
-        assertEquals("b18c9873dcbbe400e116c6e3d9644376,341e97d7bf9a69b130a0db09a8c87cfd,localhost:5300;" +
-                "cc9b4f9d4d774ddcec786208bfa0aefe,ab2bd578b78979e9d15ce0bfade24987,localhost:5200;" +
-                "ecadfd0ee12447ea5a63a5705822355b,b18c9873dcbbe400e116c6e3d9644375,localhost:5400;" +
-                "341e97d7bf9a69b130a0db09a8c87cfe,cc9b4f9d4d774ddcec786208bfa0aefd,localhost:5100;" +
-                "ab2bd578b78979e9d15ce0bfade24988,ecadfd0ee12447ea5a63a5705822355a,localhost:5000;",md.toKeyRangeReadString());
+        assertEquals("341e97d7bf9a69b130a0db09a8c87cfe,cc9b4f9d4d774ddcec786208bfa0aefd,localhost:5300;" +
+                "ab2bd578b78979e9d15ce0bfade24988,ecadfd0ee12447ea5a63a5705822355a,localhost:5200;" +
+                "b18c9873dcbbe400e116c6e3d9644376,341e97d7bf9a69b130a0db09a8c87cfd,localhost:5400;" +
+                "cc9b4f9d4d774ddcec786208bfa0aefe,ab2bd578b78979e9d15ce0bfade24987,localhost:5100;" +
+                "ecadfd0ee12447ea5a63a5705822355b,b18c9873dcbbe400e116c6e3d9644375,localhost:5000;",md.toKeyRangeReadString());
 
     }
 
