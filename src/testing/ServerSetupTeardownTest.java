@@ -84,7 +84,7 @@ public class ServerSetupTeardownTest extends TestCase {
             setup_server = false;
             setUpServer(40000+i,i);
             try {
-                Thread.sleep(15);
+                Thread.sleep(30);
             } catch (InterruptedException e) {
                 System.out.println("Sleep failed.");
             }
@@ -98,6 +98,12 @@ public class ServerSetupTeardownTest extends TestCase {
         final long endTime = System.nanoTime();
         float difference = (endTime - startTime) / 1000000;
         System.out.println(difference);
+        System.out.println("DONE");
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep failed.");
+        }
 
         final long startTeardown = System.nanoTime();
 
@@ -136,7 +142,7 @@ public class ServerSetupTeardownTest extends TestCase {
             setup_server = false;
             setUpServer(40000+i,i);
             try {
-                Thread.sleep(1500);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 System.out.println("Sleep failed.");
             }
@@ -156,7 +162,7 @@ public class ServerSetupTeardownTest extends TestCase {
         for(int i = 0; i< 100; i++){
             kvServer[i].close();
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 System.out.println("Sleep failed.");
             }
