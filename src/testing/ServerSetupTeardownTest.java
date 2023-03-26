@@ -84,7 +84,7 @@ public class ServerSetupTeardownTest extends TestCase {
             setup_server = false;
             setUpServer(40000+i,i);
             try {
-                Thread.sleep(12);
+                Thread.sleep(15);
             } catch (InterruptedException e) {
                 System.out.println("Sleep failed.");
             }
