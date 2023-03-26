@@ -308,7 +308,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 }
 
                 KVMessage response = (KVMessage) kvstore.put(key, msg.toString());
-                handleNewMessage(response);
+                //handleNewMessage(response);
                 if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
                 {
                     handleNotResponsible(cmdLine);
