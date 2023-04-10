@@ -108,8 +108,11 @@ public interface IKVServer {
 
     /**
      * Remove a client ID from the list of subscribers for a key
+     *
      * @param key
      * @param clientID
+     * @return true if the client ID was removed, false if the client ID was not
+     *         subscribed to the key
      */
-    public void removeSubscriber(String key, String clientID);
+    public boolean removeSubscriber(String key, String clientID);
 }

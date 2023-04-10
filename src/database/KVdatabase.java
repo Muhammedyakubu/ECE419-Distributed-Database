@@ -310,7 +310,7 @@ public class KVdatabase implements IKVDatabase{
         }
     }
 
-    public void removeSubscriber(String key, String clientID) throws Exception {
+    public boolean removeSubscriber(String key, String clientID) throws Exception {
         List<String> subs = getSubscribers(key);
         if (subs.contains(clientID)){
             subs.remove(clientID);
@@ -328,7 +328,9 @@ public class KVdatabase implements IKVDatabase{
             channel.position(0);
             channel.truncate(0);
             channel.write(ByteBuffer.wrap(value.toString().getBytes(StandardCharsets.UTF_8)));
+            return true;
         }
+        return false;
     }
 
 }
