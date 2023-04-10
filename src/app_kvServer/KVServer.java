@@ -563,13 +563,14 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
-	public void removeSubscriber(String key, String clientID) {
+	public boolean removeSubscriber(String key, String clientID) {
 		try {
-			db.removeSubscriber(key, clientID);
+			return db.removeSubscriber(key, clientID);
 		}
 		catch (Exception e){
 			logger.warn("Could not remove subscriber: ", e);
 		}
+		return false;
 	}
 
 	public void shutdown() {
