@@ -77,7 +77,7 @@ public class KVdatabase implements IKVDatabase{
     }
 
     @Override
-    public String getValue(String key) {
+    public String getValue(String key, boolean withSub) {
         String kvFile =  keyPath + "/" +  key + ".txt";
         String value = "";
         Path path = Paths.get(kvFile);
@@ -100,9 +100,11 @@ public class KVdatabase implements IKVDatabase{
                 out.write(buff.array(), 0, buff.position());
                 buff.clear();
             }
-            value = new String(out.toByteArray(), StandardCharsets.UTF_8);
-            int idx = value.indexOf("\n");
-            value = value.substring(idx + 1);
+            if (!withSub) {
+                value = new String(out.toByteArray(), StandardCharsets.UTF_8);
+                int idx = value.indexOf("\n");
+                value = value.substring(idx + 1);
+            }
 
 
         }
@@ -117,7 +119,7 @@ public class KVdatabase implements IKVDatabase{
     }
 
     @Override
-    public boolean insertPair(String key, String value) throws Exception{
+    public boolean insertPair(String key, String value, boolean withSub) throws Exception{
         String kvFile = keyPath + "/" +  key + ".txt";
         boolean exists = true;
         Path path = Paths.get(kvFile);
@@ -143,7 +145,8 @@ public class KVdatabase implements IKVDatabase{
                 subscribers = subscribers.replace("]", "\n");
             }
 
-            value = new StringBuilder(value).insert(0, subscribers).toString();
+            if (!withSub)
+                value = new StringBuilder(value).insert(0, subscribers).toString();
 
 
             writer.position(0);
@@ -300,7 +303,7 @@ public class KVdatabase implements IKVDatabase{
 
             String kvFile = keyPath + "/" +  key + ".txt";
             Path path = Paths.get(kvFile);
-            StringBuilder value = new StringBuilder(new String(getValue(key)));
+            StringBuilder value = new StringBuilder(new String(getValue(key, false)));
             value.insert(0, list);
 
             FileChannel channel = channels.get(path.toString());
@@ -319,7 +322,7 @@ public class KVdatabase implements IKVDatabase{
             list = list.replace("[", "");
             list = list.replace("]", "\n");
 
-            StringBuilder value = new StringBuilder(new String(getValue(key)));
+            StringBuilder value = new StringBuilder(new String(getValue(key, false)));
             value.insert(0, list);
 
             String kvFile = keyPath + "/" +  key + ".txt";
