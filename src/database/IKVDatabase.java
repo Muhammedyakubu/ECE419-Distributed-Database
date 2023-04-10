@@ -63,12 +63,12 @@ public interface IKVDatabase {
      * @param key
      * @param clientID
      */
-    public void addSubscriber(String key, String clientID);
+    public void addSubscriber(String key, String clientID) throws Exception;
 
     /**
      * Remove a client ID from the list of subscribers for a key
      * @param key
      * @param clientID
      */
-    public void removeSubscriber(String key, String clientID);
+    public void removeSubscriber(String key, String clientID) throws Exception;
 }

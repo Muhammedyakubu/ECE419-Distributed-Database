@@ -10,6 +10,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -100,6 +101,8 @@ public class KVdatabase implements IKVDatabase{
                 buff.clear();
             }
             value = new String(out.toByteArray(), StandardCharsets.UTF_8);
+            int idx = value.indexOf("\n");
+            value = value.substring(idx + 1);
 
 
         }
@@ -121,11 +124,27 @@ public class KVdatabase implements IKVDatabase{
 
         try {
             FileChannel writer = channels.get(kvFile);
+            List<String> subs = null;
+            String subscribers = "\n";
             if (writer == null) {
                 exists = false;
                 writer = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
                 channels.put(kvFile, writer);
             }
+            else {
+                subs = getSubscribers(key);
+            }
+
+            if (subs != null){
+                subscribers = subs.toString();
+
+                subscribers = subscribers.replaceAll("\\s", "");
+                subscribers= subscribers.replace("[", "");
+                subscribers = subscribers.replace("]", "\n");
+            }
+
+            value = new StringBuilder(value).insert(0, subscribers).toString();
+
 
             writer.position(0);
             writer.truncate(0);
@@ -228,4 +247,90 @@ public class KVdatabase implements IKVDatabase{
         return res.toArray(new String[0]);
     }
 
+    public List<String> getSubscribers(String key){
+        String kvFile =  keyPath + "/" +  key + ".txt";
+        List<String> subs;
+        Path path = Paths.get(kvFile);
+        FileChannel reader = channels.get(kvFile);
+        if (reader == null){
+            return null;
+        }
+        else {
+            try {
+                reader.position(0);
+
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+                int bufferSize = 1024;
+                ByteBuffer buff = ByteBuffer.allocate(bufferSize);
+
+                while (reader.read(buff) > 0) {
+                    out.write(buff.array(), 0, buff.position());
+                    buff.clear();
+                }
+                String value = new String(out.toByteArray(), StandardCharsets.UTF_8);
+                int idx = value.indexOf("\n");
+                if (idx == 0) return null;
+                value = value.substring(0, idx);
+                subs = Arrays.asList(value.split(","));
+                subs = new ArrayList<>(subs);
+
+                return subs;
+            }
+            catch(IOException ioe){
+                logger.warn("Exception thrown when trying to read key-value pair: ", ioe);
+                return null;
+            }
+        }
+    }
+    public void addSubscriber(String key, String clientID) throws Exception {
+        List<String> subs = getSubscribers(key);
+        if (subs == null || !subs.contains(clientID)){
+            if (subs == null){
+                subs = new ArrayList<>();
+                subs.add(clientID);
+            }
+            else {
+                subs.add(clientID);
+            }
+            String list = subs.toString();
+            list = list.replaceAll("\\s", "");
+            list = list.replace("[", "");
+            list = list.replace("]", "\n");
+
+            String kvFile = keyPath + "/" +  key + ".txt";
+            Path path = Paths.get(kvFile);
+            StringBuilder value = new StringBuilder(new String(getValue(key)));
+            value.insert(0, list);
+
+            FileChannel channel = channels.get(path.toString());
+            channel.position(0);
+            channel.truncate(0);
+            channel.write(ByteBuffer.wrap(value.toString().getBytes(StandardCharsets.UTF_8)));
+        }
+    }
+
+    public void removeSubscriber(String key, String clientID) throws Exception {
+        List<String> subs = getSubscribers(key);
+        if (subs.contains(clientID)){
+            subs.remove(clientID);
+            String list = subs.toString();
+            list = list.replaceAll("\\s", "");
+            list = list.replace("[", "");
+            list = list.replace("]", "\n");
+
+            StringBuilder value = new StringBuilder(new String(getValue(key)));
+            value.insert(0, list);
+
+            String kvFile = keyPath + "/" +  key + ".txt";
+            Path path = Paths.get(kvFile);
+            FileChannel channel = channels.get(path.toString());
+            channel.position(0);
+            channel.truncate(0);
+            channel.write(ByteBuffer.wrap(value.toString().getBytes(StandardCharsets.UTF_8)));
+        }
+    }
+
 }
+
+
