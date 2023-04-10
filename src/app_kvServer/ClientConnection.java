@@ -30,6 +30,7 @@ public class ClientConnection implements Runnable {
 	private InputStream input;
 	private OutputStream output;
 	private KVServer kvServer;
+	private String clientID;
 	
 	/**
 	 * Constructs a new CientConnection object for a given TCP socket.
@@ -40,6 +41,7 @@ public class ClientConnection implements Runnable {
 		this.clientSocket = clientSocket;
 		this.kvServer = kvServer;
 		this.isOpen = true;
+		this.clientID = null;
 	}
 	
 	/**
@@ -55,8 +57,10 @@ public class ClientConnection implements Runnable {
 			
 			while(isOpen) {
 				try {
-					KVMessage response = handleClientMessage(CommModule.receiveMessage(clientSocket));
-					CommModule.sendMessage(response, clientSocket);
+					// NOTE: may or may not need to wrap this part in a lock to prevent
+					// 			other threads from interrupting protocol messages.
+					KVMessage response = handleClientMessage(receiveMessage());
+					sendMessage(response);
 					
 				/* connection either terminated by the client or lost due to 
 				 * network problems */
@@ -79,6 +83,9 @@ public class ClientConnection implements Runnable {
 				}
 			} catch (IOException ioe) {
 				logger.error("Error! Unable to tear down connection!", ioe);
+			}
+			if (clientID != null) {
+				kvServer.clientConnections.remove(clientID);
 			}
 		}
 	}
@@ -107,7 +114,6 @@ public class ClientConnection implements Runnable {
 					return new KVMessage(IKVMessage.StatusType.SERVER_STOPPED, "", "");
 				}
 				if (!kvServer.isResponsible(msg.getKey()) && !kvServer.isReplicaResponsible(msg.getKey())){
-//				if (!kvServer.isResponsible(msg.getKey())){
 					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
 				}
 				try {
@@ -139,9 +145,8 @@ public class ClientConnection implements Runnable {
 				}
 				boolean isUpdate = false;
 				try {
-					// convert all forms of null to null
+					// set status for delete
 					if (msg.getValue() == null) {
-						msg.setValue(null);
 						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
 					}
 
@@ -193,14 +198,8 @@ public class ClientConnection implements Runnable {
 	 * @param msg the message that is to be sent.
 	 * @throws IOException some I/O error regarding the output stream 
 	 */
-	public void sendMessage(KVMessage msg) throws IOException {
-		byte[] msgBytes = msg.toByteArray();
-		output.write(msgBytes, 0, msgBytes.length);
-		output.flush();
-		logger.info("SEND \t<" 
-				+ clientSocket.getInetAddress().getHostAddress() + ":" 
-				+ clientSocket.getPort() + ">: '" 
-				+ msg +"'");
+	public synchronized void sendMessage(KVMessage msg) throws IOException {
+		CommModule.sendMessage(msg, clientSocket);
     }
 
 	/**
@@ -208,69 +207,30 @@ public class ClientConnection implements Runnable {
 	 * @return the received message as a KVMessage object
 	 * @throws IOException some I/O error regarding the input stream
 	 */
-	private KVMessage receiveMessage() throws IOException {
-		
-		int index = 0;
-		byte[] msgBytes = null, tmp = null;
-		byte[] bufferBytes = new byte[BUFFER_SIZE];
-		
-		/* read first char from stream */
-		byte read = (byte) input.read();	
-		boolean reading = true;
-
-		while(read != 13 && read != -1 && reading) {/* CR, disconnect, error */
-			/* if buffer filled, copy to msg array */
-			if(index == BUFFER_SIZE) {
-				if(msgBytes == null){
-					tmp = new byte[BUFFER_SIZE];
-					System.arraycopy(bufferBytes, 0, tmp, 0, BUFFER_SIZE);
-				} else {
-					tmp = new byte[msgBytes.length + BUFFER_SIZE];
-					System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
-					System.arraycopy(bufferBytes, 0, tmp, msgBytes.length,
-							BUFFER_SIZE);
-				}
-
-				msgBytes = tmp;
-				bufferBytes = new byte[BUFFER_SIZE];
-				index = 0;
-			} 
-			
-			/* only read valid characters, i.e. letters and constants */
-			bufferBytes[index] = read;
-			index++;
-			
-			/* stop reading is DROP_SIZE is reached */
-			if(msgBytes != null && msgBytes.length + index >= DROP_SIZE) {
-				reading = false;
-			}
-			
-			/* read next char from stream */
-			read = (byte) input.read();
-		}
-		
-		if(msgBytes == null){
-			tmp = new byte[index];
-			System.arraycopy(bufferBytes, 0, tmp, 0, index);
-		} else {
-			tmp = new byte[msgBytes.length + index];
-			System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
-			System.arraycopy(bufferBytes, 0, tmp, msgBytes.length, index);
-		}
-		
-		msgBytes = tmp;
-
-		/* Check for empty message indicating a disconnect */
-		if(msgBytes.length < 2) {
-			throw new IOException("Error! Connection lost!");
-		}
-		
-		/* build final String */
-		KVMessage msg = new KVMessage(msgBytes);
-		logger.info("RECEIVE \t<" 
-				+ clientSocket.getInetAddress().getHostAddress() + ":" 
-				+ clientSocket.getPort() + ">: '" 
-				+ msg + "'");
-		return msg;
+	private synchronized KVMessage receiveMessage() throws IOException {
+		return CommModule.receiveMessage(clientSocket);
     }
+
+	public String getClientID() {
+		if (clientID != null) {
+			return clientID;
+		}
+
+		// clientID has not been set, so get it.
+		try {
+			KVMessage msg = receiveMessage();
+			if (msg.getStatus() == KVMessage.StatusType.CONNECT) {
+				clientID = msg.getKey();
+				sendMessage(new KVMessage(IKVMessage.StatusType.CONNECT_SUCCESS, "", ""));
+			} else if (msg.getStatus() == IKVMessage.StatusType.REQUEST_ID) {
+				clientID = this.kvServer.getHostname() + ":"
+						 + this.kvServer.getPort() + ":"
+						 + this.kvServer.connectionCount.incrementAndGet();
+				sendMessage(new KVMessage(IKVMessage.StatusType.SET_CLIENT_ID, clientID, ""));
+			}
+		} catch (IOException e) {
+			logger.error("Error! Unable to receive message from client!", e);
+		}
+		return clientID;
+	}
 }
