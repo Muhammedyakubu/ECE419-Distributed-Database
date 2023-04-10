@@ -155,6 +155,7 @@ public class KVStore implements KVCommInterface {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.UNSUBSCRIBE, key, null);
 		CommModule.sendMessage(msg, clientSocket);
 		KVMessage response = CommModule.receiveMessage(clientSocket);
+		response = CommModule.receiveMessage(clientSocket);
 		return response;
 	}
 
@@ -188,61 +189,68 @@ public class KVStore implements KVCommInterface {
 	 * 		  if the message cannot be received.
 	 */
 	public KVMessage receiveMessage() throws IOException {
+		boolean notification = true;
+		KVMessage msg = null;
+		while(notification) {
+			int index = 0;
+			byte[] msgBytes = null, tmp = null;
+			byte[] bufferBytes = new byte[BUFFER_SIZE];
 
-		int index = 0;
-		byte[] msgBytes = null, tmp = null;
-		byte[] bufferBytes = new byte[BUFFER_SIZE];
+			/* read first char from stream */
+			byte read = (byte) input.read();
+			boolean reading = true;
 
-		/* read first char from stream */
-		byte read = (byte) input.read();
-		boolean reading = true;
+			while (read != 13 && read != -1 && reading) {/* CR, LF, error */
+				/* if buffer filled, copy to msg array */
+				if (index == BUFFER_SIZE) {
+					if (msgBytes == null) {
+						tmp = new byte[BUFFER_SIZE];
+						System.arraycopy(bufferBytes, 0, tmp, 0, BUFFER_SIZE);
+					} else {
+						tmp = new byte[msgBytes.length + BUFFER_SIZE];
+						System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
+						System.arraycopy(bufferBytes, 0, tmp, msgBytes.length,
+								BUFFER_SIZE);
+					}
 
-		while(read != 13 && read != -1 && reading) {/* CR, LF, error */
-			/* if buffer filled, copy to msg array */
-			if(index == BUFFER_SIZE) {
-				if(msgBytes == null){
-					tmp = new byte[BUFFER_SIZE];
-					System.arraycopy(bufferBytes, 0, tmp, 0, BUFFER_SIZE);
-				} else {
-					tmp = new byte[msgBytes.length + BUFFER_SIZE];
-					System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
-					System.arraycopy(bufferBytes, 0, tmp, msgBytes.length,
-							BUFFER_SIZE);
+					msgBytes = tmp;
+					bufferBytes = new byte[BUFFER_SIZE];
+					index = 0;
 				}
 
-				msgBytes = tmp;
-				bufferBytes = new byte[BUFFER_SIZE];
-				index = 0;
+				/* only read valid characters, i.e. letters and constants */
+				bufferBytes[index] = read;
+				index++;
+
+				/* stop reading is DROP_SIZE is reached */
+				if (msgBytes != null && msgBytes.length + index >= DROP_SIZE) {
+					reading = false;
+				}
+
+				/* read next char from stream */
+				read = (byte) input.read();
 			}
 
-			/* only read valid characters, i.e. letters and constants */
-			bufferBytes[index] = read;
-			index++;
-
-			/* stop reading is DROP_SIZE is reached */
-			if(msgBytes != null && msgBytes.length + index >= DROP_SIZE) {
-				reading = false;
+			if (msgBytes == null) {
+				tmp = new byte[index];
+				System.arraycopy(bufferBytes, 0, tmp, 0, index);
+			} else {
+				tmp = new byte[msgBytes.length + index];
+				System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
+				System.arraycopy(bufferBytes, 0, tmp, msgBytes.length, index);
 			}
 
-			/* read next char from stream */
-			read = (byte) input.read();
+			msgBytes = tmp;
+
+			/* build final String */
+			msg = new KVMessage(msgBytes);
+			// Client specific logging
+			logger.info("Receive message:\t '" + msg.toString() + "'");
+
+			if(msg.getStatus() == IKVMessage.StatusType.NOTIFY)
+				System.out.println("NOTIFICATION: Key " + msg.getKey() + " was updated.");
+			else notification = false;
 		}
-
-		if(msgBytes == null){
-			tmp = new byte[index];
-			System.arraycopy(bufferBytes, 0, tmp, 0, index);
-		} else {
-			tmp = new byte[msgBytes.length + index];
-			System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
-			System.arraycopy(bufferBytes, 0, tmp, msgBytes.length, index);
-		}
-
-		msgBytes = tmp;
-
-		/* build final String */
-		KVMessage msg = new KVMessage(msgBytes);
-		// Client specific logging
-		logger.info("Receive message:\t '" + msg.toString() + "'");
 		return msg;
 	}
 }
