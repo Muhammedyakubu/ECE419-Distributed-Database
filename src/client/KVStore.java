@@ -130,6 +130,35 @@ public class KVStore implements KVCommInterface {
 		return response;
 	}
 
+	public IKVMessage getClientID() throws Exception {
+		KVMessage msg = new KVMessage(KVMessage.StatusType.REQUEST_ID, null, null);
+		CommModule.sendMessage(msg, clientSocket);
+		KVMessage response = CommModule.receiveMessage(clientSocket);
+		return response;
+	}
+
+	public IKVMessage sendClientID(String clientID) throws Exception {
+		KVMessage msg = new KVMessage(KVMessage.StatusType.CONNECT, clientID, null);
+		CommModule.sendMessage(msg, clientSocket);
+		KVMessage response = CommModule.receiveMessage(clientSocket);
+		return response;
+	}
+
+	public IKVMessage subscribe(String key) throws Exception {
+		KVMessage msg = new KVMessage(KVMessage.StatusType.SUBSCRIBE, key, null);
+		CommModule.sendMessage(msg, clientSocket);
+		KVMessage response = CommModule.receiveMessage(clientSocket);
+		return response;
+	}
+
+	public IKVMessage unsubscribe(String key) throws Exception {
+		KVMessage msg = new KVMessage(KVMessage.StatusType.UNSUBSCRIBE, key, null);
+		CommModule.sendMessage(msg, clientSocket);
+		KVMessage response = CommModule.receiveMessage(clientSocket);
+		return response;
+	}
+
+
 	public void addListener(ClientSocketListener listener){
 		listeners.add(listener);
 	}

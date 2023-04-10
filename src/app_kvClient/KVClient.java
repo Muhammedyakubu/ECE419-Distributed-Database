@@ -35,6 +35,10 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private KVMetadata metadata = null;
 
     private boolean deadServer = false;
+    private boolean firstConnection = true;
+    private String myID = "";
+    private List<String> key_subs;
+    private boolean desiredDisconnect = false;
 
     /**
      * Runs the client application and takes input from user.
@@ -168,9 +172,6 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 logger.warn("Exception occurred");
             }
 
-
-
-        //NEED TO DO
         } else  if (tokens[0].equals("get")) {
             if(tokens.length >= 2) {
                 //if there is a connected client
@@ -239,6 +240,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
         //GOOD
         } else if(tokens[0].equals("disconnect")) {
+            desiredDisconnect = true;
             disconnect();
 
         } else if(tokens[0].equals("logLevel")) {
@@ -291,6 +293,106 @@ public class KVClient implements IKVClient, ClientSocketListener {
             } else {
                 printError("Not connected!");
             }
+        } else if(tokens[0].equals("sub")) {
+            if(tokens.length >= 2) {
+                if(kvstore != null) {
+                    String new_sub = tokens[1];
+                    if (key_subs.contains(new_sub)) {
+                        System.out.println("You are already subscribed to that key.");
+                    } else {
+                        try {
+                            String currServerAddPort = serverAddress + ":" + serverPort;
+                            String newServerAddPort;
+                            if (metadata != null) {
+                                newServerAddPort = metadata.findServer(new_sub);
+                            } else newServerAddPort = currServerAddPort;
+
+                            if (currServerAddPort.compareTo(newServerAddPort) != 0) {
+                                disconnect();
+                                String[] IPPort = newServerAddPort.split(":");
+                                serverAddress = IPPort[0];
+                                serverPort = Integer.parseInt(IPPort[1]);
+                                newConnection(serverAddress, serverPort);
+                            }
+
+                            KVMessage response = (KVMessage) kvstore.subscribe(new_sub); //NEED TO IMPLEMENT THIS
+                            handleNewMessage(response);
+                            if (response.getStatus() == IKVMessage.StatusType.SUBSCRIBE_SUCCESS)
+                                key_subs.add(new_sub);
+                            return response.getStatus().toString();
+                        } catch (IOException e) {
+                            logger.info("Connection to server was lost.");
+                        }
+                    }
+                } else printError("Not connected!");
+            } else printError("Usage: sub <key>!");
+        } else if(tokens[0].equals("unsub")) {
+            if(tokens.length >= 2) {
+                if(kvstore != null) {
+                    String unsub_key = tokens[1];
+                    if (!key_subs.contains(unsub_key)) {
+                        System.out.println("You are not subscribed to that key.");
+                    } else {
+                        try {
+                            String currServerAddPort = serverAddress + ":" + serverPort;
+                            String newServerAddPort;
+                            if (metadata != null) {
+                                newServerAddPort = metadata.findServer(unsub_key);
+                            } else newServerAddPort = currServerAddPort;
+
+                            if (currServerAddPort.compareTo(newServerAddPort) != 0) {
+                                disconnect();
+                                String[] IPPort = newServerAddPort.split(":");
+                                serverAddress = IPPort[0];
+                                serverPort = Integer.parseInt(IPPort[1]);
+                                newConnection(serverAddress, serverPort);
+                            }
+                            KVMessage response = (KVMessage) kvstore.unsubscribe(unsub_key); //NEED TO IMPLEMENT THIS
+                            handleNewMessage(response);
+                            if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS)
+                                key_subs.remove(unsub_key);
+                            return response.getStatus().toString();
+                        } catch (IOException e) {
+                            logger.info("Connection to server was lost.");
+                        }
+                    }
+                } else printError("Not connected!");
+            } else printError("Usage: unsub <key>!");
+        } else if(tokens[0].equals("list_subs")) {
+            if(key_subs.size() == 0)
+                System.out.println("You are not subscribed to any keys!");
+            for(int i = 0; i < key_subs.size(); i++){
+                System.out.println(key_subs.get(i));
+            }
+        } else if(tokens[0].equals("clear_subs")) {
+            if(kvstore != null) {
+                for (int i = 0; i < key_subs.size(); i++) {
+                    try {
+                        String currServerAddPort = serverAddress + ":" + serverPort;
+                        String newServerAddPort;
+                        if (metadata != null) {
+                            newServerAddPort = metadata.findServer(key_subs.get(i));
+                        } else newServerAddPort = currServerAddPort;
+
+                        if (currServerAddPort.compareTo(newServerAddPort) != 0) {
+                            disconnect();
+                            String[] IPPort = newServerAddPort.split(":");
+                            serverAddress = IPPort[0];
+                            serverPort = Integer.parseInt(IPPort[1]);
+                            newConnection(serverAddress, serverPort);
+                        }
+
+                        KVMessage response = (KVMessage) kvstore.unsubscribe(key_subs.get(i)); //NEED TO IMPLEMENT THIS
+                        if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS)
+                            key_subs.remove(key_subs.get(i));
+                        else handleNewMessage(response);
+                    } catch (IOException e) {
+                        logger.info("Connection to server was lost.");
+                    }
+                }
+                return "DONE_UNSUBSCRIBING";
+            }
+            else printError("Not connected!");
         } else if(tokens[0].equals("help")) {
             printHelpText();
         } else {
@@ -388,6 +490,33 @@ public class KVClient implements IKVClient, ClientSocketListener {
      */
     public void disconnect(){
         if (kvstore != null){
+            if(desiredDisconnect){
+                for (int i = 0; i < key_subs.size(); i++) {
+                    try {
+                        String currServerAddPort = serverAddress + ":" + serverPort;
+                        String newServerAddPort;
+                        if (metadata != null) {
+                            newServerAddPort = metadata.findServer(key_subs.get(i));
+                        } else newServerAddPort = currServerAddPort;
+
+                        if (currServerAddPort.compareTo(newServerAddPort) != 0) {
+                            disconnect();
+                            String[] IPPort = newServerAddPort.split(":");
+                            serverAddress = IPPort[0];
+                            serverPort = Integer.parseInt(IPPort[1]);
+                            newConnection(serverAddress, serverPort);
+                        }
+
+                        KVMessage response = (KVMessage) kvstore.unsubscribe(key_subs.get(i)); //NEED TO IMPLEMENT THIS
+                        if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS)
+                            key_subs.remove(key_subs.get(i));
+                        else handleNewMessage(response);
+                    } catch (Exception e) {
+                        logger.info("Connection to server was lost.");
+                    }
+                }
+                desiredDisconnect = false;
+            }
             kvstore.disconnect();
             kvstore = null;
         } else {
@@ -453,6 +582,18 @@ public class KVClient implements IKVClient, ClientSocketListener {
             kvstore = new KVStore(hostname, port);
             kvstore.connect();
             kvstore.addListener(this);
+
+            if(firstConnection) {
+                KVMessage response = (KVMessage) kvstore.getClientID();
+                firstConnection = false;
+                //RESPONSE STATUS IS SET_CLIENT_ID
+                myID = response.getKey();
+            }
+            else{
+                KVMessage response = (KVMessage) kvstore.sendClientID(myID);
+                if(response.getStatus() == IKVMessage.StatusType.CONNECT_ERROR)
+                    printError("Error sending client ID to server!");
+            }
     }
 
     /**
