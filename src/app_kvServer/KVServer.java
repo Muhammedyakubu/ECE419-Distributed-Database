@@ -543,17 +543,33 @@ public class KVServer implements IKVServer {
 
 	@Override
 	public List<String> getSubscribers(String key) {
-		return db.getSubscribers(key);
+		try {
+			return db.getSubscribers(key);
+		}
+		catch (Exception e){
+			logger.warn("Could not get subscribers: ", e);
+			return null;
+		}
 	}
 
 	@Override
 	public void addSubscriber(String key, String clientID) {
-		db.addSubscriber(key, clientID);
+		try {
+			db.addSubscriber(key, clientID);
+		}
+		catch(Exception e){
+			logger.warn("Could not add subscriber: ", e);
+		}
 	}
 
 	@Override
 	public void removeSubscriber(String key, String clientID) {
-		db.removeSubscriber(key, clientID);
+		try {
+			db.removeSubscriber(key, clientID);
+		}
+		catch (Exception e){
+			logger.warn("Could not remove subscriber: ", e);
+		}
 	}
 
 	public void shutdown() {
