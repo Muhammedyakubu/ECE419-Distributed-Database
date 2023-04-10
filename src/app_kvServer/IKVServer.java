@@ -1,5 +1,7 @@
 package app_kvServer;
 
+import java.util.List;
+
 public interface IKVServer {
     public enum CacheStrategy {
         None,
@@ -87,4 +89,27 @@ public interface IKVServer {
      * Gracefully stop the server, can perform any additional actions
      */
     public void close();
+
+    /* Subscription methods */
+
+    /**
+     * Get all the client IDs that are subscribed to a key
+     * @param key
+     * @return List of client IDs
+     */
+    public List<String> getSubscribers(String key);
+
+    /**
+     * Add a client ID to the list of subscribers for a key
+     * @param key
+     * @param clientID
+     */
+    public void addSubscriber(String key, String clientID);
+
+    /**
+     * Remove a client ID from the list of subscribers for a key
+     * @param key
+     * @param clientID
+     */
+    public void removeSubscriber(String key, String clientID);
 }

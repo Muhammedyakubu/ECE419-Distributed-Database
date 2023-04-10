@@ -2,6 +2,7 @@ package database;
 
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Interface for handling persistent database storage system.
@@ -48,4 +49,26 @@ public interface IKVDatabase {
      */
     public String[] getAllKeys();
 
+    /* Subscription methods */
+
+    /**
+     * Get all the client IDs that are subscribed to a key
+     * @param key
+     * @return List of client IDs
+     */
+    public List<String> getSubscribers(String key);
+
+    /**
+     * Add a client ID to the list of subscribers for a key
+     * @param key
+     * @param clientID
+     */
+    public void addSubscriber(String key, String clientID);
+
+    /**
+     * Remove a client ID from the list of subscribers for a key
+     * @param key
+     * @param clientID
+     */
+    public void removeSubscriber(String key, String clientID);
 }
