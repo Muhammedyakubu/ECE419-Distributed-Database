@@ -757,17 +757,11 @@ public class KVServer implements IKVServer {
 
 			if(port_present == false) {
 				System.out.println("Error! No port number found!");
-				System.out.println("Usage: java -jar m2-server.jar " +
+				System.out.println("Usage: java -jar m3-server.jar " +
 						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
 				return("No port, invalid");
 				//System.exit(0);
 			}
-			/*if (ecs_present == false){
-				System.out.println("Error! No ECS bootstrap found!");
-				System.out.println("Usage: java -jar m2-server.jar " +
-						"-p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number> !");
-				return("No ECS bootstrap, invalid");
-			}*/
 
 			//WILL THROW UNKNOWN HOST EXCEPTION IF ADDRESS IS INVALID
 			//InetAddress ecs_bind = InetAddress.getByName(ecsAddress);
@@ -821,7 +815,7 @@ public class KVServer implements IKVServer {
 	 * replacement strategy if caching is enabled.
 	 * @param args
 	 *
-	 * java -jar m2-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number>
+	 * java -jar m<x>-server.jar -p <port number> -a <address> -d <dataPath> -l <logPath> -ll <logLevel> -b <port number> or -b <ecs-address:port number>
 	 */
 	public static void main(String[] args) {
 		parseCommandLine(args, true);
