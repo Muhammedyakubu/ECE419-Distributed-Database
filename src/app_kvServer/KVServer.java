@@ -18,10 +18,10 @@ import shared.messages.Pair;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -60,7 +60,8 @@ public class KVServer implements IKVServer {
 	private final int SHUTDOWN_TIMEOUT = 5000;
 	private boolean hasShutdown = false;
 	private List<Socket> successors = Collections.synchronizedList(new ArrayList<Socket>(2));
-
+	public ConcurrentMap<String, ClientConnection> clientConnections = new ConcurrentHashMap<>();
+	public AtomicInteger connectionCount = new AtomicInteger(0);
 	/**
 	 * Shutdown hook for when the server shuts down
 	 *
@@ -489,6 +490,7 @@ public class KVServer implements IKVServer {
 					Socket clientSocket = serverSocket.accept();
 					ClientConnection connection =
 							new ClientConnection(clientSocket, this);
+					clientConnections.put(connection.getClientID(), connection);
 					Thread clientThread = new Thread(connection);
 					clientThread.setDaemon(true);	// make sure the thread dies once server stops
 					clientThread.start();
@@ -539,6 +541,21 @@ public class KVServer implements IKVServer {
 		shutdown();
 	}
 
+	@Override
+	public List<String> getSubscribers(String key) {
+		return db.getSubscribers(key);
+	}
+
+	@Override
+	public void addSubscriber(String key, String clientID) {
+		db.addSubscriber(key, clientID);
+	}
+
+	@Override
+	public void removeSubscriber(String key, String clientID) {
+		db.removeSubscriber(key, clientID);
+	}
+
 	public void shutdown() {
 		if (hasShutdown) return;
 		hasShutdown = true;
@@ -552,33 +569,6 @@ public class KVServer implements IKVServer {
 			logger.debug("Deleting all " + numKeys + " keys...");
 			db.clearStorage();
 		}
-//		KVMessage msg = new KVMessage(IKVMessage.StatusType.SHUTTING_DOWN, "", "]");
-//		try {
-//			CommModule.sendMessage(msg,ecsSocket);
-//			if (getMetadata().metadata.size() == 1) {
-//				logger.debug("Last node in cluster, no need to rebalance");
-//				return;
-//			}
-//			// if shutting down because ECS connection lost, skip rebalance
-//			if (!ecsConnection.isOpen()) {
-//				logger.debug("ECSConnection thread already closed");
-//				return;
-//			}
-//
-//			// allow the ECSConnection thread handle the rebalance, but
-//			// we need to set isOpen to false, so it will stop listening after
-//			ecsConnection.isOpen.set(false);
-//			logger.debug("Waiting for ECSConnection thread to finish...");
-//			ecsThread.join(SHUTDOWN_TIMEOUT);
-//			// if ECSConnection thread is still running, interrupt it
-//			if (ecsThread.isAlive()) ecsConnection.close();
-//			logger.debug("ECSConnection thread finished");
-//			// assume server has most updated metadata
-//		} catch (IOException e) {
-//			logger.warn("Connection to ECS lost. Server Not closed properly", e);
-//		} catch (InterruptedException e) {
-//			logger.error("ECSConnection thread interrupted before rebalance completed", e);
-//		}
 	}
 
 
