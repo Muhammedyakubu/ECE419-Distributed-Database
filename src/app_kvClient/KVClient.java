@@ -61,6 +61,23 @@ public class KVClient implements IKVClient, ClientSocketListener {
         }
     }
 
+    public void run_listener() { //taken from m0 Application
+        while(!stop) {
+
+            try {
+                if(this.kvstore != null && kvstore.getInputAvailable() > 0) {
+                    KVMessage msg = kvstore.receiveMessage();
+                    if (msg != null && msg.getStatus() == IKVMessage.StatusType.NOTIFY)
+                        kvstore.addToQueue(msg);
+                }
+                    Thread.sleep(1);
+            } catch (Exception e){
+                logger.warn("The following error occurred:", e);
+                printError("Unknown error occurred.");
+            }
+        }
+    }
+
     public static int getRandomNumberUsingInts(int min, int max) {
         Random random = new Random();
         return random.ints(min, max)
@@ -316,7 +333,11 @@ public class KVClient implements IKVClient, ClientSocketListener {
                             }
 
                             KVMessage response = (KVMessage) kvstore.subscribe(new_sub); //NEED TO IMPLEMENT THIS
-                            handleNewMessage(response);
+                            if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+                            {
+                                handleNotResponsible(cmdLine);
+                            }
+                            else handleNewMessage(response);
                             if (response.getStatus() == IKVMessage.StatusType.SUBSCRIBE_SUCCESS)
                                 key_subs.add(new_sub);
                             return response.getStatus().toString();
@@ -347,8 +368,12 @@ public class KVClient implements IKVClient, ClientSocketListener {
                                 serverPort = Integer.parseInt(IPPort[1]);
                                 newConnection(serverAddress, serverPort);
                             }
-                            KVMessage response = (KVMessage) kvstore.unsubscribe(unsub_key); //NEED TO IMPLEMENT THIS
-                            handleNewMessage(response);
+                            KVMessage response = (KVMessage) kvstore.unsubscribe(unsub_key);
+                            if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+                            {
+                                handleNotResponsible(cmdLine);
+                            }
+                            else handleNewMessage(response);
                             if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS)
                                 key_subs.remove(unsub_key);
                             return response.getStatus().toString();
@@ -383,7 +408,11 @@ public class KVClient implements IKVClient, ClientSocketListener {
                         }
 
                         KVMessage response = (KVMessage) kvstore.unsubscribe(key_subs.get(i)); //NEED TO IMPLEMENT THIS
-                        if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS)
+                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+                        {
+                            handleNotResponsible("clear_subs");
+                        }
+                        else if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS)
                             key_subs.remove(key_subs.get(i));
                         else handleNewMessage(response);
                     } catch (IOException e) {
@@ -508,6 +537,10 @@ public class KVClient implements IKVClient, ClientSocketListener {
                         }
 
                         KVMessage response = (KVMessage) kvstore.unsubscribe(key_subs.get(i)); //NEED TO IMPLEMENT THIS
+                        if(response.getStatus() == IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE)
+                        {
+                            handleNotResponsible("disconnect");
+                        }
                         if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS)
                             key_subs.remove(key_subs.get(i));
                         else handleNewMessage(response);
@@ -642,13 +675,15 @@ public class KVClient implements IKVClient, ClientSocketListener {
         try {
             IKVMessage response = kvstore.getKeyRange();
             metadata = new KVMetadata(response.getKey());
-            String serverAddPort = metadata.findServer(tokens[1]);
-            String[] IPPort = serverAddPort.split(":");
-            disconnect();
-            serverAddress = IPPort[0];
-            serverPort = Integer.parseInt(IPPort[1]);
-            newConnection(serverAddress, serverPort);
-            logger.info("Connected to new server. Resending request...");
+            if(!cmdLine.equals("disconnect") && !cmdLine.equals("clear_subs")) {
+                String serverAddPort = metadata.findServer(tokens[1]);
+                String[] IPPort = serverAddPort.split(":");
+                disconnect();
+                serverAddress = IPPort[0];
+                serverPort = Integer.parseInt(IPPort[1]);
+                newConnection(serverAddress, serverPort);
+                logger.info("Connected to new server. Resending request...");
+            }
             handleCommand(cmdLine);
         } catch(NumberFormatException nfe) {
             printError("No valid address. Port must be a number!");
@@ -670,6 +705,10 @@ public class KVClient implements IKVClient, ClientSocketListener {
         try {
             new LogSetup("logs/KVClient.log", Level.ALL);
             KVClient client = new KVClient();
+            MyRunnable myRunnable = new MyRunnable(client);
+            //myRunnable.client = client;
+            Thread thread = new Thread(myRunnable);
+            thread.start();
             client.run();
         } catch (IOException e) {
             System.out.println("Error! Unable to initialize logger!");
@@ -678,3 +717,4 @@ public class KVClient implements IKVClient, ClientSocketListener {
         }
     }
 }
+

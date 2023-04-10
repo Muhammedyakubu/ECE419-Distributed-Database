@@ -12,6 +12,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,7 +39,7 @@ public class KVStore implements KVCommInterface {
 	private static final int DROP_SIZE = 128 * BUFFER_SIZE;
 	private String address;
 	private int port;
-
+	private List<KVMessage> msg_queue;
 
 	/**
 	 * Initialize KVStore with address and port of KVServer
@@ -188,7 +189,25 @@ public class KVStore implements KVCommInterface {
 	 * @throws IOException
 	 * 		  if the message cannot be received.
 	 */
-	public KVMessage receiveMessage() throws IOException {
+	public void addToQueue(KVMessage msg){
+		msg_queue.add(msg);
+	}
+
+	public int getInputAvailable(){
+		int avail = -1;
+		try{
+			avail = input.available();
+		} catch (IOException e){
+			System.out.println(e);
+		}
+		return avail;
+	}
+	public synchronized KVMessage receiveMessage() throws IOException {
+		if(!msg_queue.isEmpty()){
+			KVMessage msg = msg_queue.get(0);
+			msg_queue.remove(msg);
+			return msg;
+		}
 		boolean notification = true;
 		KVMessage msg = null;
 		while(notification) {
