@@ -47,9 +47,36 @@ public interface IKVMessage {
 
 		// Server-Server Status Messages
 		SERVER_PUT,		/* Server put command when rebalancing */
-
 		WAGWAN, /*Heartbeat message*/
 
+		// M4 Status Messages
+
+		// new connection protocol messages
+		CONNECT,			/* Client sends to server to connect (with client ID in key) */
+		CONNECT_SUCCESS, 	/* Server sends to client to confirm connection */
+		CONNECT_ERROR,		/* Server sends to client to reject connection */
+		REQUEST_ID,			/* Client sends to server to request ID */
+		SET_CLIENT_ID,		/* Server sends to client to set ID */
+
+		// subscription protocol messages
+		SUBSCRIBE,			/* Client sends to server to subscribe to a key */
+		SUBSCRIBE_SUCCESS,	/* Server sends to client to confirm subscription */
+		SUBSCRIBE_ERROR,	/* Server sends to client to reject subscription */
+		UNSUBSCRIBE,		/* Client sends to server to unsubscribe from a key */
+		UNSUBSCRIBE_SUCCESS,/* Server sends to client to confirm unsubscription */
+		UNSUBSCRIBE_ERROR,	/* Server sends to client to reject unsubscription */
+
+		// ECS-server subscription protocol messages
+		NOFITY_SUBSCRIBERS,	/* <key> <List<clientID>. Server sends to ECS to notify subscribers of a key */
+		NOTIFY_SUBSCRIBERS_SUCCESS,	/* ECS sends to server to confirm that all subscribers have been notified */
+		UNSUBSCRIBE_CLIENTS,	/* <key> <List<ClientID>>. (Synonymous to notify_fail) In the case that not all clients are notified
+									=> at least one client has disconnected ECS sends to a server to
+									unsubscribe all referenced clients in from <key> */
+
+		// client-server subscription protocol messages
+		NOTIFY,				/* <key>. Server sends to client to notify it of a key update */
+		NOTIFY_SUCCESS,		/* Client sends to server to confirm that it has been notified */
+		NOTIFY_ERROR,		/* Client sends to server in the case of notification error */
 	}
 	public enum ServerState {
 		SERVER_STOPPED,
