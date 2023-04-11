@@ -229,6 +229,8 @@ public class KVStore implements KVCommInterface {
 		for(ClientSocketListener listener : listeners) {
 //			listener.handleNotification(msg);
 			logger.debug("Received notify message for key: " + msg.getKey());
+			System.out.println("NOTIFICATION: Key " + msg.getKey() + " was updated.");
+			System.out.print("M4Client> ");
 		}
 	}
 }
