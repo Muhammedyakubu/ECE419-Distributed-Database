@@ -196,7 +196,8 @@ public class KVStore implements KVCommInterface {
 	public int getInputAvailable(){
 		int avail = -1;
 		try{
-			avail = input.available();
+			if(input != null)
+				avail = input.available();
 		} catch (IOException e){
 			System.out.println(e);
 		}
