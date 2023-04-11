@@ -86,7 +86,7 @@ public class KVdatabase implements IKVDatabase{
             //open the file channel and read
             if (reader == null) {
                 reader = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
-                channels.put(kvFile, reader);
+                channels.put(path.toString(), reader);
 
             }
             reader.position(0);
@@ -125,13 +125,13 @@ public class KVdatabase implements IKVDatabase{
         Path path = Paths.get(kvFile);
 
         try {
-            FileChannel writer = channels.get(kvFile);
+            FileChannel writer = channels.get(path.toString());
             List<String> subs = null;
             String subscribers = "\n";
             if (writer == null) {
                 exists = false;
                 writer = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
-                channels.put(kvFile, writer);
+                channels.put(path.toString(), writer);
             }
             else {
                 subs = getSubscribers(key);
@@ -154,8 +154,8 @@ public class KVdatabase implements IKVDatabase{
             writer.write(ByteBuffer.wrap(value.getBytes(StandardCharsets.UTF_8)));
         }
         catch (Exception e) {
-            if (sv != null)
-                logger.warn("Exception thrown when writing to the key-value store:", e);
+//            if (sv != null)
+            logger.warn("Exception thrown when writing to the key-value store:", e);
             throw new Exception("Write Exception");
         }
         return exists;
@@ -191,9 +191,12 @@ public class KVdatabase implements IKVDatabase{
         return success;
 
     }
-
     @Override
     public boolean clearStorage() {
+        return clearStorage(true);
+    }
+
+    public boolean clearStorage(boolean deleteDir) {
         Path rootPath = Paths.get(keyPath);
 
 
@@ -217,8 +220,9 @@ public class KVdatabase implements IKVDatabase{
                     return false;
                 }
             }
-            if (!rootPath.toString().equals(defaultPath))
-                Files.delete(rootPath);
+            Path defPath = Paths.get(defaultPath);
+            if (!rootPath.toString().equals(defPath.toString()))
+                if (deleteDir) Files.delete(rootPath);
 
         }
         catch (Exception e){
@@ -254,7 +258,7 @@ public class KVdatabase implements IKVDatabase{
         String kvFile =  keyPath + "/" +  key + ".txt";
         List<String> subs;
         Path path = Paths.get(kvFile);
-        FileChannel reader = channels.get(kvFile);
+        FileChannel reader = channels.get(path.toString());
         if (reader == null){
             return null;
         }

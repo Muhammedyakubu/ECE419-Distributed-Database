@@ -16,6 +16,8 @@ public class SubDatabaseTest extends TestCase {
 
     public void setUp() {
         BasicConfigurator.configure();
+//        db = new KVdatabase(null, "./src/KVStorage/test");
+//        db.clearStorage(false);
         db = new KVdatabase();
         db.clearStorage();
         testValue = "Hey there this is the value";
@@ -23,9 +25,9 @@ public class SubDatabaseTest extends TestCase {
         testKey = "testKey";
         try {
             db.insertPair(testKey, testValue, false);
-            //db.addSubscriber(testKey, "1");
-            //db.addSubscriber(testKey, "2");
-            //db.addSubscriber(testKey, "3");
+            db.addSubscriber(testKey, "1");
+            db.addSubscriber(testKey, "2");
+            db.addSubscriber(testKey, "3");
         }
         catch(Exception e){
             e.printStackTrace();
