@@ -66,9 +66,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
             try {
                 if(this.kvstore != null && kvstore.getInputAvailable() > 0) {
-                    KVMessage msg = kvstore.receiveMessage(true);
-                    if(msg.getStatus() == IKVMessage.StatusType.NOTIFY)
-                        System.out.print(PROMPT);
+                    kvstore.receiveMessage(true);
                 }
                 Thread.sleep(1);
             } catch (Exception e){
