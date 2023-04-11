@@ -37,7 +37,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private boolean deadServer = false;
     private boolean firstConnection = true;
     private String myID = "";
-    private List<String> key_subs;
+    private List<String> key_subs = new ArrayList<String>();
     private boolean desiredDisconnect = false;
 
     /**
@@ -66,9 +66,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
             try {
                 if(this.kvstore != null && kvstore.getInputAvailable() > 0) {
-                    KVMessage msg = kvstore.receiveMessage();
-                    if (msg != null && msg.getStatus() == IKVMessage.StatusType.NOTIFY)
-                        kvstore.addToQueue(msg);
+                    kvstore.receiveMessage(true);
                 }
                 Thread.sleep(1);
             } catch (Exception e){

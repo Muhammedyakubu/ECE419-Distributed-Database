@@ -11,10 +11,8 @@ import java.io.OutputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * KVStore provides an API for the client side application to communicate with
@@ -40,7 +38,7 @@ public class KVStore implements KVCommInterface {
 	private static final int DROP_SIZE = 128 * BUFFER_SIZE;
 	private String address;
 	private int port;
-	private List<KVMessage> msg_queue = new ArrayList<KVMessage>();
+	private final Queue<KVMessage> messageQueue = new ConcurrentLinkedQueue<>();
 
 	/**
 	 * Initialize KVStore with address and port of KVServer
@@ -105,59 +103,58 @@ public class KVStore implements KVCommInterface {
 	@Override
 	public KVMessage put(String key, String value) throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.PUT, key, value);
-		CommModule.sendMessage(msg, clientSocket); // this should throw an exception if the connection is closed... right?
-		KVMessage response = CommModule.receiveMessage(clientSocket);
+		sendMessage(msg); // this should throw an exception if the connection is closed... right?
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
 	@Override
 	public IKVMessage get(String key) throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.GET, key, null);
-		CommModule.sendMessage(msg, clientSocket); // this should throw an exception if the connection is closed... right?
-		KVMessage response = CommModule.receiveMessage(clientSocket);
+		sendMessage(msg); // this should throw an exception if the connection is closed... right?
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
 	public IKVMessage getKeyRange() throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.KEYRANGE, null, null);
-		CommModule.sendMessage(msg, clientSocket); // this should throw an exception if the connection is closed... right?
-		KVMessage response = CommModule.receiveMessage(clientSocket);
+		sendMessage(msg); // this should throw an exception if the connection is closed... right?
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
 	public IKVMessage getKeyRangeRead() throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.KEYRANGE_READ, null, null);
-		CommModule.sendMessage(msg, clientSocket); // this should throw an exception if the connection is closed... right?
-		KVMessage response = CommModule.receiveMessage(clientSocket);
+		sendMessage(msg); // this should throw an exception if the connection is closed... right?
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
 	public IKVMessage getClientID() throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.REQUEST_ID, null, null);
-		CommModule.sendMessage(msg, clientSocket);
-		KVMessage response = CommModule.receiveMessage(clientSocket);
+		sendMessage(msg);
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
 	public IKVMessage sendClientID(String clientID) throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.CONNECT, clientID, null);
-		CommModule.sendMessage(msg, clientSocket);
-		KVMessage response = CommModule.receiveMessage(clientSocket);
+		sendMessage(msg);
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
 	public IKVMessage subscribe(String key) throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.SUBSCRIBE, key, null);
-		CommModule.sendMessage(msg, clientSocket);
-		KVMessage response = CommModule.receiveMessage(clientSocket);
+		sendMessage(msg);
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
 	public IKVMessage unsubscribe(String key) throws Exception {
 		KVMessage msg = new KVMessage(KVMessage.StatusType.UNSUBSCRIBE, key, null);
-		CommModule.sendMessage(msg, clientSocket);
-		KVMessage response = CommModule.receiveMessage(clientSocket);
-		response = CommModule.receiveMessage(clientSocket);
+		sendMessage(msg);
+		KVMessage response = receiveMessage();
 		return response;
 	}
 
@@ -175,24 +172,9 @@ public class KVStore implements KVCommInterface {
 	 * 		  if the message cannot be sent.
 	 */
 	public void sendMessage(KVMessage msg) throws IOException {
-		byte[] msgBytes = msg.toByteArray();
-		output.write(msgBytes, 0, msgBytes.length);
-		output.flush();
-		// Client specific logging
-		logger.info("Send message:\t '" + msg.toString() + "'");
-
+		CommModule.sendMessage(msg, clientSocket);
 	}
 
-	/**
-	 * Receives a message from the KVServer.
-	 *
-	 * @return the received message.
-	 * @throws IOException
-	 * 		  if the message cannot be received.
-	 */
-	public void addToQueue(KVMessage msg){
-		msg_queue.add(msg);
-	}
 
 	public int getInputAvailable(){
 		int avail = -1;
@@ -204,74 +186,54 @@ public class KVStore implements KVCommInterface {
 		}
 		return avail;
 	}
-	public synchronized KVMessage receiveMessage() throws IOException {
-		if(!msg_queue.isEmpty()){
-			KVMessage msg = msg_queue.get(0);
-			msg_queue.remove(msg);
+
+	public KVMessage receiveMessage() throws IOException {
+		return receiveMessage(false);
+	}
+
+	/**
+	 * Receives a message from the KVServer.
+	 *
+	 * @return the received message.
+	 * @throws IOException
+	 * 		  if the message cannot be received.
+	 */
+	public synchronized KVMessage receiveMessage(boolean notifThread) throws IOException {
+		if (notifThread) {
+			KVMessage msg = CommModule.receiveMessage(clientSocket);
+			if (msg.getStatus() == IKVMessage.StatusType.NOTIFY) {
+				handleNotification(msg);
+			} else {
+				messageQueue.add(msg);
+			}
+			return null;
+		}
+
+		KVMessage msg = messageQueue.poll();
+		if (msg != null) {
 			return msg;
 		}
-		boolean notification = true;
-		KVMessage msg = null;
-		while(notification) {
-			int index = 0;
-			byte[] msgBytes = null, tmp = null;
-			byte[] bufferBytes = new byte[BUFFER_SIZE];
-
-			/* read first char from stream */
-			byte read = (byte) input.read();
-			boolean reading = true;
-
-			while (read != 13 && read != -1 && reading) {/* CR, LF, error */
-				/* if buffer filled, copy to msg array */
-				if (index == BUFFER_SIZE) {
-					if (msgBytes == null) {
-						tmp = new byte[BUFFER_SIZE];
-						System.arraycopy(bufferBytes, 0, tmp, 0, BUFFER_SIZE);
-					} else {
-						tmp = new byte[msgBytes.length + BUFFER_SIZE];
-						System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
-						System.arraycopy(bufferBytes, 0, tmp, msgBytes.length,
-								BUFFER_SIZE);
-					}
-
-					msgBytes = tmp;
-					bufferBytes = new byte[BUFFER_SIZE];
-					index = 0;
-				}
-
-				/* only read valid characters, i.e. letters and constants */
-				bufferBytes[index] = read;
-				index++;
-
-				/* stop reading is DROP_SIZE is reached */
-				if (msgBytes != null && msgBytes.length + index >= DROP_SIZE) {
-					reading = false;
-				}
-
-				/* read next char from stream */
-				read = (byte) input.read();
-			}
-
-			if (msgBytes == null) {
-				tmp = new byte[index];
-				System.arraycopy(bufferBytes, 0, tmp, 0, index);
-			} else {
-				tmp = new byte[msgBytes.length + index];
-				System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
-				System.arraycopy(bufferBytes, 0, tmp, msgBytes.length, index);
-			}
-
-			msgBytes = tmp;
-
-			/* build final String */
-			msg = new KVMessage(msgBytes);
-			// Client specific logging
-			logger.info("Receive message:\t '" + msg.toString() + "'");
-
-			if(msg.getStatus() == IKVMessage.StatusType.NOTIFY)
-				System.out.println("NOTIFICATION: Key " + msg.getKey() + " was updated.");
-			else notification = false;
+	    msg = CommModule.receiveMessage(clientSocket);
+		if (msg.getStatus() == IKVMessage.StatusType.NOTIFY) {
+			handleNotification(msg);
+			return receiveMessage();
 		}
 		return msg;
+	}
+
+//	public void handleNewNotifications() throws IOException {
+//		KVMessage msg = CommModule.receiveMessage(clientSocket);
+//		if (msg.getStatus() == IKVMessage.StatusType.NOTIFY) {
+//			handleNotification(msg);
+//		} else {
+//			messageQueue.add(msg);
+//		}
+//	}
+
+	public void handleNotification (KVMessage msg) {
+		for(ClientSocketListener listener : listeners) {
+//			listener.handleNotification(msg);
+			logger.debug("Received notify message for key: " + msg.getKey());
+		}
 	}
 }
