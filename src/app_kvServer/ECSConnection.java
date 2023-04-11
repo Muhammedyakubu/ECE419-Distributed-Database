@@ -124,10 +124,6 @@ public class ECSConnection implements Runnable{
                     if (connect != null && connect.getClientID().equals(client)) {
                         try {
                             CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY, msg.getKey(), ""), connect.clientSocket);
-                            KVMessage response = CommModule.receiveMessage(connect.clientSocket);
-                            if (response.getStatus() != IKVMessage.StatusType.NOTIFY_SUCCESS){
-                                logger.warn("Client did not recieve notification");
-                            }
                             msg.setStatus(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS_SUCCESS);
                             sent.add(connect.getClientID());
                         } catch (Exception e) {
@@ -138,10 +134,16 @@ public class ECSConnection implements Runnable{
 
                 //will be empty if nothing was sent
                 String reply = sent.toString();
-                reply.replaceAll("[", "");
-                reply.replaceAll("]", "");
+                reply.replaceAll("\\[", "");
+                reply.replaceAll("\\]", "");
                 msg.setValue(sent.toString());
-
+                break;
+            case UNSUBSCRIBE_CLIENTS:
+                List<String> toUnsub = Arrays.asList(msg.getValue().split(","));
+                for (String client : toUnsub) {
+                    kvServer.removeSubscriber(msg.getKey(), client);
+                }
+                break;
             case REBALANCE:
                 String stripSemiColon = msg.getValue().split(";")[0];
                 String[] value = stripSemiColon.split(",");
