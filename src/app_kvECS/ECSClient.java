@@ -118,7 +118,11 @@ public class ECSClient implements IECSClient {
     }
 
     public ArrayList<String> getClientList(String clientListString) {
-        return new ArrayList<>(Arrays.asList(clientListString.split(",")));
+        if (clientListString == null) {
+            return new ArrayList<>();
+        } else {
+            return  new ArrayList<>(Arrays.asList(clientListString.split(",")));
+        }
     }
 
     public String getClientListString(List<String> clientList) {
@@ -144,6 +148,8 @@ public class ECSClient implements IECSClient {
                         if (clientList.isEmpty()) {
                             break;
                         }
+                    } else {
+                        logger.error("Received unexpected response from " + node.getNodeName() + ": " + response.getStatus());
                     }
                 } catch (IOException e) {
                     logger.error("Error! Unable to send notification to " + node.getNodeName());
@@ -151,7 +157,6 @@ public class ECSClient implements IECSClient {
             }
 
             // send response message to notification initiator
-            ECSNode sender; // need to get sender from notification?
             KVMessage notifResponse;
             // if there are any unnotified clients, update then we assume they've disconnected
             if (!clientList.isEmpty()) {

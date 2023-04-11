@@ -216,13 +216,24 @@ public class ClientConnection implements Runnable {
 				}
 				try {
 					String value = kvServer.getKV(msg.getKey(), false);
-					if (value == null) return new KVMessage(IKVMessage.StatusType.UNSUBSCRIBE_ERROR, "", "");
+					if (value == null) {
+						return new KVMessage(
+								IKVMessage.StatusType.UNSUBSCRIBE_ERROR,
+								msg.getKey(),
+								"Key does not exist"
+						);
+					}
 				}
 				catch (Exception e){
 					logger.warn("Could not unsubscribe: ", e);
 				}
-				kvServer.removeSubscriber(msg.getKey(), clientID);
-				msg.setStatus(IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS);
+				if (kvServer.removeSubscriber(msg.getKey(), clientID)) {
+					msg.setStatus(IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS);
+				}
+				else {
+					msg.setStatus(IKVMessage.StatusType.UNSUBSCRIBE_ERROR);
+					msg.setValue("Client was not subscribed to this key");
+				}
 				break;
 			default:
 				logger.error("Error! Invalid message type: " + msg.getStatus());

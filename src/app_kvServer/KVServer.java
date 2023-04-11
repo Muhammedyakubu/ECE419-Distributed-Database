@@ -577,8 +577,8 @@ public class KVServer implements IKVServer {
 		}
 		catch (Exception e){
 			logger.warn("Could not remove subscriber: ", e);
+			return false;
 		}
-		return false;
 	}
 
 	public void shutdown() {
