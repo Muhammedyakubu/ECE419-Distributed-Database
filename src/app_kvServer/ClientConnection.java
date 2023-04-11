@@ -252,8 +252,7 @@ public class ClientConnection implements Runnable {
 	public void handleSubscriptions(List<String> subs, KVMessage msg){
 		try {
 			String subsString = subs.toString();
-			subsString = subsString.replaceAll("[", "");
-			subsString = subsString.replaceAll("]", "");
+			subsString = subsString.replaceAll("\\[", "").replaceAll("]","");
 			CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS, msg.getKey(), subsString), kvServer.ecsSocket);
 			KVMessage response = CommModule.receiveMessage(kvServer.ecsSocket);
 			if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_CLIENTS){
