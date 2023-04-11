@@ -138,9 +138,10 @@ public class ECSConnection implements Runnable{
 
                 //will be empty if nothing was sent
                 String reply = sent.toString();
-                reply.replaceAll("[", "");
-                reply.replaceAll("]", "");
+                reply.replaceAll("\\[", "");
+                reply.replaceAll("\\]", "");
                 msg.setValue(sent.toString());
+                break;
 
             case REBALANCE:
                 String stripSemiColon = msg.getValue().split(";")[0];
