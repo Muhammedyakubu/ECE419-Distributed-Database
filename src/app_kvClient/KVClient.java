@@ -66,7 +66,9 @@ public class KVClient implements IKVClient, ClientSocketListener {
 
             try {
                 if(this.kvstore != null && kvstore.getInputAvailable() > 0) {
-                    kvstore.receiveMessage(true);
+                    KVMessage msg = kvstore.receiveMessage(true);
+                    if(msg.getStatus() == IKVMessage.StatusType.NOTIFY)
+                        System.out.print(PROMPT);
                 }
                 Thread.sleep(1);
             } catch (Exception e){
@@ -498,17 +500,25 @@ public class KVClient implements IKVClient, ClientSocketListener {
         sb.append(PROMPT).append("put <key> <value>");
         sb.append("\t\t sends a key-value pair to the server to be stored \n");
         sb.append(PROMPT).append("get <key>");
-        sb.append("\t\t sends a key to the server to retrieve the corresponding value \n");
+        sb.append("\t\t\t\t sends a key to the server to retrieve the corresponding value \n");
+        sb.append(PROMPT).append("sub <key>");
+        sb.append("\t\t\t\t subscribes to updates for the given key \n");
+        sb.append(PROMPT).append("unsub <key>");
+        sb.append("\t\t\t unsubscribes to updates for the given key \n");
+        sb.append(PROMPT).append("keyrange");
+        sb.append("\t\t\t\t prints the primary keyranges of all active servers \n");
+        sb.append(PROMPT).append("keyrange_read");
+        sb.append("\t\t\t prints the keyrange of all accessible data on all active servers \n");
         sb.append(PROMPT).append("disconnect");
         sb.append("\t\t\t disconnects from the server \n");
 
         sb.append(PROMPT).append("logLevel");
-        sb.append("\t\t\t changes the logLevel \n");
-        sb.append(PROMPT).append("\t\t\t\t ");
+        sb.append("\t\t\t\t changes the logLevel \n");
+        sb.append(PROMPT).append("\t\t\t\t\t\t ");
         sb.append("ALL | DEBUG | INFO | WARN | ERROR | FATAL | OFF \n");
 
         sb.append(PROMPT).append("quit ");
-        sb.append("\t\t\t exits the program");
+        sb.append("\t\t\t\t\t exits the program");
         System.out.println(sb.toString());
     }
 
