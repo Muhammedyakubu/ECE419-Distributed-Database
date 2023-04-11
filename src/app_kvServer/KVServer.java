@@ -325,8 +325,11 @@ public class KVServer implements IKVServer {
 		if (successors.size() == 0) {
 			Socket replicaOne, replicaTwo;
 			try {
+				KVMessage connect = new KVMessage(IKVMessage.StatusType.CONNECT_SERVER, null, null);
 				replicaOne = new Socket(firstSucc[0], Integer.parseInt(firstSucc[1]));
+				CommModule.sendMessage(connect, replicaOne);
 				replicaTwo = new Socket(secondSucc[0], Integer.parseInt(secondSucc[1]));
+				CommModule.sendMessage(connect, replicaTwo);
 				successors.add(replicaOne);
 				successors.add(replicaTwo);
 			}
@@ -491,7 +494,11 @@ public class KVServer implements IKVServer {
 					Socket clientSocket = serverSocket.accept();
 					ClientConnection connection =
 							new ClientConnection(clientSocket, this);
-					clientConnections.put(connection.getClientID(), connection);
+
+					String clientID = connection.getClientID();
+					if (clientID != null) {	// if not null, then it's a new client not a server connection
+						clientConnections.put(clientID, connection);
+					}
 					Thread clientThread = new Thread(connection);
 					clientThread.setDaemon(true);	// make sure the thread dies once server stops
 					clientThread.start();
