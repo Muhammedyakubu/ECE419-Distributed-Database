@@ -200,12 +200,7 @@ public class KVStore implements KVCommInterface {
 	 */
 	public synchronized KVMessage receiveMessage(boolean notifThread) throws IOException {
 		if (notifThread) {
-			KVMessage msg = CommModule.receiveMessage(clientSocket);
-			if (msg.getStatus() == IKVMessage.StatusType.NOTIFY) {
-				handleNotification(msg);
-			} else {
-				messageQueue.add(msg);
-			}
+			handleNewNotifications();
 			return null;
 		}
 
@@ -221,14 +216,14 @@ public class KVStore implements KVCommInterface {
 		return msg;
 	}
 
-//	public void handleNewNotifications() throws IOException {
-//		KVMessage msg = CommModule.receiveMessage(clientSocket);
-//		if (msg.getStatus() == IKVMessage.StatusType.NOTIFY) {
-//			handleNotification(msg);
-//		} else {
-//			messageQueue.add(msg);
-//		}
-//	}
+	public void handleNewNotifications() throws IOException {
+		KVMessage msg = CommModule.receiveMessage(clientSocket);
+		if (msg.getStatus() == IKVMessage.StatusType.NOTIFY) {
+			handleNotification(msg);
+		} else {
+			messageQueue.add(msg);
+		}
+	}
 
 	public void handleNotification (KVMessage msg) {
 		for(ClientSocketListener listener : listeners) {
