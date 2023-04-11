@@ -254,13 +254,6 @@ public class ClientConnection implements Runnable {
 			String subsString = subs.toString();
 			subsString = subsString.replaceAll("\\[", "").replaceAll("]","");
 			CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS, msg.getKey(), subsString), kvServer.ecsSocket);
-			KVMessage response = CommModule.receiveMessage(kvServer.ecsSocket);
-			if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_CLIENTS){
-				List<String> toUnsub = Arrays.asList(response.getValue().split(","));
-				for (String client: toUnsub){
-					kvServer.removeSubscriber(msg.getKey(), client);
-				}
-			}
 		}
 		catch(IOException ioe){
 			logger.warn("Error notifying subscribers of key", ioe);
