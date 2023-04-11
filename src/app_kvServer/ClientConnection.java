@@ -163,6 +163,7 @@ public class ClientConnection implements Runnable {
 
 					List<String> subs = kvServer.getSubscribers(msg.getKey());
 					if (subs != null){
+						// I think this should happen after the response is sent back to the client
 						handleSubscriptions(subs, msg);
 					}
 					// set the status
@@ -249,9 +250,9 @@ public class ClientConnection implements Runnable {
 	public void handleSubscriptions(List<String> subs, KVMessage msg){
 		try {
 			String subsString = subs.toString();
-			subsString.replaceAll("[", "");
-			subsString.replaceAll("]", "");
-			CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS, msg.getKey(), subs.toString()), kvServer.ecsSocket);
+			subsString = subsString.replaceAll("[", "");
+			subsString = subsString.replaceAll("]", "");
+			CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS, msg.getKey(), subsString), kvServer.ecsSocket);
 			KVMessage response = CommModule.receiveMessage(kvServer.ecsSocket);
 			if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_CLIENTS){
 				List<String> toUnsub = Arrays.asList(response.getValue().split(","));

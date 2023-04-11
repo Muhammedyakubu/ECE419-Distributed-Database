@@ -3,15 +3,14 @@ package ecs;
 import org.apache.log4j.Logger;
 import shared.Range;
 import shared.comms.CommModule;
-import shared.messages.IKVMessage;
 import shared.messages.IKVMessage.ServerState;
 import shared.messages.KVMessage;
 import shared.messages.KVMetadata;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Queue;
 
 public class ECSNode implements IECSNode{
     private static final Logger logger = Logger.getLogger(ECSNode.class);
@@ -21,13 +20,15 @@ public class ECSNode implements IECSNode{
     private Range hashRange;
     private Socket socket;
     private boolean failed = false;
+    private final Queue<Notification> notificationQueue;
 
-    public ECSNode(Socket socket, String hostAddress, int port, Range hashRange) throws IOException {
+    public ECSNode(Socket socket, String hostAddress, int port, Queue<Notification> notificationQueue) throws IOException {
         this.socket = socket;
         this.hostAddress = hostAddress;
         this.address = InetAddress.getByName(hostAddress);
         this.port = port;
-        this.hashRange = hashRange;
+        this.hashRange = null;
+        this.notificationQueue = notificationQueue;
     }
 
     public void sendMessage(KVMessage message) throws IOException {
@@ -43,12 +44,18 @@ public class ECSNode implements IECSNode{
 
     public KVMessage receiveMessage() throws IOException {
         try {
-            return CommModule.receiveMessage(this.socket);
+            KVMessage msg = CommModule.receiveMessage(this.socket);
+            if (msg.getStatus() == KVMessage.StatusType.NOTIFY_SUBSCRIBERS) {
+                logger.debug("Received notification from " + this.getNodeName());
+                this.notificationQueue.add(new Notification(this, msg));
+                return receiveMessage();    // keep reading until we get a non-notification message
+            } else {
+                return msg;
+            }
         } catch (IOException e) {
             logger.debug("Error receiving message from " + this.getNodeName());
             failed = true;
             throw e;
-//            return null;
         }
     }
 

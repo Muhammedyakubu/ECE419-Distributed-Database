@@ -70,7 +70,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                     if (msg != null && msg.getStatus() == IKVMessage.StatusType.NOTIFY)
                         kvstore.addToQueue(msg);
                 }
-                    Thread.sleep(1);
+                Thread.sleep(1);
             } catch (Exception e){
                 logger.warn("The following error occurred:", e);
                 printError("Unknown error occurred.");
