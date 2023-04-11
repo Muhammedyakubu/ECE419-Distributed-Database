@@ -175,7 +175,7 @@ public class M2DemoTests extends TestCase {
         KVServer server = servers.get("localhost:" + SERVER_START_PORT);
         for (int i = 0; i < NUM_KEYS; i++) {
             try {
-                assertEquals("value" + i, server.getKV("key" + i));
+                assertEquals("value" + i, server.getKV("key" + i, false));
             } catch (Exception e) {
                 ex = e;
                 e.printStackTrace();
@@ -327,7 +327,7 @@ public class M2DemoTests extends TestCase {
         servers.put(lastServer, server);
         for (int i = 0; i < NUM_KEYS; i++) {
             try {
-                assertEquals("value" + i, server.getKV("key" + i));
+                assertEquals("value" + i, server.getKV("key" + i, false));
             } catch (Exception e) {
                 e.printStackTrace();
             }

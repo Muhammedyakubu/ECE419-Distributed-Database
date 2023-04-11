@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -26,7 +28,7 @@ public class ClientConnection implements Runnable {
 	private static final int BUFFER_SIZE = 1024;
 	private static final int DROP_SIZE = 128 * BUFFER_SIZE;
 	
-	private Socket clientSocket;
+	public Socket clientSocket;
 	private InputStream input;
 	private OutputStream output;
 	private KVServer kvServer;
@@ -117,7 +119,7 @@ public class ClientConnection implements Runnable {
 					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
 				}
 				try {
-					String value = kvServer.getKV(msg.getKey());
+					String value = kvServer.getKV(msg.getKey(), false);
 					msg.setValue(value);
 					if (value == null)
 						msg.setStatus(KVMessage.StatusType.GET_ERROR);
@@ -159,6 +161,10 @@ public class ClientConnection implements Runnable {
 						kvServer.replicate(msg.getKey(), msg.getValue());
 					}
 
+					List<String> subs = kvServer.getSubscribers(msg.getKey());
+					if (subs != null){
+						handleSubscriptions(subs, msg);
+					}
 					// set the status
 					if (deleteSuccessful) {
 						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
@@ -187,6 +193,34 @@ public class ClientConnection implements Runnable {
 				msg.setKey(kvServer.getMetadata().toKeyRangeReadString());
 				msg.setValue("");
 				break;
+			case SUBSCRIBE:
+				if (!kvServer.isResponsible(msg.getKey())) {
+					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
+				}
+				try {
+					String value = kvServer.getKV(msg.getKey(), false);
+					if (value == null) return new KVMessage(IKVMessage.StatusType.SUBSCRIBE_ERROR, "", "");
+				}
+				catch (Exception e){
+					logger.warn("Could not subscribe: ", e);
+				}
+				kvServer.addSubscriber(msg.getKey(), clientID);
+				msg.setStatus(IKVMessage.StatusType.SUBSCRIBE_SUCCESS);
+				break;
+			case UNSUBSCRIBE:
+				if (!kvServer.isResponsible(msg.getKey())) {
+					return new KVMessage(IKVMessage.StatusType.SERVER_NOT_RESPONSIBLE, "", "");
+				}
+				try {
+					String value = kvServer.getKV(msg.getKey(), false);
+					if (value == null) return new KVMessage(IKVMessage.StatusType.UNSUBSCRIBE_ERROR, "", "");
+				}
+				catch (Exception e){
+					logger.warn("Could not unsubscribe: ", e);
+				}
+				kvServer.removeSubscriber(msg.getKey(), clientID);
+				msg.setStatus(IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS);
+				break;
 			default:
 				logger.error("Error! Invalid message type: " + msg.getStatus());
 				msg.setStatus(KVMessage.StatusType.FAILED);
@@ -211,6 +245,25 @@ public class ClientConnection implements Runnable {
 	private synchronized KVMessage receiveMessage() throws IOException {
 		return CommModule.receiveMessage(clientSocket);
     }
+
+	public void handleSubscriptions(List<String> subs, KVMessage msg){
+		try {
+			String subsString = subs.toString();
+			subsString.replaceAll("[", "");
+			subsString.replaceAll("]", "");
+			CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS, msg.getKey(), subs.toString()), kvServer.ecsSocket);
+			KVMessage response = CommModule.receiveMessage(kvServer.ecsSocket);
+			if (response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_CLIENTS){
+				List<String> toUnsub = Arrays.asList(response.getValue().split(","));
+				for (String client: toUnsub){
+					kvServer.removeSubscriber(msg.getKey(), client);
+				}
+			}
+		}
+		catch(IOException ioe){
+			logger.warn("Error notifying subscribers of key", ioe);
+		}
+	}
 
 	public String getClientID() {
 		if (clientID != null) {

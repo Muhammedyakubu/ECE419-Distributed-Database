@@ -41,7 +41,7 @@ public class KVServer implements IKVServer {
 	private InetAddress ecsAddress;
 	private int ecsPort;
 	private ServerSocket serverSocket;
-	private Socket ecsSocket;
+	public Socket ecsSocket;
 	ECSConnection ecsConnection;
 	Thread ecsThread;
 
@@ -220,17 +220,17 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
-    public String getKV(String key) throws Exception{
+    public String getKV(String key, boolean withSub) throws Exception{
 		byte[] byteArr = key.getBytes("UTF-8");
 		if (key == "")throw new Exception("Invalid key length, must be more than 0 bytes and less than 20");
 		 // TODO || byteArr.length > 20)
 		String value = null;
 
-		if (cache != null && inCache(key)){
+		if (cache != null && inCache(key) && !withSub){
 			value = cache.getKV(key);
 		}
 		else {
-			value = db.getValue(key, false);
+			value = db.getValue(key, withSub);
 			if ((value != null) && (cache != null))
 				cache.putKV(key, value);
 		}

@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ECSConnection implements Runnable{
@@ -110,6 +113,34 @@ public class ECSConnection implements Runnable{
                 else
                     msg.setStatus(IKVMessage.StatusType.DELETE_KEYRANGE_ERROR);
                 break;
+
+            case NOTIFY_SUBSCRIBERS:
+                List<String> subs = Arrays.asList(msg.getValue().split(","));
+                List<String> sent = new ArrayList<>();
+                for (String client: subs){
+
+                    //check all valid connections for the right client
+                    ClientConnection connect = kvServer.clientConnections.get(client);
+                    if (connect != null && connect.getClientID().equals(client)) {
+                        try {
+                            CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY, msg.getKey(), ""), connect.clientSocket);
+                            KVMessage response = CommModule.receiveMessage(connect.clientSocket);
+                            if (response.getStatus() != IKVMessage.StatusType.NOTIFY_SUCCESS){
+                                logger.warn("Client did not recieve notification");
+                            }
+                            msg.setStatus(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS_SUCCESS);
+                            sent.add(connect.getClientID());
+                        } catch (Exception e) {
+                            logger.warn("Unable to deliver notification", e);
+                        }
+                    }
+                }
+
+                //will be empty if nothing was sent
+                String reply = sent.toString();
+                reply.replaceAll("[", "");
+                reply.replaceAll("]", "");
+                msg.setValue(sent.toString());
 
             case REBALANCE:
                 String stripSemiColon = msg.getValue().split(";")[0];

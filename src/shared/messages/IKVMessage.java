@@ -68,7 +68,7 @@ public interface IKVMessage {
 		UNSUBSCRIBE_ERROR,	/* Server sends to client to reject unsubscription */
 
 		// ECS-server subscription protocol messages
-		NOFITY_SUBSCRIBERS,	/* <key> <List<clientID>. Server sends to ECS to notify subscribers of a key.
+		NOTIFY_SUBSCRIBERS,	/* <key> <List<clientID>. Server sends to ECS to notify subscribers of a key.
 		 							ECS forwards to all server */
 		NOTIFY_SUBSCRIBERS_SUCCESS,	/* ECS sends to server to confirm that all subscribers have been notified.
 										Server overloads this and returns list of successfully notified clients

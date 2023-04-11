@@ -23,9 +23,9 @@ public class SubDatabaseTest extends TestCase {
         testKey = "testKey";
         try {
             db.insertPair(testKey, testValue, false);
-            db.addSubscriber(testKey, "1");
-            db.addSubscriber(testKey, "2");
-            db.addSubscriber(testKey, "3");
+            //db.addSubscriber(testKey, "1");
+            //db.addSubscriber(testKey, "2");
+            //db.addSubscriber(testKey, "3");
         }
         catch(Exception e){
             e.printStackTrace();
