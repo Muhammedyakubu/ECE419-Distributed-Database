@@ -63,6 +63,14 @@ public class ClientConnection implements Runnable {
 					// 			other threads from interrupting protocol messages.
 					KVMessage response = handleClientMessage(receiveMessage());
 					sendMessage(response);
+
+					//notify
+					if (response.getStatus() == IKVMessage.StatusType.PUT_SUCCESS){
+						List<String> subs = kvServer.getSubscribers(response.getKey());
+						if (subs != null){
+							handleSubscriptions(subs, response);
+						}
+					}
 					
 				/* connection either terminated by the client or lost due to 
 				 * network problems */
@@ -109,7 +117,6 @@ public class ClientConnection implements Runnable {
 	 * @return the response to be sent to the client
 	 */
 	public KVMessage handleClientMessage(KVMessage msg) {
-
 		switch (msg.getStatus()) {
 			case GET:
 				if (checkStopped()){
@@ -159,12 +166,6 @@ public class ClientConnection implements Runnable {
 
 					if (msg.getStatus() == IKVMessage.StatusType.PUT){
 						kvServer.replicate(msg.getKey(), msg.getValue());
-					}
-
-					List<String> subs = kvServer.getSubscribers(msg.getKey());
-					if (subs != null){
-						// I think this should happen after the response is sent back to the client
-						handleSubscriptions(subs, msg);
 					}
 					// set the status
 					if (deleteSuccessful) {
