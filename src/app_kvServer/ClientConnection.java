@@ -149,9 +149,10 @@ public class ClientConnection implements Runnable {
 					if (msg.getValue() == null) {
 						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
 					}
-
+					boolean withSub = msg.getStatus() == IKVMessage.StatusType.PUT ? false : true;
 					// do the put
-					isUpdate = kvServer.putKV(msg.getKey(), msg.getValue());
+					isUpdate = kvServer.putKV(msg.getKey(), msg.getValue(), withSub);
+
 					boolean deleteSuccessful = isUpdate && (msg.getValue() == null);
 
 					if (msg.getStatus() == IKVMessage.StatusType.PUT){

@@ -16,7 +16,7 @@ public interface IKVDatabase {
      * @param key
      * @return value in string
      */
-    public String getValue(String key);
+    public String getValue(String key, boolean withSub);
 
     /**
      * Inserts/updates KV Pair
@@ -27,7 +27,7 @@ public interface IKVDatabase {
      * @throws Exception
      *     when there's an error inserting the key-value pair into the database
      */
-    public boolean insertPair(String key, String value) throws Exception ;
+    public boolean insertPair(String key, String value, boolean withSubs) throws Exception ;
 
     /**
      * Permanently deletes a pair in storage

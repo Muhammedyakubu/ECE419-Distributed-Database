@@ -25,13 +25,13 @@ public class KVDatabaseTest extends TestCase{
 
     public void testGet() {
         try {
-            db.insertPair("foo", "bar");
+            db.insertPair("foo", "bar", false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         String key = "foo";
         String expected = "bar";
-        String actual = db.getValue(key);
+        String actual = db.getValue(key, false);
         assertEquals(expected, actual);
     }
 
@@ -42,11 +42,11 @@ public class KVDatabaseTest extends TestCase{
         boolean actual = false;
         String actualVal = "";
         try {
-            actual = db.insertPair(key, value);
+            actual = db.insertPair(key, value, false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        actualVal = db.getValue(key);
+        actualVal = db.getValue(key, false);
         assertEquals(expected, actual);
         assertEquals(value, actualVal);
     }
@@ -56,7 +56,7 @@ public class KVDatabaseTest extends TestCase{
 
     public void testDelete() {
         try {
-            db.insertPair("foo", "bar");
+            db.insertPair("foo", "bar", false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -79,13 +79,13 @@ public class KVDatabaseTest extends TestCase{
     public void testUpdate() {
         String key = "foo";
         try {
-            db.insertPair(key, "bar");
-            db.insertPair(key, "yeah");
+            db.insertPair(key, "bar", false);
+            db.insertPair(key, "yeah", false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         String expected = "yeah";
-        String actual = db.getValue(key);
+        String actual = db.getValue(key, false);
         assertEquals(expected, actual);
     }
 
@@ -93,8 +93,8 @@ public class KVDatabaseTest extends TestCase{
         String key = "foo";
         String key2 = "foo2";
         try {
-            db.insertPair(key, "bar");
-            db.insertPair(key2, "bar2");
+            db.insertPair(key, "bar", false);
+            db.insertPair(key2, "bar2", false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

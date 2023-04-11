@@ -206,7 +206,7 @@ public class KVServer implements IKVServer {
 	@Override
     public boolean inStorage(String key){
 
-		String exists = db.getValue(key);
+		String exists = db.getValue(key, false);
 
 		return exists != null;
 	}
@@ -230,7 +230,7 @@ public class KVServer implements IKVServer {
 			value = cache.getKV(key);
 		}
 		else {
-			value = db.getValue(key);
+			value = db.getValue(key, false);
 			if ((value != null) && (cache != null))
 				cache.putKV(key, value);
 		}
@@ -238,7 +238,7 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
-    public boolean putKV(String key, String value) throws Exception{
+    public boolean putKV(String key, String value, boolean withSub) throws Exception{
 		byte[] byteArr = key.getBytes("UTF-8");
 		if (key == "")  throw new Exception("Invalid key length, must be more than 0 bytes");
 		//|| byteArr.length > 20)
@@ -250,7 +250,7 @@ public class KVServer implements IKVServer {
 				cache.deleteKV(key);
 		}
 		else {
-			keyInStorage = db.insertPair(key, value);
+			keyInStorage = db.insertPair(key, value, withSub);
 			if (cache != null)
 				cache.putKV(key, value);
 
@@ -268,6 +268,7 @@ public class KVServer implements IKVServer {
 		KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, value);
 		if (kvMetadata.size() == 1) return true;
 
+		value = db.getValue(key, true);
 		for (Socket succ:successors){
 			try {
 				CommModule.sendMessage(msg, succ);
@@ -367,7 +368,7 @@ public class KVServer implements IKVServer {
 			return -1;
 		}
 		for (String key:keysToSend){
-			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, db.getValue(key));
+			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, db.getValue(key, true));
 			try {
 				CommModule.sendMessage(msg, receiver);
 			}
@@ -400,7 +401,7 @@ public class KVServer implements IKVServer {
 		//delete keys
 		for (String key: keysToSend){
 			try {
-				this.putKV(key, null);
+				this.putKV(key, null, true);
 			} catch (Exception ioe) {
 				logger.warn("Failure in deleting rebalanced keys");
 				return -1;
@@ -427,7 +428,7 @@ public class KVServer implements IKVServer {
 			return -1;
 		}
 		for (String key:keysToSend){
-			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, db.getValue(key));
+			KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, db.getValue(key, true));
 			try {
 				CommModule.sendMessage(msg, receiver);
 			}
@@ -453,7 +454,7 @@ public class KVServer implements IKVServer {
 		// TODO: move this do a delete function which is triggered by the ECS after the rebalance is complete.
 		for (String key: keysToSend){
 			try {
-				this.putKV(key, null);
+				this.putKV(key, null, true);
 //				db.deletePair(key);
 			} catch (Exception ioe) {
 				logger.warn("Failure in deleting rebalanced keys");
