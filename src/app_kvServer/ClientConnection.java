@@ -65,7 +65,8 @@ public class ClientConnection implements Runnable {
 					sendMessage(response);
 
 					//notify
-					if (response.getStatus() == IKVMessage.StatusType.PUT_SUCCESS){
+					if (response.getStatus() == IKVMessage.StatusType.PUT_SUCCESS || response.getStatus() == IKVMessage.StatusType.PUT_UPDATE
+						|| response.getStatus() == IKVMessage.StatusType.DELETE_SUCCESS){
 						List<String> subs = kvServer.getSubscribers(response.getKey());
 						if (subs != null){
 							handleSubscriptions(subs, response);
