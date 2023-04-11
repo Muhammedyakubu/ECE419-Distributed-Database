@@ -228,6 +228,10 @@ public class ClientConnection implements Runnable {
 						 + this.kvServer.getPort() + ":"
 						 + this.kvServer.connectionCount.incrementAndGet();
 				sendMessage(new KVMessage(IKVMessage.StatusType.SET_CLIENT_ID, clientID, ""));
+			} else {
+				// server-server connection
+				logger.debug("Server-server connection established");
+				return null;
 			}
 		} catch (IOException e) {
 			logger.error("Error! Unable to receive message from client!", e);

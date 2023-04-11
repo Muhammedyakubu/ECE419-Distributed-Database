@@ -46,6 +46,7 @@ public interface IKVMessage {
 		KEYRANGE_READ_SUCCESS, /* Successful keyrange_read return */
 
 		// Server-Server Status Messages
+		CONNECT_SERVER, /* Server sends to server to connect */
 		SERVER_PUT,		/* Server put command when rebalancing */
 		WAGWAN, /*Heartbeat message*/
 
@@ -67,10 +68,13 @@ public interface IKVMessage {
 		UNSUBSCRIBE_ERROR,	/* Server sends to client to reject unsubscription */
 
 		// ECS-server subscription protocol messages
-		NOFITY_SUBSCRIBERS,	/* <key> <List<clientID>. Server sends to ECS to notify subscribers of a key */
-		NOTIFY_SUBSCRIBERS_SUCCESS,	/* ECS sends to server to confirm that all subscribers have been notified */
+		NOFITY_SUBSCRIBERS,	/* <key> <List<clientID>. Server sends to ECS to notify subscribers of a key.
+		 							ECS forwards to all server */
+		NOTIFY_SUBSCRIBERS_SUCCESS,	/* ECS sends to server to confirm that all subscribers have been notified.
+										Server overloads this and returns list of successfully notified clients
+										in the key field */
 		UNSUBSCRIBE_CLIENTS,	/* <key> <List<ClientID>>. (Synonymous to notify_fail) In the case that not all clients are notified
-									=> at least one client has disconnected ECS sends to a server to
+									=> at least one client has disconnected, ECS sends to a server to
 									unsubscribe all referenced clients in from <key> */
 
 		// client-server subscription protocol messages
