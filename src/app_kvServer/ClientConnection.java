@@ -33,6 +33,8 @@ public class ClientConnection implements Runnable {
 	private OutputStream output;
 	private KVServer kvServer;
 	private String clientID;
+
+	private List<String> subs;
 	
 	/**
 	 * Constructs a new CientConnection object for a given TCP socket.
@@ -67,7 +69,6 @@ public class ClientConnection implements Runnable {
 					//notify
 					if (response.getStatus() == IKVMessage.StatusType.PUT_SUCCESS || response.getStatus() == IKVMessage.StatusType.PUT_UPDATE
 						|| response.getStatus() == IKVMessage.StatusType.DELETE_SUCCESS){
-						List<String> subs = kvServer.getSubscribers(response.getKey());
 						if (subs != null){
 							handleSubscriptions(subs, response);
 						}
@@ -156,6 +157,7 @@ public class ClientConnection implements Runnable {
 				boolean isUpdate = false;
 				try {
 					// set status for delete
+					subs = kvServer.getSubscribers(msg.getKey());
 					if (msg.getValue() == null) {
 						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
 					}
@@ -253,7 +255,10 @@ public class ClientConnection implements Runnable {
 		try {
 			String subsString = subs.toString();
 			subsString = subsString.replaceAll("\\[", "").replaceAll("]","");
-			CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS, msg.getKey(), subsString), kvServer.ecsSocket);
+			String key = "UPDATED_" + msg.getKey();
+			if(msg.getStatus() == IKVMessage.StatusType.DELETE_SUCCESS)
+				key = "DELETED_" + msg.getKey();
+			CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS, key, subsString), kvServer.ecsSocket);
 		}
 		catch(IOException ioe){
 			logger.warn("Error notifying subscribers of key", ioe);

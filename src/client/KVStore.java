@@ -200,7 +200,11 @@ public class KVStore implements KVCommInterface {
 	 */
 	public synchronized KVMessage receiveMessage(boolean notifThread) throws IOException {
 		if (notifThread) {
-			handleNewNotifications();
+			String deleted_notif = handleNewNotifications();
+			if(deleted_notif != null) {
+				KVMessage msg = new KVMessage(IKVMessage.StatusType.NOTIFY, deleted_notif, "");
+				return msg;
+			}
 			return null;
 		}
 
@@ -216,20 +220,31 @@ public class KVStore implements KVCommInterface {
 		return msg;
 	}
 
-	public void handleNewNotifications() throws IOException {
+	//FOR DELETE, RETURN SOMETHING FROM THIS AND HANDLE IN receiveMessage
+	public String handleNewNotifications() throws IOException {
 		KVMessage msg = CommModule.receiveMessage(clientSocket);
 		if (msg.getStatus() == IKVMessage.StatusType.NOTIFY) {
 			handleNotification(msg);
+			if(msg.getKey().substring(0,6).equals("DELETE"))
+				return msg.getKey().substring(8);
+			return null;
 		} else {
 			messageQueue.add(msg);
+			return null;
 		}
 	}
 
 	public void handleNotification (KVMessage msg) {
 		for(ClientSocketListener listener : listeners) {
 //			listener.handleNotification(msg);
-			logger.debug("Received notify message for key: " + msg.getKey());
-			System.out.println("NOTIFICATION: Key " + msg.getKey() + " was updated.");
+			String key = msg.getKey().substring(8);
+			String operation = msg.getKey().substring(0,6);
+			logger.debug("Received notify message for key: " + key);
+			//System.out.println(operation);
+			if(operation.equals("DELETE"))
+				System.out.println("NOTIFICATION: Key " + key + " was deleted.");
+			else
+				System.out.println("NOTIFICATION: Key " + key + " was updated.");
 			System.out.print("M4Client> ");
 		}
 	}
