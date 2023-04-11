@@ -26,7 +26,7 @@ import static shared.MD5.getHash;
 public class KVClient implements IKVClient, ClientSocketListener {
 
     private static Logger logger = Logger.getLogger(KVClient.class);
-    private static final String PROMPT = "M1Client> ";
+    private static final String PROMPT = "M4Client> ";
     private BufferedReader stdin;
     public KVStore kvstore = null;
     private boolean stop = false;
