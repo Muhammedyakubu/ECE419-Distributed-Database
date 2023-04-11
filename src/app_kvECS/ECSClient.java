@@ -117,17 +117,12 @@ public class ECSClient implements IECSClient {
         }
     }
 
-    public List<String> getClientList(String clientListString) {
-        return Arrays.asList(clientListString.split(","));
+    public ArrayList<String> getClientList(String clientListString) {
+        return new ArrayList<>(Arrays.asList(clientListString.split(",")));
     }
 
     public String getClientListString(List<String> clientList) {
-        StringBuilder sb = new StringBuilder();
-        for (String client: clientList) {
-            sb.append(client);
-            sb.append(",");
-        }
-        return sb.toString();
+        return clientList.toString().replace("[", "").replace("]", "");
     }
 
     /**
@@ -143,7 +138,8 @@ public class ECSClient implements IECSClient {
                     node.sendMessage(notification.getMessage());
                     KVMessage response = node.receiveMessage();
                     if (response.getStatus() == IKVMessage.StatusType.NOTIFY_SUBSCRIBERS_SUCCESS) {
-                        clientList.removeAll(getClientList(response.getValue()));   // may throw null pointer exception
+                        List<String> notifiedClients = getClientList(response.getValue());
+                        clientList.removeAll(notifiedClients);   // may throw null pointer exception
                         // could update list of clients to be notified here.
                         if (clientList.isEmpty()) {
                             break;
