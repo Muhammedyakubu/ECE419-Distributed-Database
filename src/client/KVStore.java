@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +40,7 @@ public class KVStore implements KVCommInterface {
 	private static final int DROP_SIZE = 128 * BUFFER_SIZE;
 	private String address;
 	private int port;
-	private List<KVMessage> msg_queue;
+	private List<KVMessage> msg_queue = new ArrayList<KVMessage>();
 
 	/**
 	 * Initialize KVStore with address and port of KVServer
