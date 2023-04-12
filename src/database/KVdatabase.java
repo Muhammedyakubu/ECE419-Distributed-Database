@@ -81,7 +81,7 @@ public class KVdatabase implements IKVDatabase{
         String kvFile =  keyPath + "/" +  key + ".txt";
         String value = "";
         Path path = Paths.get(kvFile);
-        FileChannel reader = channels.get(key);
+        FileChannel reader = channels.get(path.toString());
         try {
             //open the file channel and read
             if (reader == null) {
@@ -100,12 +100,11 @@ public class KVdatabase implements IKVDatabase{
                 out.write(buff.array(), 0, buff.position());
                 buff.clear();
             }
+            value = out.toString(StandardCharsets.UTF_8);
             if (!withSub) {
-                value = new String(out.toByteArray(), StandardCharsets.UTF_8);
                 int idx = value.indexOf("\n");
                 value = value.substring(idx + 1);
             }
-
 
         }
         catch(Exception e) {
@@ -169,7 +168,7 @@ public class KVdatabase implements IKVDatabase{
         try {
             FileChannel channel = channels.get(key);
             if (channel != null) channel.close();
-            channels.remove(kvFile);
+            channels.remove(path.toString());
             Files.delete(path);
             success = true;
 

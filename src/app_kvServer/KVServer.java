@@ -251,7 +251,7 @@ public class KVServer implements IKVServer {
 		}
 		else {
 			keyInStorage = db.insertPair(key, value, withSub);
-			if (cache != null)
+			if (cache != null && !withSub)
 				cache.putKV(key, value);
 
 		}
@@ -265,10 +265,10 @@ public class KVServer implements IKVServer {
 	 * @return
 	 */
 	public boolean replicate(String key, String value){
-		KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, value);
 		if (kvMetadata.size() == 1) return true;
 
 		value = db.getValue(key, true);
+		KVMessage msg = new KVMessage(IKVMessage.StatusType.SERVER_PUT, key, value);
 		for (Socket succ:successors){
 			try {
 				CommModule.sendMessage(msg, succ);
@@ -319,17 +319,16 @@ public class KVServer implements IKVServer {
 	public void updateMetadata(String metadata){
 		this.kvMetadata = new KVMetadata(metadata);
 
-		String[] firstSucc = this.kvMetadata.getNthSuccessor(this.bindAddress + ":" + Integer.toString(port), 1).getFirst().split(":");
-		String[] secondSucc = this.kvMetadata.getNthSuccessor(this.bindAddress+":"+Integer.toString(port), 2).getFirst().split(":");
+		String self = bindAddress + ":" + port;
+		KVMessage connect = new KVMessage(IKVMessage.StatusType.CONNECT_SERVER, self, null);
+		String[] firstSucc = this.kvMetadata.getNthSuccessor(self, 1).getFirst().split(":");
+		String[] secondSucc = this.kvMetadata.getNthSuccessor(self, 2).getFirst().split(":");
 		//add sockets
 		if (successors.size() == 0) {
 			Socket replicaOne, replicaTwo;
 			try {
-				KVMessage connect = new KVMessage(IKVMessage.StatusType.CONNECT_SERVER, null, null);
 				replicaOne = new Socket(firstSucc[0], Integer.parseInt(firstSucc[1]));
-				CommModule.sendMessage(connect, replicaOne);
 				replicaTwo = new Socket(secondSucc[0], Integer.parseInt(secondSucc[1]));
-				CommModule.sendMessage(connect, replicaTwo);
 				successors.add(replicaOne);
 				successors.add(replicaTwo);
 			}
@@ -348,6 +347,18 @@ public class KVServer implements IKVServer {
 				logger.warn("Server-Replica connection lost!", ioe);
 			}
 		}
+
+		// send connection message to replicas
+		for (Socket replica:successors){
+			try {
+				CommModule.sendMessage(connect, replica);
+				CommModule.receiveMessage(replica);
+			}
+			catch(IOException ioe){
+				logger.warn("Server-Replica connection lost!", ioe);
+			}
+		}
+
 		Range ownRange = this.kvMetadata.getRange(getHostname() + ":" + Integer.toString(port));
 		this.keyRange.updateRange(ownRange.start, ownRange.end);
 	}
@@ -494,11 +505,6 @@ public class KVServer implements IKVServer {
 					Socket clientSocket = serverSocket.accept();
 					ClientConnection connection =
 							new ClientConnection(clientSocket, this);
-
-					String clientID = connection.getClientID();
-					if (clientID != null) {	// if not null, then it's a new client not a server connection
-						clientConnections.put(clientID, connection);
-					}
 					Thread clientThread = new Thread(connection);
 					clientThread.setDaemon(true);	// make sure the thread dies once server stops
 					clientThread.start();
@@ -611,7 +617,7 @@ public class KVServer implements IKVServer {
 			if (ecsPort != -1) {
 				ecsSocket = new Socket(ecsAddress, ecsPort);
 				logger.info("Connected to ECS on port: "
-						+ ecsSocket.getLocalPort());
+						+ ecsSocket.getPort());
 			}
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());

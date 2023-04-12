@@ -239,8 +239,6 @@ public class KVStore implements KVCommInterface {
 //			listener.handleNotification(msg);
 			String key = msg.getKey().substring(8);
 			String operation = msg.getKey().substring(0,6);
-			logger.debug("Received notify message for key: " + key);
-			//System.out.println(operation);
 			if(operation.equals("DELETE"))
 				System.out.println("NOTIFICATION: Key " + key + " was deleted.");
 			else

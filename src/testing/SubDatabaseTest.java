@@ -13,6 +13,7 @@ public class SubDatabaseTest extends TestCase {
     String testKey;
     String testValue;
     String realValue;
+    String subs;
 
     public void setUp() {
         BasicConfigurator.configure();
@@ -28,6 +29,7 @@ public class SubDatabaseTest extends TestCase {
             db.addSubscriber(testKey, "1");
             db.addSubscriber(testKey, "2");
             db.addSubscriber(testKey, "3");
+            subs = "1,2,3";
         }
         catch(Exception e){
             e.printStackTrace();
@@ -67,6 +69,44 @@ public class SubDatabaseTest extends TestCase {
         String a[] = new String[] {"1","2"};
         List<String> expected = Arrays.asList(a);
         List<String> actual = db.getSubscribers(testKey);
+        assertEquals(expected, actual);
+    }
+
+    public void testGetWithSubscribers() {
+        String actual = db.getValue(testKey, true);
+        String expected = subs + "\n" + realValue;  // won't work if ran as a suite
+        assertEquals(expected, actual);
+    }
+
+    public void testGetWithoutSubscribers() {
+        String actual = db.getValue(testKey, false);
+        String expected = realValue;
+        assertEquals(expected, actual);
+    }
+
+    public void testPutWithSubs() {
+        String newValue = "This is a new value";
+        try {
+            db.insertPair(testKey, subs + "\n" + newValue, true);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        String actual = db.getValue(testKey, true);
+        String expected = subs + "\n" + newValue;
+        assertEquals(expected, actual);
+    }
+
+    public void testPutWithoutSubs() {
+        String newValue = "This is a new value";
+        try {
+            db.insertPair(testKey, newValue, false);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        String actual = db.getValue(testKey, true);
+        String expected = subs + "\n" + newValue;
         assertEquals(expected, actual);
     }
 

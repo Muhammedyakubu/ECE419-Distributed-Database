@@ -63,12 +63,17 @@ public class ClientConnection implements Runnable {
 				try {
 					// NOTE: may or may not need to wrap this part in a lock to prevent
 					// 			other threads from interrupting protocol messages.
-					KVMessage response = handleClientMessage(receiveMessage());
+					KVMessage request = receiveMessage();
+					boolean isServerPut = request.getStatus() == IKVMessage.StatusType.SERVER_PUT;
+					KVMessage response = handleClientMessage(request);
 					sendMessage(response);
 
 					//notify
-					if (response.getStatus() == IKVMessage.StatusType.PUT_SUCCESS || response.getStatus() == IKVMessage.StatusType.PUT_UPDATE
-						|| response.getStatus() == IKVMessage.StatusType.DELETE_SUCCESS){
+					if (!isServerPut && (
+							response.getStatus() == IKVMessage.StatusType.PUT_SUCCESS ||
+							response.getStatus() == IKVMessage.StatusType.PUT_UPDATE ||
+							response.getStatus() == IKVMessage.StatusType.DELETE_SUCCESS
+					)){
 						if (subs != null){
 							handleSubscriptions(subs, response);
 						}
@@ -158,9 +163,6 @@ public class ClientConnection implements Runnable {
 				try {
 					// set status for delete
 					subs = kvServer.getSubscribers(msg.getKey());
-					if (msg.getValue() == null) {
-						msg.setStatus(KVMessage.StatusType.DELETE_SUCCESS);
-					}
 					boolean withSub = msg.getStatus() == IKVMessage.StatusType.PUT ? false : true;
 					// do the put
 					isUpdate = kvServer.putKV(msg.getKey(), msg.getValue(), withSub);
@@ -204,7 +206,11 @@ public class ClientConnection implements Runnable {
 				}
 				try {
 					String value = kvServer.getKV(msg.getKey(), false);
-					if (value == null) return new KVMessage(IKVMessage.StatusType.SUBSCRIBE_ERROR, "", "");
+					if (value == null)
+						return new KVMessage(
+								IKVMessage.StatusType.SUBSCRIBE_ERROR,
+								"Key doesn't exist",
+								"");
 				}
 				catch (Exception e){
 					logger.warn("Could not subscribe: ", e);
@@ -236,6 +242,24 @@ public class ClientConnection implements Runnable {
 					msg.setStatus(IKVMessage.StatusType.UNSUBSCRIBE_ERROR);
 					msg.setValue("Client was not subscribed to this key");
 				}
+				break;
+			case CONNECT:
+				clientID = msg.getKey();
+				msg.setStatus(IKVMessage.StatusType.CONNECT_SUCCESS);
+				kvServer.clientConnections.put(clientID, this);
+				break;
+			case CONNECT_SERVER:
+				clientID = msg.getKey();
+				msg.setStatus(IKVMessage.StatusType.CONNECT_SUCCESS);
+//				kvServer.clientConnections.put(clientID, this);
+				break;
+			case REQUEST_ID:
+				clientID = this.kvServer.getHostname() + ":"
+						+ this.kvServer.getPort() + ":"
+						+ this.kvServer.connectionCount.incrementAndGet();
+				msg.setStatus(IKVMessage.StatusType.SET_CLIENT_ID);
+				msg.setKey(clientID);
+				kvServer.clientConnections.put(clientID, this);
 				break;
 			default:
 				logger.error("Error! Invalid message type: " + msg.getStatus());
@@ -277,29 +301,6 @@ public class ClientConnection implements Runnable {
 	}
 
 	public String getClientID() {
-		if (clientID != null) {
-			return clientID;
-		}
-
-		// clientID has not been set, so get it.
-		try {
-			KVMessage msg = receiveMessage();
-			if (msg.getStatus() == KVMessage.StatusType.CONNECT) {
-				clientID = msg.getKey();
-				sendMessage(new KVMessage(IKVMessage.StatusType.CONNECT_SUCCESS, "", ""));
-			} else if (msg.getStatus() == IKVMessage.StatusType.REQUEST_ID) {
-				clientID = this.kvServer.getHostname() + ":"
-						 + this.kvServer.getPort() + ":"
-						 + this.kvServer.connectionCount.incrementAndGet();
-				sendMessage(new KVMessage(IKVMessage.StatusType.SET_CLIENT_ID, clientID, ""));
-			} else {
-				// server-server connection
-				logger.debug("Server-server connection established");
-				return null;
-			}
-		} catch (IOException e) {
-			logger.error("Error! Unable to receive message from client!", e);
-		}
 		return clientID;
 	}
 }

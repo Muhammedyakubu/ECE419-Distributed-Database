@@ -65,13 +65,15 @@ public class KVClient implements IKVClient, ClientSocketListener {
         while(!stop) {
 
             try {
-                if(this.kvstore != null && kvstore.getInputAvailable() > 0) {
+                if (this.kvstore != null && kvstore.getInputAvailable() > 0) {
                     KVMessage msg = kvstore.receiveMessage(true);
-                    if(msg != null && msg.getStatus() == IKVMessage.StatusType.NOTIFY){
+                    if (msg != null && msg.getStatus() == IKVMessage.StatusType.NOTIFY) {
                         key_subs.remove(msg.getKey());
                     }
                 }
                 Thread.sleep(1);
+            } catch (IOException ioe) {
+                logger.debug("Listener thread disconnecting...");
             } catch (Exception e){
                 logger.warn("The following error occurred:", e);
                 printError("Unknown error occurred.");
