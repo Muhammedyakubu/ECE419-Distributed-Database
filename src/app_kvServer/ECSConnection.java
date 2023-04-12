@@ -143,6 +143,12 @@ public class ECSConnection implements Runnable{
                     kvServer.removeSubscriber(msg.getKey(), client);
                 }
                 break;
+
+            case NOTIFY_SUBSCRIBERS_SUCCESS:
+                // acknowledgement from ECS that notifications were delivered
+                // just finishing up the protocol
+                break;
+
             case REBALANCE:
                 String stripSemiColon = msg.getValue().split(";")[0];
                 String[] value = stripSemiColon.split(",");
