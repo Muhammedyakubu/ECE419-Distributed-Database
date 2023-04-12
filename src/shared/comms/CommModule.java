@@ -117,6 +117,10 @@ public final class CommModule {
             /* build final String */
             KVMessage msg = new KVMessage(msgBytes);
             if(msg.getStatus() != IKVMessage.StatusType.WAGWAN) {
+                if (msg.getStatus() == IKVMessage.StatusType.NOTIFY) {  // to let the client print properly
+                    // move cursor to the beginning of the line
+                    System.out.print("\n");
+                }
                 logger.debug("RECEIVE \t<"
                         + socket.getInetAddress().getHostAddress() + ":"
                         + socket.getPort() + ">: '"

@@ -236,7 +236,6 @@ public class KVStore implements KVCommInterface {
 
 	public void handleNotification (KVMessage msg) {
 		for(ClientSocketListener listener : listeners) {
-//			listener.handleNotification(msg);
 			String key = msg.getKey().substring(8);
 			String operation = msg.getKey().substring(0,6);
 			if(operation.equals("DELETE"))
