@@ -73,8 +73,8 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 }
                 Thread.sleep(1);
             } catch (Exception e){
-                logger.warn("The following error occurred:", e);
-                printError("Unknown error occurred.");
+//                logger.warn("The following error occurred:", e);
+//                printError("Unknown error occurred.");
             }
         }
     }
