@@ -203,6 +203,38 @@ public class ECSInteractionTest extends TestCase {
 
         Assert.assertEquals("2b0dbbc3be8244f7ec794c92afb0becb,428ac38add006bf878cbdc8d5fadcc51,192.168.0.13:45000;428ac38add006bf878cbdc8d5fadcc52,98b5140588e1cf53350ee513faf6dfa5,192.168.0.13:47000;98b5140588e1cf53350ee513faf6dfa6,c47d295c85a741f71b328778f2342de6,192.168.0.13:46000;c47d295c85a741f71b328778f2342de7,2b0dbbc3be8244f7ec794c92afb0beca,192.168.0.13:49988;",keyRangeAfter);
     }
+    @Test
+    public void testSubscription() {
+        String key = "test_sub";
+        String value = "this is the value";
+        IKVMessage response = null;
+        Exception ex = null;
+
+        try {
+            kvClient.put(key, value);
+            response = kvClient.subscribe(key);
+        } catch (Exception e) {
+            ex = e;
+        }
+        Assert.assertTrue(ex == null && response.getStatus() == IKVMessage.StatusType.SUBSCRIBE_SUCCESS);
+    }
+
+    @Test
+    public void testUnsubscription() {
+        String key = "test_sub";
+        String value = "this is the value";
+        IKVMessage response = null;
+        Exception ex = null;
+
+        try {
+            kvClient.put(key, value);
+            kvClient.subscribe(key);
+            response = kvClient.unsubscribe(key);
+        } catch (Exception e) {
+            ex = e;
+        }
+        Assert.assertTrue(ex == null && response.getStatus() == IKVMessage.StatusType.UNSUBSCRIBE_SUCCESS);
+    }
 
 //    @Test
 //    public void testServerNotResponsible() {

@@ -137,13 +137,13 @@ public class ECSConnection implements Runnable{
 
                 //will be empty if nothing was sent
                 String reply = sent.toString();
-                reply = reply.replaceAll("\\[", "").replaceAll("]", "");
+                reply = reply.replaceAll("\\[", "").replaceAll("]", "").replaceAll(" ", "");
                 msg.setValue(reply);
                 break;
             case UNSUBSCRIBE_CLIENTS:
                 String[] toUnsub = msg.getValue().split(",");
                 for (String client : toUnsub) {
-                    kvServer.removeSubscriber(msg.getKey(), client);
+                    kvServer.removeSubscriber(msg.getKey().substring(8), client);
                 }
                 break;
 
