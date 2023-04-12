@@ -74,6 +74,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 Thread.sleep(1);
             } catch (IOException ioe) {
                 logger.debug("Listener thread disconnecting...");
+                System.out.println(PROMPT);
             } catch (Exception e){
 //                logger.warn("The following error occurred:", e);
 //                printError("Unknown error occurred.");

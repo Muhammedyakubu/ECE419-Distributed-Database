@@ -45,6 +45,7 @@ public class AllTests {
 		clientSuite.addTestSuite(KVMetadataTest.class);
 		clientSuite.addTestSuite(RangeTest.class);
 		clientSuite.addTestSuite(ResponsibleReplicaTest.class);
+		clientSuite.addTestSuite(SubDatabaseTest.class);
 		return clientSuite;
 	}
 	

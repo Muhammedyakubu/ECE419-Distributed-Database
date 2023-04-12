@@ -273,7 +273,7 @@ public class ClientConnection implements Runnable {
 	 * @param msg the message that is to be sent.
 	 * @throws IOException some I/O error regarding the output stream 
 	 */
-	public synchronized void sendMessage(KVMessage msg) throws IOException {
+	public void sendMessage(KVMessage msg) throws IOException {
 		CommModule.sendMessage(msg, clientSocket);
     }
 
@@ -282,14 +282,14 @@ public class ClientConnection implements Runnable {
 	 * @return the received message as a KVMessage object
 	 * @throws IOException some I/O error regarding the input stream
 	 */
-	private synchronized KVMessage receiveMessage() throws IOException {
+	private KVMessage receiveMessage() throws IOException {
 		return CommModule.receiveMessage(clientSocket);
     }
 
 	public void handleSubscriptions(List<String> subs, KVMessage msg){
 		try {
 			String subsString = subs.toString();
-			subsString = subsString.replaceAll("\\[", "").replaceAll("]","");
+			subsString = subsString.replaceAll("\\[", "").replaceAll("]","").replaceAll(" ", "");
 			String key = "UPDATED_" + msg.getKey();
 			if(msg.getStatus() == IKVMessage.StatusType.DELETE_SUCCESS)
 				key = "DELETED_" + msg.getKey();
