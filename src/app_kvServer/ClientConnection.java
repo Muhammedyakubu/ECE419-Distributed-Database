@@ -163,7 +163,7 @@ public class ClientConnection implements Runnable {
 				try {
 					// set status for delete
 					subs = kvServer.getSubscribers(msg.getKey());
-					boolean withSub = msg.getStatus() == IKVMessage.StatusType.PUT ? false : true;
+					boolean withSub = msg.getStatus() != IKVMessage.StatusType.PUT;
 					// do the put
 					isUpdate = kvServer.putKV(msg.getKey(), msg.getValue(), withSub);
 
