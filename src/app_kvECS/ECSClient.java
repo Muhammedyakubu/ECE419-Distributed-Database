@@ -171,6 +171,7 @@ public class ECSClient implements IECSClient {
             }
             try {
                 notification.getInitiator().sendMessage(notifResponse);
+                notification.getInitiator().receiveMessage();   // should expect a response, but we don't care what it is
             } catch (IOException e) {
                 logger.error("Error! Unable to send notification response to " + notification.getInitiator().getNodeName());
             }

@@ -117,15 +117,18 @@ public class ECSConnection implements Runnable{
             case NOTIFY_SUBSCRIBERS:
                 List<String> subs = Arrays.asList(msg.getValue().split(","));
                 List<String> sent = new ArrayList<>();
-                for (String client: subs){
+                msg.setStatus(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS_FAIL);
+                for (String recipient: subs){
 
-                    //check all valid connections for the right client
-                    ClientConnection connect = kvServer.clientConnections.get(client);
-                    if (connect != null && connect.getClientID().equals(client)) {
+                    // check all valid connections for the right recipient
+                    ClientConnection client = kvServer.clientConnections.get(recipient);
+                    if (client != null && client.getClientID().equals(recipient)) {
                         try {
-                            CommModule.sendMessage(new KVMessage(IKVMessage.StatusType.NOTIFY, msg.getKey(), ""), connect.clientSocket);
+                            client.sendMessage(
+                                    new KVMessage(IKVMessage.StatusType.NOTIFY, msg.getKey(), "")
+                            );
                             msg.setStatus(IKVMessage.StatusType.NOTIFY_SUBSCRIBERS_SUCCESS);
-                            sent.add(connect.getClientID());
+                            sent.add(client.getClientID());
                         } catch (Exception e) {
                             logger.warn("Unable to deliver notification", e);
                         }
@@ -138,11 +141,17 @@ public class ECSConnection implements Runnable{
                 msg.setValue(reply);
                 break;
             case UNSUBSCRIBE_CLIENTS:
-                List<String> toUnsub = Arrays.asList(msg.getValue().split(","));
+                String[] toUnsub = msg.getValue().split(",");
                 for (String client : toUnsub) {
                     kvServer.removeSubscriber(msg.getKey(), client);
                 }
                 break;
+
+            case NOTIFY_SUBSCRIBERS_SUCCESS:
+                // acknowledgement from ECS that notifications were delivered
+                // just finishing up the protocol
+                break;
+
             case REBALANCE:
                 String stripSemiColon = msg.getValue().split(";")[0];
                 String[] value = stripSemiColon.split(",");

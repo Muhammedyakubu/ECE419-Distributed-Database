@@ -73,6 +73,7 @@ public interface IKVMessage {
 		NOTIFY_SUBSCRIBERS_SUCCESS,	/* ECS sends to server to confirm that all subscribers have been notified.
 										Server overloads this and returns list of successfully notified clients
 										in the key field */
+		NOTIFY_SUBSCRIBERS_FAIL,
 		UNSUBSCRIBE_CLIENTS,	/* <key> <List<ClientID>>. (Synonymous to notify_fail) In the case that not all clients are notified
 									=> at least one client has disconnected, ECS sends to a server to
 									unsubscribe all referenced clients in from <key> */
