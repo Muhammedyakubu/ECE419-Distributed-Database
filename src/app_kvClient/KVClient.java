@@ -26,7 +26,6 @@ import static shared.MD5.getHash;
 public class KVClient implements IKVClient, ClientSocketListener {
 
     private static Logger logger = Logger.getLogger(KVClient.class);
-    private static final String PROMPT = "M4Client> ";
     private BufferedReader stdin;
     public KVStore kvstore = null;
     private boolean stop = false;
@@ -37,6 +36,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
     private boolean deadServer = false;
     private boolean firstConnection = true;
     private String myID = "";
+    private String PROMPT = "M4Client> ";
     private List<String> key_subs = new ArrayList<String>();
     private boolean desiredDisconnect = false;
 
@@ -633,6 +633,7 @@ public class KVClient implements IKVClient, ClientSocketListener {
                 firstConnection = false;
                 //RESPONSE STATUS IS SET_CLIENT_ID
                 myID = response.getKey();
+                PROMPT = "M4Client " + myID + "> ";
             }
             else{
                 KVMessage response = (KVMessage) kvstore.sendClientID(myID);
